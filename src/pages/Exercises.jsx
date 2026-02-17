@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { MUSCLE_OPTIONS, formatLabel, listEquipmentOptions } from '../services/exerciseCatalog'
 
 function toggleSelection(current, value) {
@@ -46,24 +46,22 @@ export default function Exercises({ exercises }) {
       <h1>Exercises</h1>
       <p>Search and filter the Lifti exercise catalog.</p>
 
-      <div className="exercise-filters">
+      <div className="card exercise-filters">
         <input
           type="search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search exercises"
         />
+        <h2>Equipment</h2>
+        <Chips items={equipmentOptions} selectedItems={equipmentFilter} onToggle={(value) => setEquipmentFilter((current) => toggleSelection(current, value))} />
+        <h2>Muscles</h2>
+        <Chips items={MUSCLE_OPTIONS} selectedItems={muscleFilter} onToggle={(value) => setMuscleFilter((current) => toggleSelection(current, value))} />
       </div>
-
-      <h2>Equipment</h2>
-      <Chips items={equipmentOptions} selectedItems={equipmentFilter} onToggle={(value) => setEquipmentFilter((current) => toggleSelection(current, value))} />
-
-      <h2>Muscles</h2>
-      <Chips items={MUSCLE_OPTIONS} selectedItems={muscleFilter} onToggle={(value) => setMuscleFilter((current) => toggleSelection(current, value))} />
 
       <div className="exercise-grid">
         {filteredExercises.map((exercise) => (
-          <article key={exercise.id} className="exercise-card">
+          <article key={exercise.id} className="card exercise-card">
             <h3>{exercise.name}</h3>
             <p><strong>Equipment:</strong> {exercise.equipment.map(formatLabel).join(', ')}</p>
             <p><strong>Primary:</strong> {exercise.primaryMuscles.map(formatLabel).join(', ')}</p>
