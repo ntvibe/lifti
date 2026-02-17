@@ -170,6 +170,27 @@ input {
   margin-top: 0;
 }
 
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.badge {
+  background: #1e2332;
+  border: 1px solid #36415f;
+  border-radius: 999px;
+  color: #cfdbff;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.65rem;
+}
+
+.exercise-detail-back {
+  display: inline-block;
+  margin-top: 1rem;
+}
+
 .pose-grid {
   display: grid;
   gap: 0.8rem;
