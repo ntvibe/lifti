@@ -8,7 +8,7 @@ function toggleSelection(current, value) {
 
 function Chips({ items, selectedItems, onToggle }) {
   return (
-    <div className="chips">
+    <div className="chips-row">
       {items.map((item) => {
         const key = typeof item === 'string' ? item : item.id
         const label = typeof item === 'string' ? formatLabel(item) : item.label
@@ -47,28 +47,39 @@ export default function Exercises({ exercises }) {
       <p>Search and filter the Lifti exercise catalog.</p>
 
       <div className="card exercise-filters">
-        <input
-          type="search"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search exercises"
-        />
+        <div className="search-row">
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search exercises"
+          />
+          {search ? (
+            <button type="button" className="ghost clear-search" onClick={() => setSearch('')}>
+              Clear
+            </button>
+          ) : null}
+        </div>
+
         <h2>Equipment</h2>
         <Chips items={equipmentOptions} selectedItems={equipmentFilter} onToggle={(value) => setEquipmentFilter((current) => toggleSelection(current, value))} />
+
         <h2>Muscles</h2>
         <Chips items={MUSCLE_OPTIONS} selectedItems={muscleFilter} onToggle={(value) => setMuscleFilter((current) => toggleSelection(current, value))} />
       </div>
 
       <div className="exercise-grid">
         {filteredExercises.map((exercise) => (
-          <article key={exercise.id} className="card exercise-card">
-            <h3>{exercise.name}</h3>
-            <div className="badges">
-              {exercise.equipment.map((item) => <span key={`${exercise.id}-${item}`} className="badge">{formatLabel(item)}</span>)}
-            </div>
-            <p><strong>Primary:</strong> {exercise.primaryMuscles.map(formatLabel).join(', ')}</p>
-            <Link to={`/exercises/${exercise.id}`}>View details</Link>
-          </article>
+          <Link key={exercise.id} to={`/exercises/${exercise.id}`} className="card exercise-card-link">
+            <article className="exercise-card">
+              <h3>{exercise.name}</h3>
+              <div className="badges">
+                <span className="badge">{formatLabel(exercise.trackMode)}</span>
+                {exercise.equipment.map((item) => <span key={`${exercise.id}-${item}`} className="badge">{formatLabel(item)}</span>)}
+              </div>
+              <p><strong>Primary:</strong> {exercise.primaryMuscles.map(formatLabel).join(', ')}</p>
+            </article>
+          </Link>
         ))}
       </div>
 

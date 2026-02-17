@@ -322,7 +322,10 @@ export default function App() {
     <div className="app-shell">
       <header className="top-bar">
         <h1>Lifti</h1>
-        {accessToken ? <button type="button" className="ghost" onClick={logout}>Sign out</button> : <NavLink to="/login" className="ghost action-link">Login</NavLink>}
+        <div className="top-bar-actions">
+          <span className={`status-chip ${accessToken ? 'signed-in' : 'signed-out'}`}>{accessToken ? 'Signed in' : 'Signed out'}</span>
+          {accessToken ? <button type="button" className="ghost" onClick={logout}>Sign out</button> : <NavLink to="/login" className="ghost action-link">Login</NavLink>}
+        </div>
       </header>
 
       <div className="app-layout">
