@@ -4,6 +4,11 @@ function getGroupKey(id) {
   return id.replace(/\d+$/, '')
 }
 
+const SILHOUETTE_FILL = '#ffffff'
+const SILHOUETTE_OPACITY = '0.5'
+const DEFAULT_MUSCLE_FILL = '#ffffff'
+const ACTIVE_MUSCLE_FILL = '#3b82f6'
+
 export default function MuscleMap({ value, onChange }) {
   const containerRef = useRef(null)
   const onChangeRef = useRef(onChange)
@@ -64,13 +69,21 @@ export default function MuscleMap({ value, onChange }) {
         const id = pathEl.id
         const d = pathEl.getAttribute('d') || ''
 
-        if (id === 'fig-front' || id === 'fig-back' || d.trim() === '') {
+        if (id === 'fig-front' || id === 'fig-back') {
+          pathEl.style.fill = SILHOUETTE_FILL
+          pathEl.style.opacity = SILHOUETTE_OPACITY
+          return
+        }
+
+        if (d.trim() === '') {
           return
         }
 
         const groupKey = getGroupKey(id)
         pathEl.dataset.group = groupKey
         pathEl.classList.add('muscle')
+        pathEl.style.fill = DEFAULT_MUSCLE_FILL
+        pathEl.style.opacity = '1'
       })
 
       containerRef.current.addEventListener('click', handleMuscleClick)
@@ -97,7 +110,10 @@ export default function MuscleMap({ value, onChange }) {
 
     const musclePaths = containerRef.current.querySelectorAll('path.muscle')
     musclePaths.forEach((pathEl) => {
-      pathEl.classList.toggle('active', selectedGroups.has(pathEl.dataset.group))
+      const isSelected = selectedGroups.has(pathEl.dataset.group)
+      pathEl.classList.toggle('active', isSelected)
+      pathEl.style.fill = isSelected ? ACTIVE_MUSCLE_FILL : DEFAULT_MUSCLE_FILL
+      pathEl.style.opacity = '1'
     })
   }, [selectedGroups])
 

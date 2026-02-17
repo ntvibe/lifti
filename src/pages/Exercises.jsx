@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import MuscleMap from '../components/MuscleMap'
 import { MUSCLE_OPTIONS, formatLabel, listEquipmentOptions } from '../services/exerciseCatalog'
 
 function toggleSelection(current, value) {
@@ -24,7 +25,22 @@ function Chips({ items, selectedItems, onToggle }) {
   )
 }
 
-export default function Exercises({ exercises }) {
+function formatSelectedGroupName(group) {
+  return group
+    .replace(/[_-]+/g, ' ')
+    .split(' ')
+    .filter(Boolean)
+    .map((word) => {
+      if (word.length > 1 && word === word.toUpperCase()) {
+        return word
+      }
+
+      return `${word.charAt(0).toUpperCase()}${word.slice(1).toLowerCase()}`
+    })
+    .join(' ')
+}
+
+export default function Exercises({ exercises, selectedGroups = [], onSelectedGroupsChange = () => {} }) {
   const [search, setSearch] = useState('')
   const [equipmentFilter, setEquipmentFilter] = useState([])
   const [muscleFilter, setMuscleFilter] = useState([])
@@ -41,10 +57,30 @@ export default function Exercises({ exercises }) {
     return matchesName && matchesEquipment && matchesMuscles
   }), [equipmentFilter, exercises, muscleFilter, search])
 
+  const sortedSelectedGroups = useMemo(
+    () => [...selectedGroups].sort((a, b) => formatSelectedGroupName(a).localeCompare(formatSelectedGroupName(b))),
+    [selectedGroups],
+  )
+
   return (
     <section className="screen">
       <h1>Exercises</h1>
       <p>Search and filter the Lifti exercise catalog.</p>
+
+      <div className="card muscle-map-card">
+        <h2>Target Muscle Groups</h2>
+        <MuscleMap value={selectedGroups} onChange={onSelectedGroupsChange} />
+
+        <div className="selected-groups" aria-live="polite">
+          {sortedSelectedGroups.length > 0
+            ? sortedSelectedGroups.map((group) => (
+                <span className="badge" key={group}>{formatSelectedGroupName(group)}</span>
+              ))
+            : <p>No muscle groups selected.</p>}
+        </div>
+
+        <button type="button" className="ghost" onClick={() => onSelectedGroupsChange([])}>Clear Selection</button>
+      </div>
 
       <div className="card exercise-filters">
         <div className="search-row">
