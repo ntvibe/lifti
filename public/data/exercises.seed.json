@@ -1,0 +1,420 @@
+[
+  {
+    "id": "barbell-back-squat",
+    "name": "Barbell Back Squat",
+    "equipment": [
+      "barbell",
+      "squat rack"
+    ],
+    "muscles": [
+      "quadriceps",
+      "glutes",
+      "hamstrings"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Barbell Back Squat \u2014 Front pose placeholder",
+      "side": "Barbell Back Squat \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "barbell-front-squat",
+    "name": "Barbell Front Squat",
+    "equipment": [
+      "barbell",
+      "rack"
+    ],
+    "muscles": [
+      "quadriceps",
+      "core",
+      "upper back"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Barbell Front Squat \u2014 Front pose placeholder",
+      "side": "Barbell Front Squat \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "conventional-deadlift",
+    "name": "Conventional Deadlift",
+    "equipment": [
+      "barbell"
+    ],
+    "muscles": [
+      "hamstrings",
+      "glutes",
+      "lower back"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Conventional Deadlift \u2014 Front pose placeholder",
+      "side": "Conventional Deadlift \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "romanian-deadlift",
+    "name": "Romanian Deadlift",
+    "equipment": [
+      "barbell"
+    ],
+    "muscles": [
+      "hamstrings",
+      "glutes",
+      "lower back"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Romanian Deadlift \u2014 Front pose placeholder",
+      "side": "Romanian Deadlift \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "barbell-bench-press",
+    "name": "Barbell Bench Press",
+    "equipment": [
+      "barbell",
+      "bench"
+    ],
+    "muscles": [
+      "chest",
+      "triceps",
+      "front delts"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Barbell Bench Press \u2014 Front pose placeholder",
+      "side": "Barbell Bench Press \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "incline-dumbbell-press",
+    "name": "Incline Dumbbell Press",
+    "equipment": [
+      "dumbbells",
+      "incline bench"
+    ],
+    "muscles": [
+      "upper chest",
+      "triceps",
+      "front delts"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Incline Dumbbell Press \u2014 Front pose placeholder",
+      "side": "Incline Dumbbell Press \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "overhead-barbell-press",
+    "name": "Overhead Barbell Press",
+    "equipment": [
+      "barbell"
+    ],
+    "muscles": [
+      "shoulders",
+      "triceps",
+      "core"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Overhead Barbell Press \u2014 Front pose placeholder",
+      "side": "Overhead Barbell Press \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "seated-dumbbell-press",
+    "name": "Seated Dumbbell Press",
+    "equipment": [
+      "dumbbells",
+      "bench"
+    ],
+    "muscles": [
+      "shoulders",
+      "triceps"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Seated Dumbbell Press \u2014 Front pose placeholder",
+      "side": "Seated Dumbbell Press \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "pull-up",
+    "name": "Pull-Up",
+    "equipment": [
+      "pull-up bar"
+    ],
+    "muscles": [
+      "lats",
+      "biceps",
+      "upper back"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Pull-Up \u2014 Front pose placeholder",
+      "side": "Pull-Up \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "lat-pulldown",
+    "name": "Lat Pulldown",
+    "equipment": [
+      "cable machine"
+    ],
+    "muscles": [
+      "lats",
+      "biceps",
+      "upper back"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Lat Pulldown \u2014 Front pose placeholder",
+      "side": "Lat Pulldown \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "barbell-row",
+    "name": "Barbell Row",
+    "equipment": [
+      "barbell"
+    ],
+    "muscles": [
+      "lats",
+      "rhomboids",
+      "rear delts"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Barbell Row \u2014 Front pose placeholder",
+      "side": "Barbell Row \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "seated-cable-row",
+    "name": "Seated Cable Row",
+    "equipment": [
+      "cable machine"
+    ],
+    "muscles": [
+      "lats",
+      "rhomboids",
+      "biceps"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Seated Cable Row \u2014 Front pose placeholder",
+      "side": "Seated Cable Row \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "walking-lunge",
+    "name": "Walking Lunge",
+    "equipment": [
+      "dumbbells"
+    ],
+    "muscles": [
+      "quadriceps",
+      "glutes",
+      "hamstrings"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Walking Lunge \u2014 Front pose placeholder",
+      "side": "Walking Lunge \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "leg-press",
+    "name": "Leg Press",
+    "equipment": [
+      "leg press machine"
+    ],
+    "muscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Leg Press \u2014 Front pose placeholder",
+      "side": "Leg Press \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "hip-thrust",
+    "name": "Barbell Hip Thrust",
+    "equipment": [
+      "barbell",
+      "bench"
+    ],
+    "muscles": [
+      "glutes",
+      "hamstrings",
+      "core"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Barbell Hip Thrust \u2014 Front pose placeholder",
+      "side": "Barbell Hip Thrust \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "bicep-curl",
+    "name": "Dumbbell Bicep Curl",
+    "equipment": [
+      "dumbbells"
+    ],
+    "muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Dumbbell Bicep Curl \u2014 Front pose placeholder",
+      "side": "Dumbbell Bicep Curl \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "tricep-pushdown",
+    "name": "Tricep Pushdown",
+    "equipment": [
+      "cable machine"
+    ],
+    "muscles": [
+      "triceps"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Tricep Pushdown \u2014 Front pose placeholder",
+      "side": "Tricep Pushdown \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "cable-lateral-raise",
+    "name": "Cable Lateral Raise",
+    "equipment": [
+      "cable machine"
+    ],
+    "muscles": [
+      "lateral delts",
+      "traps"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Cable Lateral Raise \u2014 Front pose placeholder",
+      "side": "Cable Lateral Raise \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "face-pull",
+    "name": "Face Pull",
+    "equipment": [
+      "cable machine"
+    ],
+    "muscles": [
+      "rear delts",
+      "traps",
+      "upper back"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Face Pull \u2014 Front pose placeholder",
+      "side": "Face Pull \u2014 Side pose placeholder"
+    }
+  },
+  {
+    "id": "standing-calf-raise",
+    "name": "Standing Calf Raise",
+    "equipment": [
+      "calf raise machine"
+    ],
+    "muscles": [
+      "calves"
+    ],
+    "tips": [
+      "Control the lowering phase and keep your reps smooth.",
+      "Brace your core before every rep and keep a stable torso.",
+      "Choose a load that lets you keep consistent form across all sets."
+    ],
+    "poses": {
+      "front": "Standing Calf Raise \u2014 Front pose placeholder",
+      "side": "Standing Calf Raise \u2014 Side pose placeholder"
+    }
+  }
+]
