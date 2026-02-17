@@ -50,7 +50,7 @@ export default function MuscleMap({ value, onChange }) {
     }
 
     const loadSvg = async () => {
-      const response = await fetch('/svg/muscle-groups.svg')
+      const response = await fetch(`${import.meta.env.BASE_URL}svg/muscle-groups.svg`)
       const svgMarkup = await response.text()
 
       if (!isMounted || !containerRef.current) {
