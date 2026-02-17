@@ -44,13 +44,17 @@ nav a.active {
 
 main {
   margin: 0 auto;
-  max-width: 900px;
+  max-width: 960px;
   padding: 2rem 1rem;
 }
 
 .screen h1 {
   font-size: 2rem;
   margin-bottom: 0.75rem;
+}
+
+.screen h2 {
+  margin-top: 1.25rem;
 }
 
 .screen p {
@@ -74,11 +78,22 @@ button:disabled {
   opacity: 0.7;
 }
 
+input,
+select {
+  background: #151d31;
+  border: 1px solid #374157;
+  border-radius: 0.5rem;
+  color: #f5f7fb;
+  padding: 0.6rem;
+}
+
 .signout {
   margin-top: 0.75rem;
 }
 
-.sync-box {
+.sync-box,
+.exercise-card,
+.pose-grid figure {
   border: 1px solid #2a3145;
   border-radius: 0.75rem;
   margin-top: 1.5rem;
@@ -88,6 +103,82 @@ button:disabled {
 .sync-actions {
   display: flex;
   gap: 0.75rem;
+}
+
+.exercise-filters {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  margin-top: 1.5rem;
+}
+
+.exercise-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  margin-top: 1rem;
+}
+
+.pose-placeholder {
+  align-items: center;
+  background: #0f1728;
+  border: 1px dashed #3a4b6b;
+  border-radius: 0.5rem;
+  color: #cfdcff;
+  display: flex;
+  font-size: 0.9rem;
+  height: 170px;
+  justify-content: center;
+  padding: 0.75rem;
+  text-align: center;
+  width: 100%;
+}
+
+.exercise-card h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.4rem;
+}
+
+.exercise-card p {
+  margin-top: 0.5rem;
+}
+
+.exercise-card a,
+.screen a {
+  color: #89adff;
+  display: inline-block;
+  margin-top: 0.75rem;
+}
+
+.pose-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  margin-top: 1rem;
+}
+
+.pose-grid figure {
+  margin: 0;
+}
+
+.pose-grid figcaption {
+  color: #c4ccdf;
+  margin-top: 0.5rem;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.chip {
+  background: #202b45;
+  border: 1px solid #3a4b6b;
+  border-radius: 999px;
+  color: #deebff;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.65rem;
 }
 
 .status {
