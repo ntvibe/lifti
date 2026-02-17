@@ -4,6 +4,7 @@ import { signIn, signOut } from './services/googleAuth'
 import { readJson, upsertJsonByName, updateJson } from './services/driveAppData'
 import Exercises from './pages/Exercises'
 import ExerciseDetail from './pages/ExerciseDetail'
+import PlanBuilder from './pages/PlanBuilder'
 import { fetchExerciseCatalog, getPublicAssetUrl } from './services/exerciseCatalog'
 
 const HISTORY_FILE = 'lifti_history.json'
@@ -352,8 +353,8 @@ export default function App() {
             />
             <Route path="/exercises" element={<Exercises exercises={catalog} />} />
             <Route path="/exercises/:id" element={<ExerciseDetail exercises={catalog} />} />
-            <Route path="/plans" element={<Page title="Plans" description="Create and customize your weekly lifting plan." />} />
-            <Route path="/plan-builder" element={<Page title="Plans" description="Create and customize your weekly lifting plan." />} />
+            <Route path="/plans" element={<PlanBuilder />} />
+            <Route path="/plan-builder" element={<PlanBuilder />} />
             <Route path="/workout-player" element={<Page title="Workout Player" description="Follow your workout step-by-step with timers and logging." />} />
             <Route path="/history" element={<Page title="History" description="Review completed workouts, trends, and personal records." />} />
           </Routes>

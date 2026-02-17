@@ -363,3 +363,50 @@ input {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+.muscle-map {
+  margin: 0 auto;
+  max-width: 500px;
+  width: 100%;
+}
+
+.muscle-map svg {
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.muscle {
+  cursor: pointer;
+  fill: #ffffff;
+  opacity: 0.9;
+  stroke: transparent;
+  stroke-width: 0.75rem;
+  transition: 150ms ease;
+}
+
+.muscle:hover {
+  opacity: 1;
+}
+
+.muscle.active {
+  fill: #ff4d4d;
+  opacity: 1;
+}
+
+#fig-front,
+#fig-back {
+  fill: #1a1a1a;
+}
+
+.selected-groups {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.selected-groups p {
+  margin: 0;
+}
