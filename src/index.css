@@ -112,6 +112,31 @@ select {
   margin-top: 1.5rem;
 }
 
+
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.chip {
+  background: #151d31;
+  border: 1px solid #374157;
+  border-radius: 999px;
+  color: #d8def0;
+  cursor: pointer;
+  margin-top: 0;
+  padding: 0.35rem 0.7rem;
+}
+
+.chip.selected {
+  background: #5e8cff;
+  border-color: #5e8cff;
+  color: #ffffff;
+}
+
 .exercise-grid {
   display: grid;
   gap: 1rem;
@@ -246,4 +271,15 @@ select {
 .error {
   color: #ff9ca9 !important;
   margin-top: 0.75rem !important;
+}
+
+
+.pose-image {
+  background: #0f1728;
+  border: 1px dashed #3a4b6b;
+  border-radius: 0.5rem;
+  display: block;
+  height: 200px;
+  object-fit: cover;
+  width: 100%;
 }

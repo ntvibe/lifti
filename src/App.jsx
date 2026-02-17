@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, NavLink, Route, Routes, useParams } from 'react-router-dom'
-import { MuscleFilter } from './components/MuscleFilter'
+import { NavLink, Route, Routes } from 'react-router-dom'
 import { signIn, signOut } from './services/googleAuth'
 import { readJson, upsertJsonByName, updateJson } from './services/driveAppData'
-import { filterExercisesByMuscles } from './utils/filterExercisesByMuscles'
+import Exercises from './pages/Exercises'
+import ExerciseDetail from './pages/ExerciseDetail'
+import { fetchExerciseCatalog } from './services/exerciseCatalog'
 
 const HISTORY_FILE = 'lifti_history.json'
 const PLANS_FILE = 'lifti_plans.json'
@@ -36,25 +37,17 @@ function useExerciseCatalog() {
   useEffect(() => {
     let cancelled = false
 
-    const loadCatalog = async () => {
-      try {
-        const response = await fetch('/data/exercises.seed.json')
-        if (!response.ok) {
-          return
-        }
-
-        const data = await response.json()
+    fetchExerciseCatalog()
+      .then((payload) => {
         if (!cancelled) {
-          setCatalog(data)
+          setCatalog(payload.exercises)
         }
-      } catch {
+      })
+      .catch(() => {
         if (!cancelled) {
           setCatalog([])
         }
-      }
-    }
-
-    loadCatalog()
+      })
 
     return () => {
       cancelled = true
@@ -62,123 +55,6 @@ function useExerciseCatalog() {
   }, [])
 
   return catalog
-}
-
-function Chips({ items }) {
-  return (
-    <div className="chips">
-      {items.map((item) => (
-        <span key={item} className="chip">{item}</span>
-      ))}
-    </div>
-  )
-}
-
-function ExercisesScreen({ catalog }) {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [equipmentFilter, setEquipmentFilter] = useState('all')
-  const [selectedMuscles, setSelectedMuscles] = useState([])
-
-  const allEquipment = useMemo(
-    () => [...new Set(catalog.flatMap((exercise) => exercise.equipment))].sort(),
-    [catalog],
-  )
-
-  const filteredCatalog = useMemo(() => {
-    const byMuscles = filterExercisesByMuscles(catalog, selectedMuscles)
-
-    return byMuscles.filter((exercise) => {
-      const matchesName = exercise.name.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesEquipment = equipmentFilter === 'all' || exercise.equipment.includes(equipmentFilter)
-      return matchesName && matchesEquipment
-    })
-  }, [catalog, equipmentFilter, searchTerm, selectedMuscles])
-
-  return (
-    <section className="screen">
-      <h1>Exercises</h1>
-      <p>Search and filter the Lifti exercise library.</p>
-
-      <div className="exercise-filters">
-        <input
-          type="search"
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-          placeholder="Search by exercise name"
-        />
-        <select value={equipmentFilter} onChange={(event) => setEquipmentFilter(event.target.value)}>
-          <option value="all">All equipment</option>
-          {allEquipment.map((equipment) => (
-            <option key={equipment} value={equipment}>{equipment}</option>
-          ))}
-        </select>
-      </div>
-
-      <MuscleFilter selectedMuscles={selectedMuscles} onChange={setSelectedMuscles} />
-
-      <div className="exercise-grid">
-        {filteredCatalog.map((exercise) => (
-          <article key={exercise.id} className="exercise-card">
-            <div className="pose-placeholder" aria-label={`${exercise.name} front pose placeholder`}>{exercise.poses.front}</div>
-            <h2>{exercise.name}</h2>
-            <Chips items={exercise.muscles} />
-            <p>{exercise.equipment.join(' • ')}</p>
-            <Link to={`/exercises/${exercise.id}`}>View details</Link>
-          </article>
-        ))}
-      </div>
-
-      {filteredCatalog.length === 0 ? <p className="status">No exercises found for this filter.</p> : null}
-    </section>
-  )
-}
-
-function ExerciseDetailScreen({ catalog }) {
-  const { exerciseId } = useParams()
-  const exercise = catalog.find((entry) => entry.id === exerciseId)
-
-  if (!exercise) {
-    return (
-      <section className="screen">
-        <h1>Exercise not found</h1>
-        <p>Go back to the library and choose another exercise.</p>
-        <Link to="/exercises">Back to Exercises</Link>
-      </section>
-    )
-  }
-
-  return (
-    <section className="screen">
-      <h1>{exercise.name}</h1>
-      <p>Technique snapshots and coaching cues.</p>
-
-      <div className="pose-grid">
-        <figure>
-          <div className="pose-placeholder" aria-label={`${exercise.name} front pose placeholder`}>{exercise.poses.front}</div>
-          <figcaption>Front view</figcaption>
-        </figure>
-        <figure>
-          <div className="pose-placeholder" aria-label={`${exercise.name} side pose placeholder`}>{exercise.poses.side}</div>
-          <figcaption>Side view</figcaption>
-        </figure>
-      </div>
-
-      <h2>Primary muscles</h2>
-      <Chips items={exercise.muscles} />
-
-      <h2>Equipment</h2>
-      <Chips items={exercise.equipment} />
-
-      <h2>Tips</h2>
-      <ul>
-        {exercise.tips.map((tip) => (
-          <li key={tip}>{tip}</li>
-        ))}
-      </ul>
-
-      <Link to="/exercises">Back to Exercises</Link>
-    </section>
-  )
 }
 
 function LoginScreen({ onSignedIn, status }) {
@@ -192,7 +68,7 @@ function LoginScreen({ onSignedIn, status }) {
     try {
       const accessToken = await signIn()
       const exerciseSeedResponse = await fetch('/data/exercises.seed.json')
-      const exercisesSeed = exerciseSeedResponse.ok ? await exerciseSeedResponse.json() : []
+      const exercisesSeed = exerciseSeedResponse.ok ? await exerciseSeedResponse.json() : { schemaVersion: 1, updatedAt: new Date().toISOString(), exercises: [] }
 
       const [history, plans, exercises] = await Promise.all([
         upsertJsonByName(accessToken, HISTORY_FILE, DEFAULT_HISTORY),
@@ -376,8 +252,8 @@ export default function App() {
             path="/login"
             element={<LoginScreen onSignedIn={handleSignedIn} status={status} />}
           />
-          <Route path="/exercises" element={<ExercisesScreen catalog={catalog} />} />
-          <Route path="/exercises/:exerciseId" element={<ExerciseDetailScreen catalog={catalog} />} />
+          <Route path="/exercises" element={<Exercises exercises={catalog} />} />
+          <Route path="/exercises/:id" element={<ExerciseDetail exercises={catalog} />} />
           <Route path="/plan-builder" element={<Page title="Plan Builder" description="Create and customize your weekly lifting plan." />} />
           <Route path="/workout-player" element={<Page title="Workout Player" description="Follow your workout step-by-step with timers and logging." />} />
           <Route path="/history" element={<Page title="History" description="Review completed workouts, trends, and personal records." />} />
