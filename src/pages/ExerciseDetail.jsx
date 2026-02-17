@@ -16,7 +16,7 @@ export default function ExerciseDetail({ exercises }) {
 
   return (
     <section className="screen exercise-detail-screen">
-      <h1 className="exercise-detail-title">{exercise.name}</h1>
+      <h1 className="exercise-detail-title">{formatLabel(exercise.name)}</h1>
 
       <div className="badges">
         <span className="badge">{formatLabel(exercise.trackMode)}</span>
@@ -30,11 +30,11 @@ export default function ExerciseDetail({ exercises }) {
 
       <div className="pose-grid">
         <figure className="card">
-          <img src={exercise.poses.front} className="pose-image" alt={`${exercise.name} front pose`} />
+          <img src={exercise.poses.front} className="pose-image" alt={`${formatLabel(exercise.name)} front pose`} />
           <figcaption>Front</figcaption>
         </figure>
         <figure className="card">
-          <img src={exercise.poses.side} className="pose-image" alt={`${exercise.name} side pose`} />
+          <img src={exercise.poses.side} className="pose-image" alt={`${formatLabel(exercise.name)} side pose`} />
           <figcaption>Side</figcaption>
         </figure>
       </div>
