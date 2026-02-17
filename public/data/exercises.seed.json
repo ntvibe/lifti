@@ -244,3 +244,137 @@
     }
   ]
 }
+[
+  {
+    "id": "recline-distance-km",
+    "name": "Recline (Distance)",
+    "equipment": ["machine"],
+    "primaryMuscles": ["quadriceps"],
+    "secondaryMuscles": ["hamstrings", "gluteus", "calves"],
+    "trackMode": "distance",
+    "defaultPrescription": { "sets": 1, "reps": "2-5 km", "restSec": 0 },
+    "cues": ["Keep a steady pace", "Relax shoulders", "Breathe rhythmically"],
+    "commonMistakes": ["Starting too fast", "Slouching posture", "Holding breath"],
+    "poses": { "front": "/exercises/_placeholder.webp", "side": "/exercises/_placeholder.webp" }
+  },
+  {
+    "id": "goblet-squat",
+    "name": "Goblet Squat",
+    "equipment": ["dumbbell", "kettlebell"],
+    "primaryMuscles": ["quadriceps", "gluteus"],
+    "secondaryMuscles": ["hamstrings", "adductors", "abdominals"],
+    "trackMode": "reps_load",
+    "defaultPrescription": { "sets": 3, "reps": "8-12", "restSec": 90 },
+    "cues": ["Brace your core", "Sit between your hips", "Keep chest tall"],
+    "commonMistakes": ["Knees collapsing inward", "Heels lifting", "Rounding lower back"],
+    "poses": { "front": "/exercises/_placeholder.webp", "side": "/exercises/_placeholder.webp" }
+  },
+  {
+    "id": "barbell-deadlift",
+    "name": "Barbell Deadlift",
+    "equipment": ["barbell"],
+    "primaryMuscles": ["hamstrings", "gluteus", "paravertebrals"],
+    "secondaryMuscles": ["upper_back", "trapezius", "forearms", "abdominals"],
+    "trackMode": "reps_load",
+    "defaultPrescription": { "sets": 3, "reps": "3-6", "restSec": 180 },
+    "cues": ["Bar close to your shins", "Brace then push the floor away", "Lock out with hips, not lower back"],
+    "commonMistakes": ["Rounding back", "Bar drifting forward", "Jerking the pull"],
+    "poses": { "front": "/exercises/_placeholder.webp", "side": "/exercises/_placeholder.webp" }
+  },
+  {
+    "id": "machine-lat-pulldown",
+    "name": "Pulldown (Machine)",
+    "equipment": ["machine"],
+    "primaryMuscles": ["upper_back"],
+    "secondaryMuscles": ["biceps", "forearms", "trapezius"],
+    "trackMode": "reps_load",
+    "defaultPrescription": { "sets": 3, "reps": "8-12", "restSec": 90 },
+    "cues": ["Pull elbows down to your sides", "Keep ribs down", "Control the return"],
+    "commonMistakes": ["Swinging body", "Pulling behind the neck", "Shrugging shoulders"],
+    "poses": { "front": "/exercises/_placeholder.webp", "side": "/exercises/_placeholder.webp" }
+  },
+  {
+    "id": "dumbbell-biceps-curl",
+    "name": "Dumbbells Bicep Curl",
+    "equipment": ["dumbbell"],
+    "primaryMuscles": ["biceps"],
+    "secondaryMuscles": ["forearms"],
+    "trackMode": "reps_load",
+    "defaultPrescription": { "sets": 3, "reps": "10-15", "restSec": 60 },
+    "cues": ["Keep elbows close to your body", "Curl without swinging", "Squeeze at the top"],
+    "commonMistakes": ["Using momentum", "Elbows drifting forward", "Half reps"],
+    "poses": { "front": "/exercises/_placeholder.webp", "side": "/exercises/_placeholder.webp" }
+  },
+  {
+    "id": "machine-reverse-fly",
+    "name": "Reverse Fly (Machine)",
+    "equipment": ["machine"],
+    "primaryMuscles": ["deltoids"],
+    "secondaryMuscles": ["upper_back", "trapezius"],
+    "trackMode": "reps_load",
+    "defaultPrescription": { "sets": 3, "reps": "12-15", "restSec": 60 },
+    "cues": ["Lead with elbows, not hands", "Keep chest on pad (if available)", "Control both directions"],
+    "commonMistakes": ["Shrugging shoulders", "Overextending arms", "Rushing reps"],
+    "poses": { "front": "/exercises/_placeholder.webp", "side": "/exercises/_placeholder.webp" }
+  },
+  {
+    "id": "cable-triceps-pushdown",
+    "name": "Push Down (Cable)",
+    "equipment": ["cable"],
+    "primaryMuscles": ["triceps"],
+    "secondaryMuscles": ["forearms"],
+    "trackMode": "reps_load",
+    "defaultPrescription": { "sets": 3, "reps": "10-15", "restSec": 60 },
+    "cues": ["Pin elbows to your sides", "Full extension at the bottom", "Control the return"],
+    "commonMistakes": ["Elbows flaring", "Leaning too much", "Partial range"],
+    "poses": { "front": "/exercises/_placeholder.webp", "side": "/exercises/_placeholder.webp" }
+  },
+  {
+    "id": "dumbbell-french-press",
+    "name": "Dumbbells French Press",
+    "equipment": ["dumbbell"],
+    "primaryMuscles": ["triceps"],
+    "secondaryMuscles": ["forearms"],
+    "trackMode": "reps_load",
+    "defaultPrescription": { "sets": 3, "reps": "8-12", "restSec": 75 },
+    "cues": ["Keep elbows pointing up", "Lower under control", "Don’t flare elbows wide"],
+    "commonMistakes": ["Elbows drifting outward", "Too much arching", "Bouncing at the bottom"],
+    "poses": { "front": "/exercises/_placeholder.webp", "side": "/exercises/_placeholder.webp" }
+  },
+  {
+    "id": "machine-leg-press",
+    "name": "Leg Press (Machine)",
+    "equipment": ["machine"],
+    "primaryMuscles": ["quadriceps", "gluteus"],
+    "secondaryMuscles": ["hamstrings", "adductors", "calves"],
+    "trackMode": "reps_load",
+    "defaultPrescription": { "sets": 3, "reps": "10-15", "restSec": 120 },
+    "cues": ["Feet flat, controlled depth", "Keep lower back against pad", "Drive through mid-foot"],
+    "commonMistakes": ["Locking knees hard", "Butt lifting off pad", "Partial reps"],
+    "poses": { "front": "/exercises/_placeholder.webp", "side": "/exercises/_placeholder.webp" }
+  },
+  {
+    "id": "plank",
+    "name": "Plank",
+    "equipment": ["bodyweight"],
+    "primaryMuscles": ["abdominals", "transverse_abdominis"],
+    "secondaryMuscles": ["oblique", "lower_back", "gluteus"],
+    "trackMode": "time",
+    "defaultPrescription": { "sets": 3, "reps": "30-60 sec", "restSec": 60 },
+    "cues": ["Ribs down, pelvis neutral", "Push the floor away", "Breathe steadily"],
+    "commonMistakes": ["Hips sagging", "Holding breath", "Shoulders collapsing"],
+    "poses": { "front": "/exercises/_placeholder.webp", "side": "/exercises/_placeholder.webp" }
+  },
+  {
+    "id": "mountain-climber",
+    "name": "Mountain Climber",
+    "equipment": ["bodyweight"],
+    "primaryMuscles": ["abdominals", "ileopsoas"],
+    "secondaryMuscles": ["quadriceps", "deltoids"],
+    "trackMode": "reps_only",
+    "defaultPrescription": { "sets": 3, "reps": "30-60 reps", "restSec": 60 },
+    "cues": ["Keep hips low", "Drive knees under hips", "Maintain a strong plank line"],
+    "commonMistakes": ["Piking hips up", "Short range knees", "Bouncing shoulders"],
+    "poses": { "front": "/exercises/_placeholder.webp", "side": "/exercises/_placeholder.webp" }
+  }
+]
