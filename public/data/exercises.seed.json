@@ -241,10 +241,7 @@
       "cues": ["Ribs down", "Squeeze glutes", "Push floor away"],
       "commonMistakes": ["Sagging low back", "Piking hips high", "Holding breath"],
       "poses": { "front": "/lifti/exercises/_placeholder.webp", "side": "/lifti/exercises/_placeholder.webp" }
-    }
-  ]
-}
-[
+    },
   {
     "id": "recline-distance-km",
     "name": "Recline (Distance)",
@@ -378,3 +375,4 @@
     "poses": { "front": "/exercises/_placeholder.webp", "side": "/exercises/_placeholder.webp" }
   }
 ]
+}
