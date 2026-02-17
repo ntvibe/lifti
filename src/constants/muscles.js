@@ -44,8 +44,8 @@ export const MUSCLE_GROUPS = [
     ],
   },
   {
-    id: 'hips_and_legs',
-    label: 'Hips and Legs',
+    id: 'hips_legs',
+    label: 'Hips / Legs',
     muscles: [
       { id: 'adductors', label: 'Adductors', aliases: ['adductors'] },
       { id: 'gluteus', label: 'Gluteus', aliases: ['gluteus', 'glutes'] },

@@ -1,420 +1,246 @@
-[
-  {
-    "id": "barbell-back-squat",
-    "name": "Barbell Back Squat",
-    "equipment": [
-      "barbell",
-      "squat rack"
-    ],
-    "muscles": [
-      "quadriceps",
-      "glutes",
-      "hamstrings"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Barbell Back Squat \u2014 Front pose placeholder",
-      "side": "Barbell Back Squat \u2014 Side pose placeholder"
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-02-17T00:00:00.000Z",
+  "exercises": [
+    {
+      "id": "barbell-back-squat",
+      "name": "Barbell Back Squat",
+      "equipment": ["barbell", "squat_rack"],
+      "primaryMuscles": ["quadriceps", "gluteus"],
+      "secondaryMuscles": ["hamstrings", "abdominals", "paravertebrals"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 4, "reps": "5-8", "restSec": 150 },
+      "cues": ["Brace before descent", "Drive knees over toes", "Push floor away on ascent"],
+      "commonMistakes": ["Knees collapsing inward", "Losing lumbar brace", "Cutting depth too high"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "barbell-front-squat",
+      "name": "Barbell Front Squat",
+      "equipment": ["barbell", "squat_rack"],
+      "primaryMuscles": ["quadriceps"],
+      "secondaryMuscles": ["gluteus", "abdominals", "upper_back"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 4, "reps": "4-6", "restSec": 150 },
+      "cues": ["Elbows stay high", "Keep torso tall", "Mid-foot pressure throughout"],
+      "commonMistakes": ["Elbows dropping", "Heels lifting", "Chest collapsing forward"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "conventional-deadlift",
+      "name": "Conventional Deadlift",
+      "equipment": ["barbell"],
+      "primaryMuscles": ["hamstrings", "gluteus", "paravertebrals"],
+      "secondaryMuscles": ["quadriceps", "forearms", "trapezius"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 4, "reps": "3-6", "restSec": 180 },
+      "cues": ["Bar close to shins", "Take slack out first", "Lock out with glutes"],
+      "commonMistakes": ["Rounding the spine", "Jerking from the floor", "Overextending at top"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "romanian-deadlift",
+      "name": "Romanian Deadlift",
+      "equipment": ["barbell"],
+      "primaryMuscles": ["hamstrings", "gluteus"],
+      "secondaryMuscles": ["paravertebrals", "forearms"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 3, "reps": "6-10", "restSec": 120 },
+      "cues": ["Soft knees", "Hinge hips back", "Feel hamstring stretch"],
+      "commonMistakes": ["Turning it into a squat", "Bar drifting forward", "Losing neutral neck"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "barbell-bench-press",
+      "name": "Barbell Bench Press",
+      "equipment": ["barbell", "bench"],
+      "primaryMuscles": ["pectorals", "triceps"],
+      "secondaryMuscles": ["deltoids", "upper_back"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 4, "reps": "5-8", "restSec": 150 },
+      "cues": ["Set shoulder blades", "Wrists stacked over elbows", "Press bar back to rack line"],
+      "commonMistakes": ["Flaring elbows too wide", "Bouncing off chest", "Lifting hips off bench"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "incline-dumbbell-press",
+      "name": "Incline Dumbbell Press",
+      "equipment": ["dumbbells", "incline_bench"],
+      "primaryMuscles": ["pectorals", "deltoids"],
+      "secondaryMuscles": ["triceps", "rotator_cuff"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 3, "reps": "8-12", "restSec": 90 },
+      "cues": ["Pack shoulders down", "Control the eccentric", "Meet dumbbells over chest"],
+      "commonMistakes": ["Arching excessively", "Cutting range short", "Crashing dumbbells together"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "standing-overhead-press",
+      "name": "Standing Overhead Press",
+      "equipment": ["barbell"],
+      "primaryMuscles": ["deltoids", "triceps"],
+      "secondaryMuscles": ["abdominals", "upper_back"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 4, "reps": "4-8", "restSec": 120 },
+      "cues": ["Squeeze glutes", "Head through at lockout", "Bar path straight up"],
+      "commonMistakes": ["Leaning back too far", "Pressing around the face", "Soft core brace"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "seated-dumbbell-shoulder-press",
+      "name": "Seated Dumbbell Shoulder Press",
+      "equipment": ["dumbbells", "bench"],
+      "primaryMuscles": ["deltoids"],
+      "secondaryMuscles": ["triceps", "rotator_cuff"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 3, "reps": "8-12", "restSec": 90 },
+      "cues": ["Forearms vertical", "Press in slight arc", "Lower under control"],
+      "commonMistakes": ["Overarching low back", "Dropping elbows too low", "Using momentum"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "pull-up",
+      "name": "Pull-Up",
+      "equipment": ["pullup_bar"],
+      "primaryMuscles": ["upper_back", "biceps"],
+      "secondaryMuscles": ["forearms", "trapezius", "abdominals"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 4, "reps": "5-10", "restSec": 120 },
+      "cues": ["Depress shoulder blades", "Lead with chest", "Full hang each rep"],
+      "commonMistakes": ["Kipping unintentionally", "Half reps", "Forward head jut"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "lat-pulldown",
+      "name": "Lat Pulldown",
+      "equipment": ["cable_machine"],
+      "primaryMuscles": ["upper_back"],
+      "secondaryMuscles": ["biceps", "forearms", "trapezius"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 3, "reps": "8-12", "restSec": 90 },
+      "cues": ["Lean back slightly", "Drive elbows down", "Pause at lower chest"],
+      "commonMistakes": ["Pulling behind neck", "Shrugging up", "Using torso swing"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "barbell-row",
+      "name": "Barbell Row",
+      "equipment": ["barbell"],
+      "primaryMuscles": ["upper_back", "trapezius"],
+      "secondaryMuscles": ["biceps", "forearms", "paravertebrals"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 4, "reps": "6-10", "restSec": 120 },
+      "cues": ["Hinge and brace", "Row to lower ribs", "Control lowering"],
+      "commonMistakes": ["Standing too upright", "Jerking the bar", "Rounded upper back"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "seated-cable-row",
+      "name": "Seated Cable Row",
+      "equipment": ["cable_machine"],
+      "primaryMuscles": ["upper_back"],
+      "secondaryMuscles": ["biceps", "trapezius", "paravertebrals"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 3, "reps": "10-14", "restSec": 75 },
+      "cues": ["Tall torso", "Pull elbows to hips", "Let scapulae protract forward"],
+      "commonMistakes": ["Over-leaning backward", "Neck craning", "Shortening range"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "dumbbell-lateral-raise",
+      "name": "Dumbbell Lateral Raise",
+      "equipment": ["dumbbells"],
+      "primaryMuscles": ["deltoids"],
+      "secondaryMuscles": ["trapezius", "rotator_cuff"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 3, "reps": "12-20", "restSec": 60 },
+      "cues": ["Slight elbow bend", "Lift in scapular plane", "Stop around shoulder height"],
+      "commonMistakes": ["Swinging torso", "Shrugging into traps", "Turning into front raise"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "cable-triceps-pressdown",
+      "name": "Cable Triceps Pressdown",
+      "equipment": ["cable_machine"],
+      "primaryMuscles": ["triceps"],
+      "secondaryMuscles": ["deltoids", "abdominals"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 3, "reps": "10-15", "restSec": 60 },
+      "cues": ["Elbows pinned at sides", "Extend fully then squeeze", "Keep shoulders quiet"],
+      "commonMistakes": ["Elbows drifting forward", "Using bodyweight lean", "Partial lockout"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "barbell-biceps-curl",
+      "name": "Barbell Biceps Curl",
+      "equipment": ["barbell"],
+      "primaryMuscles": ["biceps"],
+      "secondaryMuscles": ["forearms"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 3, "reps": "8-12", "restSec": 60 },
+      "cues": ["Upper arms fixed", "Curl through full range", "Lower slowly"],
+      "commonMistakes": ["Swinging hips", "Flaring elbows", "Rushing eccentric"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "walking-lunge",
+      "name": "Walking Lunge",
+      "equipment": ["dumbbells"],
+      "primaryMuscles": ["quadriceps", "gluteus"],
+      "secondaryMuscles": ["hamstrings", "adductors", "abdominals"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 3, "reps": "10/leg", "restSec": 90 },
+      "cues": ["Long controlled steps", "Front knee tracks toes", "Drive through whole foot"],
+      "commonMistakes": ["Short choppy steps", "Torso tipping forward", "Back knee slamming floor"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "leg-press",
+      "name": "Leg Press",
+      "equipment": ["leg_press_machine"],
+      "primaryMuscles": ["quadriceps", "gluteus"],
+      "secondaryMuscles": ["hamstrings", "calves"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 4, "reps": "10-15", "restSec": 90 },
+      "cues": ["Feet shoulder-width", "Lower under control", "Keep low back anchored"],
+      "commonMistakes": ["Knees caving inward", "Depth too shallow", "Bouncing at bottom"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "lying-leg-curl",
+      "name": "Lying Leg Curl",
+      "equipment": ["leg_curl_machine"],
+      "primaryMuscles": ["hamstrings"],
+      "secondaryMuscles": ["calves", "gluteus"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 3, "reps": "10-15", "restSec": 75 },
+      "cues": ["Hips pressed into pad", "Curl to full contraction", "Slow return"],
+      "commonMistakes": ["Hip lifting off bench", "Fast uncontrolled lowering", "Ankles too loose"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "standing-calf-raise",
+      "name": "Standing Calf Raise",
+      "equipment": ["calf_raise_machine"],
+      "primaryMuscles": ["calves"],
+      "secondaryMuscles": ["hamstrings", "quadriceps"],
+      "trackMode": "reps_load",
+      "defaultPrescription": { "sets": 4, "reps": "12-20", "restSec": 60 },
+      "cues": ["Full stretch at bottom", "Pause on peak", "Keep knees softly unlocked"],
+      "commonMistakes": ["Bouncing reps", "Short range", "Toes turning excessively"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+    },
+    {
+      "id": "front-plank",
+      "name": "Front Plank",
+      "equipment": ["bodyweight", "mat"],
+      "primaryMuscles": ["abdominals", "transverse_abdominis"],
+      "secondaryMuscles": ["oblique", "diaphragm", "gluteus"],
+      "trackMode": "time",
+      "defaultPrescription": { "sets": 3, "reps": "30-60 sec", "restSec": 60 },
+      "cues": ["Ribs down", "Squeeze glutes", "Push floor away"],
+      "commonMistakes": ["Sagging low back", "Piking hips high", "Holding breath"],
+      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
     }
-  },
-  {
-    "id": "barbell-front-squat",
-    "name": "Barbell Front Squat",
-    "equipment": [
-      "barbell",
-      "rack"
-    ],
-    "muscles": [
-      "quadriceps",
-      "core",
-      "upper back"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Barbell Front Squat \u2014 Front pose placeholder",
-      "side": "Barbell Front Squat \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "conventional-deadlift",
-    "name": "Conventional Deadlift",
-    "equipment": [
-      "barbell"
-    ],
-    "muscles": [
-      "hamstrings",
-      "glutes",
-      "lower back"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Conventional Deadlift \u2014 Front pose placeholder",
-      "side": "Conventional Deadlift \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "romanian-deadlift",
-    "name": "Romanian Deadlift",
-    "equipment": [
-      "barbell"
-    ],
-    "muscles": [
-      "hamstrings",
-      "glutes",
-      "lower back"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Romanian Deadlift \u2014 Front pose placeholder",
-      "side": "Romanian Deadlift \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "barbell-bench-press",
-    "name": "Barbell Bench Press",
-    "equipment": [
-      "barbell",
-      "bench"
-    ],
-    "muscles": [
-      "chest",
-      "triceps",
-      "front delts"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Barbell Bench Press \u2014 Front pose placeholder",
-      "side": "Barbell Bench Press \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "incline-dumbbell-press",
-    "name": "Incline Dumbbell Press",
-    "equipment": [
-      "dumbbells",
-      "incline bench"
-    ],
-    "muscles": [
-      "upper chest",
-      "triceps",
-      "front delts"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Incline Dumbbell Press \u2014 Front pose placeholder",
-      "side": "Incline Dumbbell Press \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "overhead-barbell-press",
-    "name": "Overhead Barbell Press",
-    "equipment": [
-      "barbell"
-    ],
-    "muscles": [
-      "shoulders",
-      "triceps",
-      "core"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Overhead Barbell Press \u2014 Front pose placeholder",
-      "side": "Overhead Barbell Press \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "seated-dumbbell-press",
-    "name": "Seated Dumbbell Press",
-    "equipment": [
-      "dumbbells",
-      "bench"
-    ],
-    "muscles": [
-      "shoulders",
-      "triceps"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Seated Dumbbell Press \u2014 Front pose placeholder",
-      "side": "Seated Dumbbell Press \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "pull-up",
-    "name": "Pull-Up",
-    "equipment": [
-      "pull-up bar"
-    ],
-    "muscles": [
-      "lats",
-      "biceps",
-      "upper back"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Pull-Up \u2014 Front pose placeholder",
-      "side": "Pull-Up \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "lat-pulldown",
-    "name": "Lat Pulldown",
-    "equipment": [
-      "cable machine"
-    ],
-    "muscles": [
-      "lats",
-      "biceps",
-      "upper back"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Lat Pulldown \u2014 Front pose placeholder",
-      "side": "Lat Pulldown \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "barbell-row",
-    "name": "Barbell Row",
-    "equipment": [
-      "barbell"
-    ],
-    "muscles": [
-      "lats",
-      "rhomboids",
-      "rear delts"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Barbell Row \u2014 Front pose placeholder",
-      "side": "Barbell Row \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "seated-cable-row",
-    "name": "Seated Cable Row",
-    "equipment": [
-      "cable machine"
-    ],
-    "muscles": [
-      "lats",
-      "rhomboids",
-      "biceps"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Seated Cable Row \u2014 Front pose placeholder",
-      "side": "Seated Cable Row \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "walking-lunge",
-    "name": "Walking Lunge",
-    "equipment": [
-      "dumbbells"
-    ],
-    "muscles": [
-      "quadriceps",
-      "glutes",
-      "hamstrings"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Walking Lunge \u2014 Front pose placeholder",
-      "side": "Walking Lunge \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "leg-press",
-    "name": "Leg Press",
-    "equipment": [
-      "leg press machine"
-    ],
-    "muscles": [
-      "quadriceps",
-      "glutes"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Leg Press \u2014 Front pose placeholder",
-      "side": "Leg Press \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "hip-thrust",
-    "name": "Barbell Hip Thrust",
-    "equipment": [
-      "barbell",
-      "bench"
-    ],
-    "muscles": [
-      "glutes",
-      "hamstrings",
-      "core"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Barbell Hip Thrust \u2014 Front pose placeholder",
-      "side": "Barbell Hip Thrust \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "bicep-curl",
-    "name": "Dumbbell Bicep Curl",
-    "equipment": [
-      "dumbbells"
-    ],
-    "muscles": [
-      "biceps",
-      "forearms"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Dumbbell Bicep Curl \u2014 Front pose placeholder",
-      "side": "Dumbbell Bicep Curl \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "tricep-pushdown",
-    "name": "Tricep Pushdown",
-    "equipment": [
-      "cable machine"
-    ],
-    "muscles": [
-      "triceps"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Tricep Pushdown \u2014 Front pose placeholder",
-      "side": "Tricep Pushdown \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "cable-lateral-raise",
-    "name": "Cable Lateral Raise",
-    "equipment": [
-      "cable machine"
-    ],
-    "muscles": [
-      "lateral delts",
-      "traps"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Cable Lateral Raise \u2014 Front pose placeholder",
-      "side": "Cable Lateral Raise \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "face-pull",
-    "name": "Face Pull",
-    "equipment": [
-      "cable machine"
-    ],
-    "muscles": [
-      "rear delts",
-      "traps",
-      "upper back"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Face Pull \u2014 Front pose placeholder",
-      "side": "Face Pull \u2014 Side pose placeholder"
-    }
-  },
-  {
-    "id": "standing-calf-raise",
-    "name": "Standing Calf Raise",
-    "equipment": [
-      "calf raise machine"
-    ],
-    "muscles": [
-      "calves"
-    ],
-    "tips": [
-      "Control the lowering phase and keep your reps smooth.",
-      "Brace your core before every rep and keep a stable torso.",
-      "Choose a load that lets you keep consistent form across all sets."
-    ],
-    "poses": {
-      "front": "Standing Calf Raise \u2014 Front pose placeholder",
-      "side": "Standing Calf Raise \u2014 Side pose placeholder"
-    }
-  }
-]
+  ]
+}
