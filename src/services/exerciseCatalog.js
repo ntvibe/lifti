@@ -1,6 +1,10 @@
 import { MUSCLE_GROUPS } from '../constants/muscles'
 
-const CATALOG_PATH = '/data/exercises.seed.json'
+export function getPublicAssetUrl(path) {
+  return `${import.meta.env.BASE_URL}${path}`
+}
+
+const CATALOG_PATH = getPublicAssetUrl('data/exercises.seed.json')
 
 export async function fetchExerciseCatalog() {
   const response = await fetch(CATALOG_PATH)

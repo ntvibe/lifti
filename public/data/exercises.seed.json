@@ -12,7 +12,7 @@
       "defaultPrescription": { "sets": 4, "reps": "5-8", "restSec": 150 },
       "cues": ["Brace before descent", "Drive knees over toes", "Push floor away on ascent"],
       "commonMistakes": ["Knees collapsing inward", "Losing lumbar brace", "Cutting depth too high"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "barbell-front-squat",
@@ -24,7 +24,7 @@
       "defaultPrescription": { "sets": 4, "reps": "4-6", "restSec": 150 },
       "cues": ["Elbows stay high", "Keep torso tall", "Mid-foot pressure throughout"],
       "commonMistakes": ["Elbows dropping", "Heels lifting", "Chest collapsing forward"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "conventional-deadlift",
@@ -36,7 +36,7 @@
       "defaultPrescription": { "sets": 4, "reps": "3-6", "restSec": 180 },
       "cues": ["Bar close to shins", "Take slack out first", "Lock out with glutes"],
       "commonMistakes": ["Rounding the spine", "Jerking from the floor", "Overextending at top"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "romanian-deadlift",
@@ -48,7 +48,7 @@
       "defaultPrescription": { "sets": 3, "reps": "6-10", "restSec": 120 },
       "cues": ["Soft knees", "Hinge hips back", "Feel hamstring stretch"],
       "commonMistakes": ["Turning it into a squat", "Bar drifting forward", "Losing neutral neck"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "barbell-bench-press",
@@ -60,7 +60,7 @@
       "defaultPrescription": { "sets": 4, "reps": "5-8", "restSec": 150 },
       "cues": ["Set shoulder blades", "Wrists stacked over elbows", "Press bar back to rack line"],
       "commonMistakes": ["Flaring elbows too wide", "Bouncing off chest", "Lifting hips off bench"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "incline-dumbbell-press",
@@ -72,7 +72,7 @@
       "defaultPrescription": { "sets": 3, "reps": "8-12", "restSec": 90 },
       "cues": ["Pack shoulders down", "Control the eccentric", "Meet dumbbells over chest"],
       "commonMistakes": ["Arching excessively", "Cutting range short", "Crashing dumbbells together"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "standing-overhead-press",
@@ -84,7 +84,7 @@
       "defaultPrescription": { "sets": 4, "reps": "4-8", "restSec": 120 },
       "cues": ["Squeeze glutes", "Head through at lockout", "Bar path straight up"],
       "commonMistakes": ["Leaning back too far", "Pressing around the face", "Soft core brace"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "seated-dumbbell-shoulder-press",
@@ -96,7 +96,7 @@
       "defaultPrescription": { "sets": 3, "reps": "8-12", "restSec": 90 },
       "cues": ["Forearms vertical", "Press in slight arc", "Lower under control"],
       "commonMistakes": ["Overarching low back", "Dropping elbows too low", "Using momentum"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "pull-up",
@@ -108,7 +108,7 @@
       "defaultPrescription": { "sets": 4, "reps": "5-10", "restSec": 120 },
       "cues": ["Depress shoulder blades", "Lead with chest", "Full hang each rep"],
       "commonMistakes": ["Kipping unintentionally", "Half reps", "Forward head jut"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "lat-pulldown",
@@ -120,7 +120,7 @@
       "defaultPrescription": { "sets": 3, "reps": "8-12", "restSec": 90 },
       "cues": ["Lean back slightly", "Drive elbows down", "Pause at lower chest"],
       "commonMistakes": ["Pulling behind neck", "Shrugging up", "Using torso swing"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "barbell-row",
@@ -132,7 +132,7 @@
       "defaultPrescription": { "sets": 4, "reps": "6-10", "restSec": 120 },
       "cues": ["Hinge and brace", "Row to lower ribs", "Control lowering"],
       "commonMistakes": ["Standing too upright", "Jerking the bar", "Rounded upper back"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "seated-cable-row",
@@ -144,7 +144,7 @@
       "defaultPrescription": { "sets": 3, "reps": "10-14", "restSec": 75 },
       "cues": ["Tall torso", "Pull elbows to hips", "Let scapulae protract forward"],
       "commonMistakes": ["Over-leaning backward", "Neck craning", "Shortening range"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "dumbbell-lateral-raise",
@@ -156,7 +156,7 @@
       "defaultPrescription": { "sets": 3, "reps": "12-20", "restSec": 60 },
       "cues": ["Slight elbow bend", "Lift in scapular plane", "Stop around shoulder height"],
       "commonMistakes": ["Swinging torso", "Shrugging into traps", "Turning into front raise"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "cable-triceps-pressdown",
@@ -168,7 +168,7 @@
       "defaultPrescription": { "sets": 3, "reps": "10-15", "restSec": 60 },
       "cues": ["Elbows pinned at sides", "Extend fully then squeeze", "Keep shoulders quiet"],
       "commonMistakes": ["Elbows drifting forward", "Using bodyweight lean", "Partial lockout"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "barbell-biceps-curl",
@@ -180,7 +180,7 @@
       "defaultPrescription": { "sets": 3, "reps": "8-12", "restSec": 60 },
       "cues": ["Upper arms fixed", "Curl through full range", "Lower slowly"],
       "commonMistakes": ["Swinging hips", "Flaring elbows", "Rushing eccentric"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "walking-lunge",
@@ -192,7 +192,7 @@
       "defaultPrescription": { "sets": 3, "reps": "10/leg", "restSec": 90 },
       "cues": ["Long controlled steps", "Front knee tracks toes", "Drive through whole foot"],
       "commonMistakes": ["Short choppy steps", "Torso tipping forward", "Back knee slamming floor"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "leg-press",
@@ -204,7 +204,7 @@
       "defaultPrescription": { "sets": 4, "reps": "10-15", "restSec": 90 },
       "cues": ["Feet shoulder-width", "Lower under control", "Keep low back anchored"],
       "commonMistakes": ["Knees caving inward", "Depth too shallow", "Bouncing at bottom"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "lying-leg-curl",
@@ -216,7 +216,7 @@
       "defaultPrescription": { "sets": 3, "reps": "10-15", "restSec": 75 },
       "cues": ["Hips pressed into pad", "Curl to full contraction", "Slow return"],
       "commonMistakes": ["Hip lifting off bench", "Fast uncontrolled lowering", "Ankles too loose"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "standing-calf-raise",
@@ -228,7 +228,7 @@
       "defaultPrescription": { "sets": 4, "reps": "12-20", "restSec": 60 },
       "cues": ["Full stretch at bottom", "Pause on peak", "Keep knees softly unlocked"],
       "commonMistakes": ["Bouncing reps", "Short range", "Toes turning excessively"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     },
     {
       "id": "front-plank",
@@ -240,7 +240,7 @@
       "defaultPrescription": { "sets": 3, "reps": "30-60 sec", "restSec": 60 },
       "cues": ["Ribs down", "Squeeze glutes", "Push floor away"],
       "commonMistakes": ["Sagging low back", "Piking hips high", "Holding breath"],
-      "poses": { "front": "/exercises/_placeholder.txt", "side": "/exercises/_placeholder.txt" }
+      "poses": { "front": "/lifti/exercises/_placeholder.txt", "side": "/lifti/exercises/_placeholder.txt" }
     }
   ]
 }

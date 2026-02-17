@@ -1,1 +1,2 @@
-placeholder
+Exercise pose placeholder.
+Binary images are not committed in this repository.

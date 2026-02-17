@@ -4,7 +4,7 @@ import { signIn, signOut } from './services/googleAuth'
 import { readJson, upsertJsonByName, updateJson } from './services/driveAppData'
 import Exercises from './pages/Exercises'
 import ExerciseDetail from './pages/ExerciseDetail'
-import { fetchExerciseCatalog } from './services/exerciseCatalog'
+import { fetchExerciseCatalog, getPublicAssetUrl } from './services/exerciseCatalog'
 
 const HISTORY_FILE = 'lifti_history.json'
 const PLANS_FILE = 'lifti_plans.json'
@@ -13,12 +13,10 @@ const EXERCISES_FILE = 'lifti_exercises.json'
 const DEFAULT_HISTORY = { entries: [] }
 const DEFAULT_PLANS = { plans: [] }
 
-const navItems = [
+const primaryTabs = [
   { to: '/', label: 'Home' },
-  { to: '/login', label: 'Login' },
   { to: '/exercises', label: 'Exercises' },
-  { to: '/plan-builder', label: 'PlanBuilder' },
-  { to: '/workout-player', label: 'WorkoutPlayer' },
+  { to: '/plans', label: 'Plans' },
   { to: '/history', label: 'History' },
 ]
 
@@ -57,7 +55,73 @@ function useExerciseCatalog() {
   return catalog
 }
 
-function LoginScreen({ onSignedIn, status }) {
+function Toast({ toast }) {
+  if (!toast) {
+    return null
+  }
+
+  return <div className={`toast toast-${toast.type}`}>{toast.message}</div>
+}
+
+function InstallPrompt() {
+  const [deferredPrompt, setDeferredPrompt] = useState(null)
+  const [isDismissed, setIsDismissed] = useState(() => localStorage.getItem('lifti_install_prompt_dismissed') === '1')
+  const [showIosHelp, setShowIosHelp] = useState(false)
+
+  useEffect(() => {
+    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent)
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+
+    if (isIos && !isStandalone) {
+      setShowIosHelp(true)
+    }
+
+    const onBeforeInstallPrompt = (event) => {
+      event.preventDefault()
+      setDeferredPrompt(event)
+      setShowIosHelp(false)
+    }
+
+    window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt)
+    }
+  }, [])
+
+  if (isDismissed || (!deferredPrompt && !showIosHelp)) {
+    return null
+  }
+
+  const dismiss = () => {
+    localStorage.setItem('lifti_install_prompt_dismissed', '1')
+    setIsDismissed(true)
+  }
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) {
+      return
+    }
+
+    deferredPrompt.prompt()
+    await deferredPrompt.userChoice
+    setDeferredPrompt(null)
+    dismiss()
+  }
+
+  return (
+    <section className="card install-card">
+      <h2>Install Lifti</h2>
+      {deferredPrompt ? <p>Get the full-screen app experience on your phone.</p> : <p>To install: Share → Add to Home Screen.</p>}
+      <div className="install-actions">
+        {deferredPrompt ? <button type="button" onClick={handleInstall}>Install</button> : null}
+        <button type="button" className="ghost" onClick={dismiss}>Not now</button>
+      </div>
+    </section>
+  )
+}
+
+function LoginScreen({ onSignedIn, status, onToast }) {
   const [error, setError] = useState('')
   const [isBusy, setIsBusy] = useState(false)
 
@@ -67,7 +131,7 @@ function LoginScreen({ onSignedIn, status }) {
 
     try {
       const accessToken = await signIn()
-      const exerciseSeedResponse = await fetch('/data/exercises.seed.json')
+      const exerciseSeedResponse = await fetch(getPublicAssetUrl('data/exercises.seed.json'))
       const exercisesSeed = exerciseSeedResponse.ok ? await exerciseSeedResponse.json() : { schemaVersion: 1, updatedAt: new Date().toISOString(), exercises: [] }
 
       const [history, plans, exercises] = await Promise.all([
@@ -99,8 +163,10 @@ function LoginScreen({ onSignedIn, status }) {
           exercises: exercises.fileId,
         },
       })
+      onToast('success', 'Signed in successfully.')
     } catch (signInError) {
       setError(signInError.message)
+      onToast('error', 'Sign in failed.')
     } finally {
       setIsBusy(false)
     }
@@ -119,7 +185,7 @@ function LoginScreen({ onSignedIn, status }) {
   )
 }
 
-function HomeScreen({ accessToken, email, fileIds }) {
+function HomeScreen({ accessToken, email, fileIds, onToast }) {
   const [message, setMessage] = useState('')
   const [lastTimestamp, setLastTimestamp] = useState('No entries yet')
 
@@ -134,6 +200,7 @@ function HomeScreen({ accessToken, email, fileIds }) {
   const writeTestEntry = async () => {
     if (!accessToken || !fileIds.history) {
       setMessage('Please sign in first.')
+      onToast('error', 'Please sign in first.')
       return
     }
 
@@ -153,14 +220,17 @@ function HomeScreen({ accessToken, email, fileIds }) {
       await updateJson(accessToken, fileIds.history, nextHistory)
       setLastTimestamp(entry.timestamp)
       setMessage('Test entry written to Drive appDataFolder.')
+      onToast('success', 'Saved')
     } catch (error) {
       setMessage(`Failed to write entry: ${error.message}`)
+      onToast('error', 'Sync failed')
     }
   }
 
   const reloadFromDrive = async () => {
     if (!accessToken || !fileIds.history) {
       setMessage('Please sign in first.')
+      onToast('error', 'Please sign in first.')
       return
     }
 
@@ -169,8 +239,10 @@ function HomeScreen({ accessToken, email, fileIds }) {
       const lastEntry = history.entries?.[history.entries.length - 1]
       setLastTimestamp(lastEntry?.timestamp || 'No entries yet')
       setMessage('Reloaded from Drive.')
+      onToast('success', 'Reloaded')
     } catch (error) {
       setMessage(`Failed to reload: ${error.message}`)
+      onToast('error', 'Sync failed')
     }
   }
 
@@ -179,7 +251,7 @@ function HomeScreen({ accessToken, email, fileIds }) {
       <h1>Home</h1>
       <p>Welcome to Lifti. Start a plan or jump into today&apos;s workout.</p>
 
-      <div className="sync-box">
+      <div className="card">
         <h2>Sync Test</h2>
         <p>{accountLabel}</p>
         <div className="sync-actions">
@@ -201,7 +273,21 @@ export default function App() {
     return raw ? JSON.parse(raw) : { history: '', plans: '', exercises: '' }
   })
   const [status, setStatus] = useState('')
+  const [toast, setToast] = useState(null)
   const catalog = useExerciseCatalog()
+
+  useEffect(() => {
+    if (!toast) {
+      return undefined
+    }
+
+    const timeout = window.setTimeout(() => setToast(null), 2800)
+    return () => window.clearTimeout(timeout)
+  }, [toast])
+
+  const handleToast = (type, message) => {
+    setToast({ type, message })
+  }
 
   const handleSignedIn = ({ accessToken: nextToken, email: nextEmail, fileIds: nextIds }) => {
     sessionStorage.setItem('lifti_access_token', nextToken)
@@ -223,42 +309,62 @@ export default function App() {
     setEmail('')
     setFileIds({ history: '', plans: '', exercises: '' })
     setStatus('Signed out.')
+    handleToast('success', 'Signed out')
   }
 
   return (
     <div className="app-shell">
-      <header>
-        <nav>
-          {navItems.map((item) => (
+      <header className="top-bar">
+        <h1>Lifti</h1>
+        {accessToken ? <button type="button" className="ghost" onClick={logout}>Sign out</button> : <NavLink to="/login" className="ghost action-link">Login</NavLink>}
+      </header>
+
+      <div className="app-layout">
+        <aside className="sidebar-tabs" aria-label="Primary">
+          {primaryTabs.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
-              className={({ isActive }) => (isActive ? 'active' : '')}
+              className={({ isActive }) => `tab-link ${isActive ? 'active' : ''}`}
               end={item.to === '/'}
             >
               {item.label}
             </NavLink>
           ))}
-        </nav>
-        {accessToken ? (
-          <button type="button" className="signout" onClick={logout}>Sign out</button>
-        ) : null}
-      </header>
+        </aside>
 
-      <main>
-        <Routes>
-          <Route path="/" element={<HomeScreen accessToken={accessToken} email={email} fileIds={fileIds} />} />
-          <Route
-            path="/login"
-            element={<LoginScreen onSignedIn={handleSignedIn} status={status} />}
-          />
-          <Route path="/exercises" element={<Exercises exercises={catalog} />} />
-          <Route path="/exercises/:id" element={<ExerciseDetail exercises={catalog} />} />
-          <Route path="/plan-builder" element={<Page title="Plan Builder" description="Create and customize your weekly lifting plan." />} />
-          <Route path="/workout-player" element={<Page title="Workout Player" description="Follow your workout step-by-step with timers and logging." />} />
-          <Route path="/history" element={<Page title="History" description="Review completed workouts, trends, and personal records." />} />
-        </Routes>
-      </main>
+        <main>
+          <InstallPrompt />
+          <Routes>
+            <Route path="/" element={<HomeScreen accessToken={accessToken} email={email} fileIds={fileIds} onToast={handleToast} />} />
+            <Route
+              path="/login"
+              element={<LoginScreen onSignedIn={handleSignedIn} status={status} onToast={handleToast} />}
+            />
+            <Route path="/exercises" element={<Exercises exercises={catalog} />} />
+            <Route path="/exercises/:id" element={<ExerciseDetail exercises={catalog} />} />
+            <Route path="/plans" element={<Page title="Plans" description="Create and customize your weekly lifting plan." />} />
+            <Route path="/plan-builder" element={<Page title="Plans" description="Create and customize your weekly lifting plan." />} />
+            <Route path="/workout-player" element={<Page title="Workout Player" description="Follow your workout step-by-step with timers and logging." />} />
+            <Route path="/history" element={<Page title="History" description="Review completed workouts, trends, and personal records." />} />
+          </Routes>
+        </main>
+      </div>
+
+      <nav className="bottom-tabs" aria-label="Mobile tabs">
+        {primaryTabs.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) => `tab-link ${isActive ? 'active' : ''}`}
+            end={item.to === '/'}
+          >
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
+
+      <Toast toast={toast} />
     </div>
   )
 }
