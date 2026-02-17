@@ -161,7 +161,13 @@ input {
 
 .exercise-filters {
   display: grid;
-  gap: 0.8rem;
+  gap: 0.9rem;
+}
+
+.minimal-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: none;
+  box-shadow: none;
 }
 
 .search-row {
@@ -174,27 +180,31 @@ input {
   flex-shrink: 0;
 }
 
-.chips-row {
+.tag-toggle-list {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  overflow-x: auto;
-  padding-bottom: 0.2rem;
-  scrollbar-width: thin;
 }
 
-.chip {
-  background: #20222a;
-  border: 1px solid #3d4359;
+.tag-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
   border-radius: 999px;
-  color: #dee5ff;
+  color: #c8d1eb;
+  font-weight: 500;
   margin: 0;
   min-height: 44px;
   padding: 0.3rem 0.85rem;
+  transition: filter 150ms ease;
 }
 
-.chip.selected {
+.tag-chip:hover {
+  filter: brightness(1.1);
+}
+
+.tag-chip.selected {
   background: #668cff;
-  border-color: #668cff;
+  color: #ffffff;
 }
 
 .exercise-grid {
@@ -209,6 +219,9 @@ input {
 }
 
 .exercise-card-link {
+  background: rgba(255, 255, 255, 0.03);
+  border: none;
+  box-shadow: none;
   color: inherit;
   min-height: 140px;
   text-decoration: none;
@@ -410,4 +423,34 @@ input {
 
 .selected-groups p {
   margin: 0;
+}
+
+.filter-header-row {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.filter-header-row h2 {
+  margin: 0;
+}
+
+.text-button {
+  background: transparent;
+  border: none;
+  color: #b8c5ea;
+  min-height: 0;
+  padding: 0.2rem;
+}
+
+.collapse-toggle {
+  align-items: center;
+  background: transparent;
+  border: none;
+  color: #d8e1ff;
+  display: flex;
+  font-size: 1rem;
+  justify-content: space-between;
+  padding: 0.2rem 0;
+  width: 100%;
 }

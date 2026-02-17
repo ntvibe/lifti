@@ -1,88 +1,60 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import MuscleMap from '../components/MuscleMap'
-import { MUSCLE_OPTIONS, formatLabel, listEquipmentOptions } from '../services/exerciseCatalog'
+import TagToggleList from '../components/TagToggleList'
+import { formatLabel, listEquipmentOptions } from '../services/exerciseCatalog'
 
-function toggleSelection(current, value) {
-  return current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
-}
+function toggleSetValue(currentSet, value) {
+  const next = new Set(currentSet)
+  if (next.has(value)) {
+    next.delete(value)
+  } else {
+    next.add(value)
+  }
 
-function Chips({ items, selectedItems, onToggle }) {
-  return (
-    <div className="chips-row">
-      {items.map((item) => {
-        const key = typeof item === 'string' ? item : item.id
-        const label = typeof item === 'string' ? formatLabel(item) : item.label
-        const isSelected = selectedItems.includes(key)
-
-        return (
-          <button key={key} type="button" className={`chip ${isSelected ? 'selected' : ''}`} onClick={() => onToggle(key)}>
-            {label}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-function formatSelectedGroupName(group) {
-  return group
-    .replace(/[_-]+/g, ' ')
-    .split(' ')
-    .filter(Boolean)
-    .map((word) => {
-      if (word.length > 1 && word === word.toUpperCase()) {
-        return word
-      }
-
-      return `${word.charAt(0).toUpperCase()}${word.slice(1).toLowerCase()}`
-    })
-    .join(' ')
+  return next
 }
 
 export default function Exercises({ exercises, selectedGroups = [], onSelectedGroupsChange = () => {} }) {
   const [search, setSearch] = useState('')
-  const [equipmentFilter, setEquipmentFilter] = useState([])
-  const [muscleFilter, setMuscleFilter] = useState([])
+  const [selectedEquipment, setSelectedEquipment] = useState(() => new Set())
+  const [equipmentOpen, setEquipmentOpen] = useState(false)
+  const [muscleGroups, setMuscleGroups] = useState([])
+
+  const selectedMuscles = useMemo(() => new Set(selectedGroups), [selectedGroups])
 
   const equipmentOptions = useMemo(() => listEquipmentOptions(exercises), [exercises])
 
   const filteredExercises = useMemo(() => exercises.filter((exercise) => {
     const matchesName = exercise.name.toLowerCase().includes(search.toLowerCase())
-    const matchesEquipment = !equipmentFilter.length
-      || equipmentFilter.some((item) => exercise.equipment.includes(item))
-    const matchesMuscles = !muscleFilter.length
-      || muscleFilter.some((muscle) => exercise.primaryMuscles.includes(muscle) || exercise.secondaryMuscles.includes(muscle))
+    const matchesEquipment = !selectedEquipment.size
+      || exercise.equipment.some((item) => selectedEquipment.has(item))
+    const matchesMuscles = !selectedMuscles.size
+      || exercise.primaryMuscles.some((muscle) => selectedMuscles.has(muscle))
+      || exercise.secondaryMuscles.some((muscle) => selectedMuscles.has(muscle))
 
     return matchesName && matchesEquipment && matchesMuscles
-  }), [equipmentFilter, exercises, muscleFilter, search])
-
-  const sortedSelectedGroups = useMemo(
-    () => [...selectedGroups].sort((a, b) => formatSelectedGroupName(a).localeCompare(formatSelectedGroupName(b))),
-    [selectedGroups],
-  )
+  }), [selectedEquipment, exercises, search, selectedMuscles])
 
   return (
     <section className="screen">
       <h1>Exercises</h1>
       <p>Search and filter the Lifti exercise catalog.</p>
 
-      <div className="card muscle-map-card">
+      <div className="card exercise-filters minimal-card">
         <h2>Target Muscle Groups</h2>
-        <MuscleMap value={selectedGroups} onChange={onSelectedGroupsChange} />
+        <MuscleMap value={selectedGroups} onChange={onSelectedGroupsChange} onGroupsChange={setMuscleGroups} />
 
-        <div className="selected-groups" aria-live="polite">
-          {sortedSelectedGroups.length > 0
-            ? sortedSelectedGroups.map((group) => (
-                <span className="badge" key={group}>{formatSelectedGroupName(group)}</span>
-              ))
-            : <p>No muscle groups selected.</p>}
+        <div className="filter-header-row">
+          <h2>Muscles</h2>
+          <button type="button" className="text-button" onClick={() => onSelectedGroupsChange([])}>Clear</button>
         </div>
+        <TagToggleList
+          items={muscleGroups}
+          selectedSet={selectedMuscles}
+          onToggle={(value) => onSelectedGroupsChange(Array.from(toggleSetValue(selectedMuscles, value)))}
+        />
 
-        <button type="button" className="ghost" onClick={() => onSelectedGroupsChange([])}>Clear Selection</button>
-      </div>
-
-      <div className="card exercise-filters">
         <div className="search-row">
           <input
             type="search"
@@ -91,24 +63,36 @@ export default function Exercises({ exercises, selectedGroups = [], onSelectedGr
             placeholder="Search exercises"
           />
           {search ? (
-            <button type="button" className="ghost clear-search" onClick={() => setSearch('')}>
+            <button type="button" className="text-button clear-search" onClick={() => setSearch('')}>
               Clear
             </button>
           ) : null}
         </div>
 
-        <h2>Equipment</h2>
-        <Chips items={equipmentOptions} selectedItems={equipmentFilter} onToggle={(value) => setEquipmentFilter((current) => toggleSelection(current, value))} />
+        <button
+          type="button"
+          className="collapse-toggle"
+          onClick={() => setEquipmentOpen((open) => !open)}
+          aria-expanded={equipmentOpen}
+        >
+          <span>Equipment</span>
+          <span aria-hidden="true">{equipmentOpen ? '▾' : '▸'}</span>
+        </button>
 
-        <h2>Muscles</h2>
-        <Chips items={MUSCLE_OPTIONS} selectedItems={muscleFilter} onToggle={(value) => setMuscleFilter((current) => toggleSelection(current, value))} />
+        {equipmentOpen ? (
+          <TagToggleList
+            items={equipmentOptions}
+            selectedSet={selectedEquipment}
+            onToggle={(value) => setSelectedEquipment((current) => toggleSetValue(current, value))}
+          />
+        ) : null}
       </div>
 
       <div className="exercise-grid">
         {filteredExercises.map((exercise) => (
           <Link key={exercise.id} to={`/exercises/${exercise.id}`} className="card exercise-card-link">
             <article className="exercise-card">
-              <h3>{exercise.name}</h3>
+              <h3>{formatLabel(exercise.name)}</h3>
               <div className="badges">
                 <span className="badge">{formatLabel(exercise.trackMode)}</span>
                 {exercise.equipment.map((item) => <span key={`${exercise.id}-${item}`} className="badge">{formatLabel(item)}</span>)}
