@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, NavLink, Route, Routes, useParams } from 'react-router-dom'
+import { MuscleFilter } from './components/MuscleFilter'
 import { signIn, signOut } from './services/googleAuth'
 import { readJson, upsertJsonByName, updateJson } from './services/driveAppData'
+import { filterExercisesByMuscles } from './utils/filterExercisesByMuscles'
 
 const HISTORY_FILE = 'lifti_history.json'
 const PLANS_FILE = 'lifti_plans.json'
@@ -75,26 +77,22 @@ function Chips({ items }) {
 function ExercisesScreen({ catalog }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [equipmentFilter, setEquipmentFilter] = useState('all')
-  const [muscleFilter, setMuscleFilter] = useState('all')
+  const [selectedMuscles, setSelectedMuscles] = useState([])
 
   const allEquipment = useMemo(
     () => [...new Set(catalog.flatMap((exercise) => exercise.equipment))].sort(),
     [catalog],
   )
 
-  const allMuscles = useMemo(
-    () => [...new Set(catalog.flatMap((exercise) => exercise.muscles))].sort(),
-    [catalog],
-  )
-
   const filteredCatalog = useMemo(() => {
-    return catalog.filter((exercise) => {
+    const byMuscles = filterExercisesByMuscles(catalog, selectedMuscles)
+
+    return byMuscles.filter((exercise) => {
       const matchesName = exercise.name.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesEquipment = equipmentFilter === 'all' || exercise.equipment.includes(equipmentFilter)
-      const matchesMuscle = muscleFilter === 'all' || exercise.muscles.includes(muscleFilter)
-      return matchesName && matchesEquipment && matchesMuscle
+      return matchesName && matchesEquipment
     })
-  }, [catalog, equipmentFilter, muscleFilter, searchTerm])
+  }, [catalog, equipmentFilter, searchTerm, selectedMuscles])
 
   return (
     <section className="screen">
@@ -114,13 +112,9 @@ function ExercisesScreen({ catalog }) {
             <option key={equipment} value={equipment}>{equipment}</option>
           ))}
         </select>
-        <select value={muscleFilter} onChange={(event) => setMuscleFilter(event.target.value)}>
-          <option value="all">All muscles</option>
-          {allMuscles.map((muscle) => (
-            <option key={muscle} value={muscle}>{muscle}</option>
-          ))}
-        </select>
       </div>
+
+      <MuscleFilter selectedMuscles={selectedMuscles} onChange={setSelectedMuscles} />
 
       <div className="exercise-grid">
         {filteredCatalog.map((exercise) => (

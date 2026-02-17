@@ -119,6 +119,63 @@ select {
   margin-top: 1rem;
 }
 
+.muscle-filter {
+  border: 1px solid #2a3145;
+  border-radius: 0.75rem;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+.muscle-filter h2 {
+  margin: 0 0 0.75rem;
+}
+
+.muscle-group {
+  border: 1px solid #2a3145;
+  border-radius: 0.65rem;
+  margin: 0 0 0.75rem;
+  padding: 0.75rem;
+}
+
+.muscle-group legend {
+  color: #deebff;
+  font-weight: 600;
+  padding: 0 0.35rem;
+}
+
+.muscle-options {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.muscle-option {
+  align-items: center;
+  display: flex;
+  gap: 0.45rem;
+}
+
+.muscle-placeholder {
+  align-items: center;
+  background: #0f1728;
+  border: 1px dashed #3a4b6b;
+  border-radius: 0.5rem;
+  color: #cfdcff;
+  display: flex;
+  justify-content: center;
+  min-height: 200px;
+  padding: 1rem;
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .muscle-filter {
+    grid-template-columns: 1fr;
+  }
+}
+
 .pose-placeholder {
   align-items: center;
   background: #0f1728;
