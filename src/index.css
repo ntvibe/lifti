@@ -58,3 +58,44 @@ main {
   line-height: 1.5;
   margin: 0;
 }
+
+button {
+  background: #5e8cff;
+  border: 1px solid #5e8cff;
+  border-radius: 0.5rem;
+  color: #fff;
+  cursor: pointer;
+  margin-top: 1rem;
+  padding: 0.55rem 0.9rem;
+}
+
+button:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.signout {
+  margin-top: 0.75rem;
+}
+
+.sync-box {
+  border: 1px solid #2a3145;
+  border-radius: 0.75rem;
+  margin-top: 1.5rem;
+  padding: 1rem;
+}
+
+.sync-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.status {
+  color: #b5ffca !important;
+  margin-top: 0.75rem !important;
+}
+
+.error {
+  color: #ff9ca9 !important;
+  margin-top: 0.75rem !important;
+}
