@@ -379,24 +379,25 @@ input {
 .muscle {
   cursor: pointer;
   fill: #ffffff;
-  opacity: 0.9;
+  opacity: 1;
   stroke: transparent;
   stroke-width: 0.75rem;
   transition: 150ms ease;
 }
 
 .muscle:hover {
-  opacity: 1;
+  filter: brightness(1.12);
 }
 
 .muscle.active {
-  fill: #ff4d4d;
+  fill: #3b82f6;
   opacity: 1;
 }
 
 #fig-front,
 #fig-back {
-  fill: #1a1a1a;
+  fill: #ffffff;
+  opacity: 0.5;
 }
 
 .selected-groups {

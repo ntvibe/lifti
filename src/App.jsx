@@ -281,6 +281,7 @@ export default function App() {
   })
   const [status, setStatus] = useState('')
   const [toast, setToast] = useState(null)
+  const [selectedGroups, setSelectedGroups] = useState([])
   const catalog = useExerciseCatalog()
 
   useEffect(() => {
@@ -351,7 +352,10 @@ export default function App() {
               path="/login"
               element={<LoginScreen onSignedIn={handleSignedIn} status={status} onToast={handleToast} />}
             />
-            <Route path="/exercises" element={<Exercises exercises={catalog} />} />
+            <Route
+              path="/exercises"
+              element={<Exercises exercises={catalog} selectedGroups={selectedGroups} onSelectedGroupsChange={setSelectedGroups} />}
+            />
             <Route path="/exercises/:id" element={<ExerciseDetail exercises={catalog} />} />
             <Route path="/plans" element={<PlanBuilder />} />
             <Route path="/plan-builder" element={<PlanBuilder />} />
