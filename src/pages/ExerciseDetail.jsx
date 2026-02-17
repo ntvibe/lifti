@@ -15,8 +15,19 @@ export default function ExerciseDetail({ exercises }) {
   }
 
   return (
-    <section className="screen">
-      <h1>{exercise.name}</h1>
+    <section className="screen exercise-detail-screen">
+      <h1 className="exercise-detail-title">{exercise.name}</h1>
+
+      <div className="badges">
+        <span className="badge">{formatLabel(exercise.trackMode)}</span>
+        {exercise.equipment.map((item) => <span key={`equipment-${item}`} className="badge">{formatLabel(item)}</span>)}
+      </div>
+
+      <div className="card">
+        <p><strong>Primary muscles:</strong> {exercise.primaryMuscles.map(formatLabel).join(', ')}</p>
+        <p><strong>Secondary muscles:</strong> {exercise.secondaryMuscles.map(formatLabel).join(', ')}</p>
+      </div>
+
       <div className="pose-grid">
         <figure className="card">
           <img src={exercise.poses.front} className="pose-image" alt={`${exercise.name} front pose`} />
@@ -28,29 +39,20 @@ export default function ExerciseDetail({ exercises }) {
         </figure>
       </div>
 
-      <div className="card">
-        <p><strong>Track mode:</strong> {exercise.trackMode}</p>
-        <div className="badges">
-          {exercise.equipment.map((item) => <span key={`equipment-${item}`} className="badge">{formatLabel(item)}</span>)}
-        </div>
-        <p><strong>Primary muscles:</strong> {exercise.primaryMuscles.map(formatLabel).join(', ')}</p>
-        <p><strong>Secondary muscles:</strong> {exercise.secondaryMuscles.map(formatLabel).join(', ')}</p>
-      </div>
-
-      <div className="card">
-        <h2>Default prescription</h2>
+      <div className="card detail-section">
+        <h2>Prescription</h2>
         <p>{exercise.defaultPrescription.sets} sets × {exercise.defaultPrescription.reps} · Rest {exercise.defaultPrescription.restSec}s</p>
       </div>
 
-      <div className="card">
+      <div className="card detail-section">
         <h2>Cues</h2>
         <ul>
           {exercise.cues.map((cue) => <li key={cue}>{cue}</li>)}
         </ul>
       </div>
 
-      <div className="card">
-        <h2>Common mistakes</h2>
+      <div className="card detail-section">
+        <h2>Mistakes</h2>
         <ul>
           {exercise.commonMistakes.map((mistake) => <li key={mistake}>{mistake}</li>)}
         </ul>

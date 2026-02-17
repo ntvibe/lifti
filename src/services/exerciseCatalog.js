@@ -1,4 +1,5 @@
 import { MUSCLE_GROUPS } from '../constants/muscles'
+import { logExerciseValidationErrors } from './validateExercises'
 
 export function getPublicAssetUrl(path) {
   return `${import.meta.env.BASE_URL}${path}`
@@ -13,6 +14,8 @@ export async function fetchExerciseCatalog() {
   }
 
   const payload = await response.json()
+  logExerciseValidationErrors(payload)
+
   return {
     schemaVersion: payload.schemaVersion,
     updatedAt: payload.updatedAt,

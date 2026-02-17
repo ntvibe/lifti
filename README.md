@@ -17,6 +17,13 @@ npm run build
 
 The app is configured with a Vite base path of `/lifti/` and uses hash-based routing for GitHub Pages compatibility.
 
+## GitHub Pages deployment settings
+
+After committing the workflow, verify these repository settings:
+
+1. **Settings → Pages → Build and deployment → Source** must be set to **GitHub Actions**.
+2. **Settings → Actions → General → Workflow permissions** must be set to **Read and write permissions**.
+
 ## Google OAuth + Drive appDataFolder setup
 
 Lifti uses Google Sign-In from the browser and stores JSON data in the hidden Drive `appDataFolder` using this scope:

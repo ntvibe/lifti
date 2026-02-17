@@ -49,6 +49,32 @@ a {
   margin: 0;
 }
 
+.top-bar-actions {
+  align-items: center;
+  display: flex;
+  gap: 0.45rem;
+}
+
+.status-chip {
+  border: 1px solid #3d4359;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3rem 0.6rem;
+}
+
+.status-chip.signed-in {
+  background: #123822;
+  border-color: #1f7a48;
+  color: #9fe6ba;
+}
+
+.status-chip.signed-out {
+  background: #3a1f26;
+  border-color: #9d2f42;
+  color: #ffb3c0;
+}
+
 .app-layout {
   display: block;
   margin: 0 auto;
@@ -138,10 +164,22 @@ input {
   gap: 0.8rem;
 }
 
-.chips {
+.search-row {
+  align-items: center;
   display: flex;
-  flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.clear-search {
+  flex-shrink: 0;
+}
+
+.chips-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+  scrollbar-width: thin;
 }
 
 .chip {
@@ -170,6 +208,20 @@ input {
   margin-top: 0;
 }
 
+.exercise-card-link {
+  color: inherit;
+  min-height: 140px;
+  text-decoration: none;
+}
+
+.exercise-card-link:active {
+  transform: scale(0.99);
+}
+
+.exercise-card p {
+  margin-bottom: 0;
+}
+
 .badges {
   display: flex;
   flex-wrap: wrap;
@@ -186,6 +238,16 @@ input {
   padding: 0.35rem 0.65rem;
 }
 
+
+.exercise-detail-title {
+  font-size: 2rem !important;
+}
+
+.detail-section h2 {
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
 .exercise-detail-back {
   display: inline-block;
   margin-top: 1rem;
