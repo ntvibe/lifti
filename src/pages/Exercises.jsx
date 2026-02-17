@@ -63,7 +63,9 @@ export default function Exercises({ exercises }) {
         {filteredExercises.map((exercise) => (
           <article key={exercise.id} className="card exercise-card">
             <h3>{exercise.name}</h3>
-            <p><strong>Equipment:</strong> {exercise.equipment.map(formatLabel).join(', ')}</p>
+            <div className="badges">
+              {exercise.equipment.map((item) => <span key={`${exercise.id}-${item}`} className="badge">{formatLabel(item)}</span>)}
+            </div>
             <p><strong>Primary:</strong> {exercise.primaryMuscles.map(formatLabel).join(', ')}</p>
             <Link to={`/exercises/${exercise.id}`}>View details</Link>
           </article>

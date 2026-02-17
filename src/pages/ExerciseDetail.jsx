@@ -9,7 +9,7 @@ export default function ExerciseDetail({ exercises }) {
     return (
       <section className="screen">
         <h1>Exercise not found</h1>
-        <Link to="/exercises">Back to exercises</Link>
+        <Link to="/exercises" className="exercise-detail-back">Back to exercises</Link>
       </section>
     )
   }
@@ -30,7 +30,9 @@ export default function ExerciseDetail({ exercises }) {
 
       <div className="card">
         <p><strong>Track mode:</strong> {exercise.trackMode}</p>
-        <p><strong>Equipment:</strong> {exercise.equipment.map(formatLabel).join(', ')}</p>
+        <div className="badges">
+          {exercise.equipment.map((item) => <span key={`equipment-${item}`} className="badge">{formatLabel(item)}</span>)}
+        </div>
         <p><strong>Primary muscles:</strong> {exercise.primaryMuscles.map(formatLabel).join(', ')}</p>
         <p><strong>Secondary muscles:</strong> {exercise.secondaryMuscles.map(formatLabel).join(', ')}</p>
       </div>
@@ -54,7 +56,7 @@ export default function ExerciseDetail({ exercises }) {
         </ul>
       </div>
 
-      <Link to="/exercises">Back to exercises</Link>
+      <Link to="/exercises" className="exercise-detail-back">Back to exercises</Link>
     </section>
   )
 }

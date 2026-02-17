@@ -67,6 +67,7 @@ function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState(null)
   const [isDismissed, setIsDismissed] = useState(() => localStorage.getItem('lifti_install_prompt_dismissed') === '1')
   const [showIosHelp, setShowIosHelp] = useState(false)
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 899px)').matches)
 
   useEffect(() => {
     const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent)
@@ -84,12 +85,17 @@ function InstallPrompt() {
 
     window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt)
 
+    const mediaQuery = window.matchMedia('(max-width: 899px)')
+    const onResize = (event) => setIsMobile(event.matches)
+    mediaQuery.addEventListener('change', onResize)
+
     return () => {
       window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt)
+      mediaQuery.removeEventListener('change', onResize)
     }
   }, [])
 
-  if (isDismissed || (!deferredPrompt && !showIosHelp)) {
+  if (!isMobile || isDismissed || (!deferredPrompt && !showIosHelp)) {
     return null
   }
 
@@ -112,7 +118,7 @@ function InstallPrompt() {
   return (
     <section className="card install-card">
       <h2>Install Lifti</h2>
-      {deferredPrompt ? <p>Get the full-screen app experience on your phone.</p> : <p>To install: Share → Add to Home Screen.</p>}
+      {deferredPrompt ? <p>Get the full-screen app experience on your phone.</p> : <p>To install on iPhone: Share → Add to Home Screen.</p>}
       <div className="install-actions">
         {deferredPrompt ? <button type="button" onClick={handleInstall}>Install</button> : null}
         <button type="button" className="ghost" onClick={dismiss}>Not now</button>
