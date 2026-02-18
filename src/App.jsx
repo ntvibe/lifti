@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
-import { NavLink, Route, Routes } from 'react-router-dom'
+import { NavLink, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import { signIn, signOut } from './services/googleAuth'
-import { readJson, upsertJsonByName, updateJson } from './services/driveAppData'
+import { upsertJsonByName } from './services/driveAppData'
 import Exercises from './pages/Exercises'
 import ExerciseDetail from './pages/ExerciseDetail'
 import PlanBuilder from './pages/PlanBuilder'
+import Home from './pages/Home'
+import Planner from './pages/Planner'
+import ExerciseEditor from './pages/ExerciseEditor'
 import { fetchExerciseCatalog, getPublicAssetUrl } from './services/exerciseCatalog'
+import { loadSavedExercises, saveWorkoutPlan } from './lib/firestore'
 
 const HISTORY_FILE = 'lifti_history.json'
 const PLANS_FILE = 'lifti_plans.json'
@@ -20,6 +24,14 @@ const primaryTabs = [
   { to: '/plans', label: 'Plans' },
   { to: '/history', label: 'History' },
 ]
+
+function makeId(prefix) {
+  if (globalThis.crypto?.randomUUID) {
+    return `${prefix}-${globalThis.crypto.randomUUID()}`
+  }
+
+  return `${prefix}-${Date.now()}`
+}
 
 function Page({ title, description }) {
   return (
@@ -192,87 +204,20 @@ function LoginScreen({ onSignedIn, status, onToast }) {
   )
 }
 
-function HomeScreen({ accessToken, email, fileIds, onToast }) {
-  const [message, setMessage] = useState('')
-  const [lastTimestamp, setLastTimestamp] = useState('No entries yet')
+function PlannerEditorRoute({ plan, onSaveItemSets, onCancel }) {
+  const { planItemId } = useParams()
+  const item = plan.items.find((entry) => entry.id === planItemId)
 
-  const accountLabel = useMemo(() => {
-    if (!accessToken) {
-      return 'Not signed in'
-    }
+  return <ExerciseEditor planItem={item} onSave={(sets) => onSaveItemSets(planItemId, sets)} onCancel={onCancel} />
+}
 
-    return email ? `Signed in as ${email}` : 'Signed in (email unavailable)'
-  }, [accessToken, email])
-
-  const writeTestEntry = async () => {
-    if (!accessToken || !fileIds.history) {
-      setMessage('Please sign in first.')
-      onToast('error', 'Please sign in first.')
-      return
-    }
-
-    try {
-      const history = await readJson(accessToken, fileIds.history)
-      const entry = {
-        id: `test-${Date.now()}`,
-        timestamp: new Date().toISOString(),
-        note: 'Sync test entry',
-      }
-
-      const nextHistory = {
-        ...history,
-        entries: [...(history.entries || []), entry],
-      }
-
-      await updateJson(accessToken, fileIds.history, nextHistory)
-      setLastTimestamp(entry.timestamp)
-      setMessage('Test entry written to Drive appDataFolder.')
-      onToast('success', 'Saved')
-    } catch (error) {
-      setMessage(`Failed to write entry: ${error.message}`)
-      onToast('error', 'Sync failed')
-    }
-  }
-
-  const reloadFromDrive = async () => {
-    if (!accessToken || !fileIds.history) {
-      setMessage('Please sign in first.')
-      onToast('error', 'Please sign in first.')
-      return
-    }
-
-    try {
-      const history = await readJson(accessToken, fileIds.history)
-      const lastEntry = history.entries?.[history.entries.length - 1]
-      setLastTimestamp(lastEntry?.timestamp || 'No entries yet')
-      setMessage('Reloaded from Drive.')
-      onToast('success', 'Reloaded')
-    } catch (error) {
-      setMessage(`Failed to reload: ${error.message}`)
-      onToast('error', 'Sync failed')
-    }
-  }
-
-  return (
-    <section className="screen">
-      <h1>Home</h1>
-      <p>Welcome to Lifti. Start a plan or jump into today&apos;s workout.</p>
-
-      <div className="card">
-        <h2>Sync Test</h2>
-        <p>{accountLabel}</p>
-        <div className="sync-actions">
-          <button type="button" onClick={writeTestEntry}>Write test entry</button>
-          <button type="button" onClick={reloadFromDrive}>Reload from Drive</button>
-        </div>
-        <p>Last entry timestamp: {lastTimestamp}</p>
-        {message ? <p className="status">{message}</p> : null}
-      </div>
-    </section>
-  )
+function HomeRoute({ onStartNewPlan, ...props }) {
+  const navigate = useNavigate()
+  return <Home {...props} onOpenPlanner={() => { onStartNewPlan(); navigate('/planner') }} />
 }
 
 export default function App() {
+  const navigate = useNavigate()
   const [accessToken, setAccessToken] = useState(() => sessionStorage.getItem('lifti_access_token') || '')
   const [email, setEmail] = useState(() => sessionStorage.getItem('lifti_email') || '')
   const [fileIds, setFileIds] = useState(() => {
@@ -282,6 +227,8 @@ export default function App() {
   const [status, setStatus] = useState('')
   const [toast, setToast] = useState(null)
   const [selectedGroups, setSelectedGroups] = useState([])
+  const [savedExercises, setSavedExercises] = useState([])
+  const [draftPlan, setDraftPlan] = useState({ id: '', name: 'New Plan', items: [] })
   const catalog = useExerciseCatalog()
 
   useEffect(() => {
@@ -292,6 +239,33 @@ export default function App() {
     const timeout = window.setTimeout(() => setToast(null), 2800)
     return () => window.clearTimeout(timeout)
   }, [toast])
+
+  useEffect(() => {
+    let isMounted = true
+
+    if (!accessToken || !fileIds?.exercises) {
+      setSavedExercises([])
+      return () => {
+        isMounted = false
+      }
+    }
+
+    loadSavedExercises(accessToken, fileIds)
+      .then((items) => {
+        if (isMounted) {
+          setSavedExercises(items)
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setSavedExercises([])
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [accessToken, fileIds])
 
   const handleToast = (type, message) => {
     setToast({ type, message })
@@ -320,6 +294,18 @@ export default function App() {
     handleToast('success', 'Signed out')
   }
 
+  const startNewPlan = () => {
+    setDraftPlan({ id: makeId('plan'), name: 'New Plan', items: [] })
+  }
+
+  const accountLabel = useMemo(() => {
+    if (!accessToken) {
+      return 'Not signed in'
+    }
+
+    return email ? `Signed in as ${email}` : 'Signed in'
+  }, [accessToken, email])
+
   return (
     <div className="app-shell">
       <header className="top-bar">
@@ -338,6 +324,7 @@ export default function App() {
               to={item.to}
               className={({ isActive }) => `tab-link ${isActive ? 'active' : ''}`}
               end={item.to === '/'}
+              onClick={item.to === '/planner' ? startNewPlan : undefined}
             >
               {item.label}
             </NavLink>
@@ -346,8 +333,9 @@ export default function App() {
 
         <main>
           <InstallPrompt />
+          <p className="status">{accountLabel}</p>
           <Routes>
-            <Route path="/" element={<HomeScreen accessToken={accessToken} email={email} fileIds={fileIds} onToast={handleToast} />} />
+            <Route path="/" element={<HomeRoute accessToken={accessToken} fileIds={fileIds} onToast={handleToast} onStartNewPlan={startNewPlan} />} />
             <Route
               path="/login"
               element={<LoginScreen onSignedIn={handleSignedIn} status={status} onToast={handleToast} />}
@@ -358,6 +346,62 @@ export default function App() {
             />
             <Route path="/exercises/:id" element={<ExerciseDetail exercises={catalog} />} />
             <Route path="/plans" element={<PlanBuilder />} />
+            <Route
+              path="/planner"
+              element={(
+                <Planner
+                  plan={draftPlan}
+                  savedExercises={savedExercises}
+                  onPlanNameChange={(name) => setDraftPlan((current) => ({ ...current, name }))}
+                  onAddExercise={(exercise) => setDraftPlan((current) => ({
+                    ...current,
+                    items: [...current.items, {
+                      id: makeId('item'),
+                      exerciseId: exercise.id,
+                      exerciseName: exercise.name,
+                      exerciseType: exercise.type || 'weights',
+                      sets: (exercise.type || 'weights') === 'weights' ? [
+                        { reps: '', weight: '', restSec: '' },
+                        { reps: '', weight: '', restSec: '' },
+                        { reps: '', weight: '', restSec: '' },
+                      ] : undefined,
+                    }],
+                  }))}
+                  onDeleteItem={(itemId) => setDraftPlan((current) => ({ ...current, items: current.items.filter((item) => item.id !== itemId) }))}
+                  onEditItem={(itemId) => navigate(`/planner/edit/${itemId}`)}
+                  onDone={async () => {
+                    try {
+                      const planToSave = {
+                        ...draftPlan,
+                        id: draftPlan.id || makeId('plan'),
+                      }
+                      const savedPlan = await saveWorkoutPlan(accessToken, fileIds, planToSave)
+                      setDraftPlan(savedPlan)
+                      handleToast('success', 'Plan saved')
+                      navigate('/')
+                    } catch (error) {
+                      handleToast('error', error.message)
+                    }
+                  }}
+                />
+              )}
+            />
+            <Route
+              path="/planner/edit/:planItemId"
+              element={(
+                <PlannerEditorRoute
+                  plan={draftPlan}
+                  onCancel={() => navigate('/planner')}
+                  onSaveItemSets={(itemId, sets) => {
+                    setDraftPlan((current) => ({
+                      ...current,
+                      items: current.items.map((item) => (item.id === itemId ? { ...item, sets } : item)),
+                    }))
+                    navigate('/planner')
+                  }}
+                />
+              )}
+            />
             <Route path="/plan-builder" element={<PlanBuilder />} />
             <Route path="/workout-player" element={<Page title="Workout Player" description="Follow your workout step-by-step with timers and logging." />} />
             <Route path="/history" element={<Page title="History" description="Review completed workouts, trends, and personal records." />} />
