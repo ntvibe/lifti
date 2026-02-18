@@ -351,7 +351,7 @@ export default function App() {
               element={(
                 <Planner
                   plan={draftPlan}
-                  savedExercises={savedExercises}
+                  allExercises={catalog}
                   onPlanNameChange={(name) => setDraftPlan((current) => ({ ...current, name }))}
                   onAddExercise={(exercise) => setDraftPlan((current) => ({
                     ...current,

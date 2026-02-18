@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { formatLabel } from '../services/exerciseCatalog'
+import { normalizeKey } from '../utils/normalize'
 
 function getGroupKey(id) {
-  return id.replace(/\d+$/, '')
+  return normalizeKey(id.replace(/\d+$/, ''))
 }
 
 const SILHOUETTE_FILL = '#ffffff'

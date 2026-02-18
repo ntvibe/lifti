@@ -1,13 +1,11 @@
+import { titleCaseLabel } from './normalize'
+
 const KNOWN_ACRONYMS = new Set(['AMRAP', 'EMOM', 'HIIT', 'RPE', 'RM'])
 
 export function toTitleCase(value = '') {
-  const normalized = String(value)
-    .replaceAll('_', ' ')
-    .replaceAll('-', ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
+  const formatted = titleCaseLabel(value)
 
-  return normalized
+  return formatted
     .split(' ')
     .filter(Boolean)
     .map((word) => {
@@ -16,7 +14,7 @@ export function toTitleCase(value = '') {
         return uppercaseWord
       }
 
-      return `${word.charAt(0).toUpperCase()}${word.slice(1).toLowerCase()}`
+      return word
     })
     .join(' ')
 }

@@ -1,37 +1,126 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import MuscleMap from './MuscleMap'
 import TagToggleList from './TagToggleList'
-import { listEquipmentOptions } from '../services/exerciseCatalog'
-import { toTitleCase } from '../utils/label'
+import { titleCaseLabel, normalizeKey } from '../utils/normalize'
+
+const MUSCLE_FIELD_CANDIDATES = [
+  'primaryMuscles',
+  'muscles',
+  'muscleGroups',
+  'muscleGroup',
+  'targetMuscles',
+  'targets',
+]
+
+const EQUIPMENT_FIELD_CANDIDATES = [
+  'equipment',
+  'equipments',
+  'gear',
+  'machine',
+]
 
 function toggleSetValue(currentSet, value) {
+  const normalizedValue = normalizeKey(value)
   const next = new Set(currentSet)
-  if (next.has(value)) {
-    next.delete(value)
+
+  if (next.has(normalizedValue)) {
+    next.delete(normalizedValue)
   } else {
-    next.add(value)
+    next.add(normalizedValue)
   }
 
   return next
 }
 
-export default function AddExerciseModal({ isOpen, exercises, onClose, onSelectExercise }) {
+function normalizeAsArray(value) {
+  if (Array.isArray(value)) {
+    return value
+  }
+
+  if (typeof value === 'string') {
+    return [value]
+  }
+
+  return []
+}
+
+function getFirstNormalizedValues(exercise, candidates) {
+  for (const fieldName of candidates) {
+    const normalizedValues = normalizeAsArray(exercise[fieldName])
+      .map((item) => normalizeKey(item))
+      .filter(Boolean)
+
+    if (normalizedValues.length) {
+      return normalizedValues
+    }
+  }
+
+  return []
+}
+
+function getExerciseMuscles(exercise) {
+  return getFirstNormalizedValues(exercise, MUSCLE_FIELD_CANDIDATES)
+}
+
+function getExerciseEquipment(exercise) {
+  return getFirstNormalizedValues(exercise, EQUIPMENT_FIELD_CANDIDATES)
+}
+
+function formatExerciseName(name) {
+  return String(name)
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1).toLowerCase()}`)
+    .join(' ')
+}
+
+export default function AddExerciseModal({ isOpen, allExercises = [], onClose, onSelectExercise }) {
   const [search, setSearch] = useState('')
   const [selectedGroups, setSelectedGroups] = useState([])
   const [muscleGroups, setMuscleGroups] = useState([])
   const [selectedEquipment, setSelectedEquipment] = useState(() => new Set())
   const [equipmentOpen, setEquipmentOpen] = useState(false)
 
-  const selectedMuscles = useMemo(() => new Set(selectedGroups), [selectedGroups])
-  const equipmentOptions = useMemo(() => listEquipmentOptions(exercises), [exercises])
+  const selectedMuscles = useMemo(() => new Set((selectedGroups || []).map((group) => normalizeKey(group))), [selectedGroups])
 
-  const filteredExercises = useMemo(() => exercises.filter((exercise) => {
-    const matchesName = exercise.name.toLowerCase().includes(search.toLowerCase())
-    const matchesEquipment = !selectedEquipment.size || exercise.equipment.some((item) => selectedEquipment.has(item))
-    const matchesMuscles = !selectedMuscles.size || exercise.primaryMuscles.some((muscle) => selectedMuscles.has(muscle))
+  const equipmentOptions = useMemo(() => {
+    const values = new Set()
+    allExercises.forEach((exercise) => {
+      getExerciseEquipment(exercise).forEach((item) => values.add(item))
+    })
 
-    return matchesName && matchesEquipment && matchesMuscles
-  }), [exercises, search, selectedEquipment, selectedMuscles])
+    return [...values].sort((a, b) => titleCaseLabel(a).localeCompare(titleCaseLabel(b)))
+  }, [allExercises])
+
+  const filteredExercises = useMemo(() => allExercises.filter((exercise) => {
+    const normalizedMuscles = getExerciseMuscles(exercise)
+    const normalizedEquipment = getExerciseEquipment(exercise)
+
+    const matchesName = (exercise.name || '').toLowerCase().includes(search.toLowerCase())
+    const matchesMuscles = !selectedMuscles.size
+      || normalizedMuscles.some((muscle) => selectedMuscles.has(muscle))
+    const matchesEquipment = !selectedEquipment.size
+      || normalizedEquipment.some((item) => selectedEquipment.has(item))
+
+    return matchesName && matchesMuscles && matchesEquipment
+  }), [allExercises, search, selectedMuscles, selectedEquipment])
+
+  useEffect(() => {
+    if (!isOpen || filteredExercises.length || !allExercises.length) {
+      return
+    }
+
+    const sample = allExercises.slice(0, 3).map((exercise) => ({
+      id: exercise.id,
+      name: exercise.name,
+      normalizedMuscles: getExerciseMuscles(exercise),
+      normalizedEquipment: getExerciseEquipment(exercise),
+    }))
+
+    // temporary debug logging for filter field diagnostics
+    console.info('AddExerciseModal empty results debug:', sample)
+  }, [allExercises, filteredExercises, isOpen])
 
   if (!isOpen) {
     return null
@@ -85,6 +174,8 @@ export default function AddExerciseModal({ isOpen, exercises, onClose, onSelectE
           />
         ) : null}
 
+        <p className="status">Showing {filteredExercises.length} of {allExercises.length} exercises</p>
+
         <div className="planner-results">
           {filteredExercises.map((exercise) => (
             <button
@@ -93,11 +184,12 @@ export default function AddExerciseModal({ isOpen, exercises, onClose, onSelectE
               className="planner-list-item"
               onClick={() => onSelectExercise(exercise)}
             >
-              <span>{toTitleCase(exercise.name)}</span>
-              <small>Muscles: {exercise.primaryMuscles.map(toTitleCase).join(', ')}</small>
+              <span>{formatExerciseName(exercise.name)}</span>
+              <small>Muscles: {getExerciseMuscles(exercise).map(titleCaseLabel).join(', ')}</small>
             </button>
           ))}
-          {!filteredExercises.length ? <p className="status">No exercises match current filters.</p> : null}
+          {!filteredExercises.length && allExercises.length ? <p className="status">No exercises match current filters.</p> : null}
+          {!allExercises.length ? <p className="status">No exercises loaded. Try refreshing the app or reloading the catalog.</p> : null}
         </div>
       </section>
     </div>
