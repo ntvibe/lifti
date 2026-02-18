@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { toTitleCase } from '../utils/label'
 import AddExerciseModal from '../components/AddExerciseModal'
 
-export default function Planner({ plan, savedExercises, onPlanNameChange, onAddExercise, onDeleteItem, onEditItem, onDone }) {
+export default function Planner({ plan, allExercises, onPlanNameChange, onAddExercise, onDeleteItem, onEditItem, onDone }) {
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [openMenuId, setOpenMenuId] = useState('')
 
@@ -40,7 +40,7 @@ export default function Planner({ plan, savedExercises, onPlanNameChange, onAddE
 
       <AddExerciseModal
         isOpen={isAddOpen}
-        exercises={savedExercises}
+        allExercises={allExercises}
         onClose={() => setIsAddOpen(false)}
         onSelectExercise={(exercise) => {
           onAddExercise(exercise)

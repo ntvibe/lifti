@@ -1,5 +1,6 @@
 import { MUSCLE_GROUPS } from '../constants/muscles'
 import { toTitleCase } from '../utils/label'
+import { normalizeKey } from '../utils/normalize'
 import { logExerciseValidationErrors } from './validateExercises'
 
 export function getPublicAssetUrl(path) {
@@ -25,7 +26,12 @@ export async function fetchExerciseCatalog() {
 }
 
 export function listEquipmentOptions(exercises) {
-  return [...new Set(exercises.flatMap((exercise) => exercise.equipment))].sort()
+  return [...new Set(exercises.flatMap((exercise) => {
+    const equipment = exercise.equipment ?? exercise.equipments ?? exercise.gear ?? exercise.machine ?? []
+    return (Array.isArray(equipment) ? equipment : [equipment])
+      .map((item) => normalizeKey(item))
+      .filter(Boolean)
+  }))].sort((a, b) => a.localeCompare(b))
 }
 
 export const MUSCLE_OPTIONS = MUSCLE_GROUPS.flatMap((group) => group.muscles)
