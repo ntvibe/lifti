@@ -612,3 +612,93 @@ input {
   font-size: 0.85rem;
   font-weight: 700;
 }
+
+.bottom-tabs {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.home-plan-card {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.plan-open-button {
+  align-items: flex-start;
+  background: transparent;
+  border: none;
+  display: grid;
+  gap: 0.2rem;
+  justify-items: flex-start;
+  padding: 0;
+  text-align: left;
+}
+
+.plan-item-row > div:first-child {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.plan-item-row small {
+  color: #aeb9dc;
+}
+
+.sets-grid-extended {
+  grid-template-columns: 42px repeat(3, minmax(0, 1fr)) 36px;
+}
+
+.set-index {
+  align-items: center;
+  color: #bac5e8;
+  display: inline-flex;
+  font-weight: 700;
+  justify-content: center;
+}
+
+.field-button {
+  background: #0e0f11;
+  border: 1px solid #30343f;
+  border-radius: 0.8rem;
+  color: #f8f9ff;
+  min-height: 44px;
+}
+
+.number-pad-sheet {
+  background: #0e1015;
+  border-radius: 1rem;
+  margin-top: auto;
+  padding: 1rem;
+  width: min(500px, 100%);
+}
+
+.number-pad-grid {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.number-pad-value {
+  font-size: 2rem;
+  margin-top: 0;
+  text-align: center;
+}
+
+.nudge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1rem 0;
+}
+
+.scrub-overlay {
+  background: rgba(14, 16, 22, 0.96);
+  border: 1px solid #404765;
+  border-radius: 0.8rem;
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.6rem;
+  pointer-events: none;
+  position: fixed;
+  transform: translate(-50%, -120%);
+  z-index: 90;
+}
