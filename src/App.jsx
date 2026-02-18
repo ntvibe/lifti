@@ -1,15 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import { NavLink, Route, Routes, useNavigate, useParams } from 'react-router-dom'
+import { NavLink, Route, Routes, useNavigate } from 'react-router-dom'
 import { signIn, signOut } from './services/googleAuth'
 import { upsertJsonByName } from './services/driveAppData'
 import Exercises from './pages/Exercises'
 import ExerciseDetail from './pages/ExerciseDetail'
 import PlanBuilder from './pages/PlanBuilder'
-import Home from './pages/Home'
-import Planner from './pages/Planner'
-import ExerciseEditor from './pages/ExerciseEditor'
 import { fetchExerciseCatalog, getPublicAssetUrl } from './services/exerciseCatalog'
-import { loadSavedExercises, saveWorkoutPlan } from './lib/firestore'
+import usePlans from './hooks/usePlans'
+import Home from './screens/Home'
+import WorkoutPlanner from './screens/WorkoutPlanner'
 
 const HISTORY_FILE = 'lifti_history.json'
 const PLANS_FILE = 'lifti_plans.json'
@@ -21,11 +20,10 @@ const DEFAULT_PLANS = { plans: [] }
 const primaryTabs = [
   { to: '/', label: 'Home' },
   { to: '/exercises', label: 'Exercises' },
-  { to: '/plans', label: 'Plans' },
   { to: '/history', label: 'History' },
 ]
 
-function makeId(prefix) {
+function createId(prefix) {
   if (globalThis.crypto?.randomUUID) {
     return `${prefix}-${globalThis.crypto.randomUUID()}`
   }
@@ -74,70 +72,6 @@ function Toast({ toast }) {
   }
 
   return <div className={`toast toast-${toast.type}`}>{toast.message}</div>
-}
-
-function InstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState(null)
-  const [isDismissed, setIsDismissed] = useState(() => localStorage.getItem('lifti_install_prompt_dismissed') === '1')
-  const [showIosHelp, setShowIosHelp] = useState(false)
-  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 899px)').matches)
-
-  useEffect(() => {
-    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent)
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
-
-    if (isIos && !isStandalone) {
-      setShowIosHelp(true)
-    }
-
-    const onBeforeInstallPrompt = (event) => {
-      event.preventDefault()
-      setDeferredPrompt(event)
-      setShowIosHelp(false)
-    }
-
-    window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt)
-
-    const mediaQuery = window.matchMedia('(max-width: 899px)')
-    const onResize = (event) => setIsMobile(event.matches)
-    mediaQuery.addEventListener('change', onResize)
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt)
-      mediaQuery.removeEventListener('change', onResize)
-    }
-  }, [])
-
-  if (!isMobile || isDismissed || (!deferredPrompt && !showIosHelp)) {
-    return null
-  }
-
-  const dismiss = () => {
-    localStorage.setItem('lifti_install_prompt_dismissed', '1')
-    setIsDismissed(true)
-  }
-
-  const handleInstall = async () => {
-    if (!deferredPrompt) {
-      return
-    }
-
-    deferredPrompt.prompt()
-    await deferredPrompt.userChoice
-    setDeferredPrompt(null)
-    dismiss()
-  }
-
-  return (
-    <section className="card install-card">
-      <h2>Install Lifti</h2>
-      {deferredPrompt ? <p>Get the full-screen app experience on your phone.</p> : <p>To install on iPhone: Share → Add to Home Screen.</p>}
-      <div className="install-actions">
-        {deferredPrompt ? <button type="button" onClick={handleInstall}>Install</button> : null}
-        <button type="button" className="ghost" onClick={dismiss}>Not now</button>
-      </div>
-    </section>
-  )
 }
 
 function LoginScreen({ onSignedIn, status, onToast }) {
@@ -204,18 +138,6 @@ function LoginScreen({ onSignedIn, status, onToast }) {
   )
 }
 
-function PlannerEditorRoute({ plan, onSaveItemSets, onCancel }) {
-  const { planItemId } = useParams()
-  const item = plan.items.find((entry) => entry.id === planItemId)
-
-  return <ExerciseEditor planItem={item} onSave={(sets) => onSaveItemSets(planItemId, sets)} onCancel={onCancel} />
-}
-
-function HomeRoute({ onStartNewPlan, ...props }) {
-  const navigate = useNavigate()
-  return <Home {...props} onOpenPlanner={() => { onStartNewPlan(); navigate('/planner') }} />
-}
-
 export default function App() {
   const navigate = useNavigate()
   const [accessToken, setAccessToken] = useState(() => sessionStorage.getItem('lifti_access_token') || '')
@@ -227,9 +149,9 @@ export default function App() {
   const [status, setStatus] = useState('')
   const [toast, setToast] = useState(null)
   const [selectedGroups, setSelectedGroups] = useState([])
-  const [savedExercises, setSavedExercises] = useState([])
-  const [draftPlan, setDraftPlan] = useState({ id: '', name: 'New Plan', items: [] })
+  const [draftPlan, setDraftPlan] = useState({ id: '', name: 'New Plan', createdAt: '', updatedAt: '', items: [] })
   const catalog = useExerciseCatalog()
+  const { plans, loading, createPlan, updatePlan, deletePlan, upsertPlan } = usePlans({ accessToken, fileIds })
 
   useEffect(() => {
     if (!toast) {
@@ -239,33 +161,6 @@ export default function App() {
     const timeout = window.setTimeout(() => setToast(null), 2800)
     return () => window.clearTimeout(timeout)
   }, [toast])
-
-  useEffect(() => {
-    let isMounted = true
-
-    if (!accessToken || !fileIds?.exercises) {
-      setSavedExercises([])
-      return () => {
-        isMounted = false
-      }
-    }
-
-    loadSavedExercises(accessToken, fileIds)
-      .then((items) => {
-        if (isMounted) {
-          setSavedExercises(items)
-        }
-      })
-      .catch(() => {
-        if (isMounted) {
-          setSavedExercises([])
-        }
-      })
-
-    return () => {
-      isMounted = false
-    }
-  }, [accessToken, fileIds])
 
   const handleToast = (type, message) => {
     setToast({ type, message })
@@ -294,10 +189,6 @@ export default function App() {
     handleToast('success', 'Signed out')
   }
 
-  const startNewPlan = () => {
-    setDraftPlan({ id: makeId('plan'), name: 'New Plan', items: [] })
-  }
-
   const accountLabel = useMemo(() => {
     if (!accessToken) {
       return 'Not signed in'
@@ -319,66 +210,49 @@ export default function App() {
       <div className="app-layout">
         <aside className="sidebar-tabs" aria-label="Primary">
           {primaryTabs.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) => `tab-link ${isActive ? 'active' : ''}`}
-              end={item.to === '/'}
-              onClick={item.to === '/planner' ? startNewPlan : undefined}
-            >
+            <NavLink key={item.to} to={item.to} className={({ isActive }) => `tab-link ${isActive ? 'active' : ''}`} end={item.to === '/'}>
               {item.label}
             </NavLink>
           ))}
         </aside>
 
         <main>
-          <InstallPrompt />
           <p className="status">{accountLabel}</p>
           <Routes>
-            <Route path="/" element={<HomeRoute accessToken={accessToken} fileIds={fileIds} onToast={handleToast} onStartNewPlan={startNewPlan} />} />
             <Route
-              path="/login"
-              element={<LoginScreen onSignedIn={handleSignedIn} status={status} onToast={handleToast} />}
-            />
-            <Route
-              path="/exercises"
-              element={<Exercises exercises={catalog} selectedGroups={selectedGroups} onSelectedGroupsChange={setSelectedGroups} />}
-            />
-            <Route path="/exercises/:id" element={<ExerciseDetail exercises={catalog} />} />
-            <Route path="/plans" element={<PlanBuilder />} />
-            <Route
-              path="/planner"
+              path="/"
               element={(
-                <Planner
-                  plan={draftPlan}
-                  allExercises={catalog}
-                  onPlanNameChange={(name) => setDraftPlan((current) => ({ ...current, name }))}
-                  onAddExercise={(exercise) => setDraftPlan((current) => ({
-                    ...current,
-                    items: [...current.items, {
-                      id: makeId('item'),
-                      exerciseId: exercise.id,
-                      exerciseName: exercise.name,
-                      exerciseType: exercise.type || 'weights',
-                      sets: (exercise.type || 'weights') === 'weights' ? [
-                        { reps: '', weight: '', restSec: '' },
-                        { reps: '', weight: '', restSec: '' },
-                        { reps: '', weight: '', restSec: '' },
-                      ] : undefined,
-                    }],
-                  }))}
-                  onDeleteItem={(itemId) => setDraftPlan((current) => ({ ...current, items: current.items.filter((item) => item.id !== itemId) }))}
-                  onEditItem={(itemId) => navigate(`/planner/edit/${itemId}`)}
-                  onDone={async () => {
+                <Home
+                  plans={plans}
+                  loading={loading}
+                  onCreatePlan={async () => {
                     try {
-                      const planToSave = {
-                        ...draftPlan,
-                        id: draftPlan.id || makeId('plan'),
-                      }
-                      const savedPlan = await saveWorkoutPlan(accessToken, fileIds, planToSave)
-                      setDraftPlan(savedPlan)
-                      handleToast('success', 'Plan saved')
-                      navigate('/')
+                      const newPlan = await createPlan('New Plan')
+                      setDraftPlan(newPlan)
+                      navigate('/planner')
+                    } catch (error) {
+                      handleToast('error', error.message)
+                    }
+                  }}
+                  onOpenPlan={(planId) => {
+                    const existing = plans.find((entry) => entry.id === planId)
+                    if (existing) {
+                      setDraftPlan(existing)
+                      navigate('/planner')
+                    }
+                  }}
+                  onRenamePlan={async (planId, name) => {
+                    try {
+                      await updatePlan(planId, { name })
+                      handleToast('success', 'Plan renamed')
+                    } catch (error) {
+                      handleToast('error', error.message)
+                    }
+                  }}
+                  onDeletePlan={async (planId) => {
+                    try {
+                      await deletePlan(planId)
+                      handleToast('success', 'Plan deleted')
                     } catch (error) {
                       handleToast('error', error.message)
                     }
@@ -386,18 +260,29 @@ export default function App() {
                 />
               )}
             />
+            <Route path="/login" element={<LoginScreen onSignedIn={handleSignedIn} status={status} onToast={handleToast} />} />
+            <Route path="/exercises" element={<Exercises exercises={catalog} selectedGroups={selectedGroups} onSelectedGroupsChange={setSelectedGroups} />} />
+            <Route path="/exercises/:id" element={<ExerciseDetail exercises={catalog} />} />
             <Route
-              path="/planner/edit/:planItemId"
+              path="/planner"
               element={(
-                <PlannerEditorRoute
+                <WorkoutPlanner
                   plan={draftPlan}
-                  onCancel={() => navigate('/planner')}
-                  onSaveItemSets={(itemId, sets) => {
-                    setDraftPlan((current) => ({
-                      ...current,
-                      items: current.items.map((item) => (item.id === itemId ? { ...item, sets } : item)),
-                    }))
-                    navigate('/planner')
+                  allExercises={catalog}
+                  onPlanChange={setDraftPlan}
+                  onDone={async () => {
+                    try {
+                      const saved = await upsertPlan({
+                        ...draftPlan,
+                        id: draftPlan.id || createId('plan'),
+                        createdAt: draftPlan.createdAt || new Date().toISOString(),
+                      })
+                      setDraftPlan(saved)
+                      handleToast('success', 'Plan saved')
+                      navigate('/')
+                    } catch (error) {
+                      handleToast('error', error.message)
+                    }
                   }}
                 />
               )}
@@ -411,12 +296,7 @@ export default function App() {
 
       <nav className="bottom-tabs" aria-label="Mobile tabs">
         {primaryTabs.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) => `tab-link ${isActive ? 'active' : ''}`}
-            end={item.to === '/'}
-          >
+          <NavLink key={item.to} to={item.to} className={({ isActive }) => `tab-link ${isActive ? 'active' : ''}`} end={item.to === '/'}>
             {item.label}
           </NavLink>
         ))}

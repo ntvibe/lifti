@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import MuscleMap from './MuscleMap'
 import TagToggleList from './TagToggleList'
 import { titleCaseLabel, normalizeKey } from '../utils/normalize'
@@ -106,22 +106,6 @@ export default function AddExerciseModal({ isOpen, allExercises = [], onClose, o
     return matchesName && matchesMuscles && matchesEquipment
   }), [allExercises, search, selectedMuscles, selectedEquipment])
 
-  useEffect(() => {
-    if (!isOpen || filteredExercises.length || !allExercises.length) {
-      return
-    }
-
-    const sample = allExercises.slice(0, 3).map((exercise) => ({
-      id: exercise.id,
-      name: exercise.name,
-      normalizedMuscles: getExerciseMuscles(exercise),
-      normalizedEquipment: getExerciseEquipment(exercise),
-    }))
-
-    // temporary debug logging for filter field diagnostics
-    console.info('AddExerciseModal empty results debug:', sample)
-  }, [allExercises, filteredExercises, isOpen])
-
   if (!isOpen) {
     return null
   }
@@ -130,7 +114,7 @@ export default function AddExerciseModal({ isOpen, allExercises = [], onClose, o
     <div className="modal-backdrop" role="presentation" onClick={onClose}>
       <section className="modal-sheet" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
         <div className="filter-header-row">
-          <h2>Add Exercise</h2>
+          <h2>Find Exercise</h2>
           <button type="button" className="text-button" onClick={onClose}>Close</button>
         </div>
 
