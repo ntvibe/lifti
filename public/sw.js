@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lifti-shell-v1'
+const CACHE_NAME = 'lifti-shell-v2'
 const APP_BASE = '/lifti/'
 
 const APP_SHELL = [
@@ -29,6 +29,12 @@ self.addEventListener('fetch', (event) => {
   }
 
   const url = new URL(event.request.url)
+
+  if (url.origin === 'https://accounts.google.com' || url.hostname.includes('gsi')) {
+    event.respondWith(fetch(event.request))
+    return
+  }
+
   if (url.origin !== self.location.origin) {
     return
   }
@@ -41,10 +47,18 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
-      const copy = response.clone()
-      caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy))
-      return response
-    })),
+    caches.match(event.request).then((cached) => {
+      if (cached) {
+        return cached
+      }
+
+      return fetch(event.request).then((response) => {
+        if (response.ok) {
+          const copy = response.clone()
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy))
+        }
+        return response
+      })
+    }),
   )
 })

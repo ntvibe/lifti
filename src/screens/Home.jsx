@@ -57,7 +57,7 @@ export default function Home({
         {!loading && plans.map((plan) => (
           <article
             key={plan.id}
-            className="planner-list-item home-plan-card modern-plan-card"
+            className="planner-list-item home-plan-card modern-plan-card glass select-none"
             onPointerDown={() => {
               clearLongPress()
               longPressTimerRef.current = window.setTimeout(() => {
@@ -105,7 +105,7 @@ export default function Home({
         {!loading && !plans.length ? <p>No workout plans yet.</p> : null}
       </div>
 
-      <button type="button" className="fab" onClick={onCreatePlan} aria-label="Create workout plan">
+      <button type="button" className="fab select-none" onClick={onCreatePlan} aria-label="Create workout plan">
         +
       </button>
     </section>

@@ -171,13 +171,13 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <header className="top-bar">
+      <header className="top-bar glass select-none">
         <h1>Lifti</h1>
         <div className="top-bar-actions">
           {isAuthenticated ? (
             <AvatarMenu profileName={profileName} profilePicture={profilePicture} onSignOut={handleLogout} />
           ) : (
-            <button type="button" className="ghost" onClick={handleLogin}>Login</button>
+            <button type="button" className="ghost select-none" onClick={handleLogin}>Login</button>
           )}
         </div>
       </header>

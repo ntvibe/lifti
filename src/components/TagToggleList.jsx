@@ -10,7 +10,7 @@ export default function TagToggleList({ items, selectedSet, onToggle }) {
           <button
             key={item}
             type="button"
-            className={`tag-chip ${isSelected ? 'selected' : ''}`}
+            className={`tag-chip glass-chip select-none ${isSelected ? 'selected' : ''}`}
             onClick={() => onToggle(item)}
           >
             {formatLabel(item)}
