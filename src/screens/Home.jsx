@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Icon from '../components/Icon'
 
 function formatDate(value) {
   if (!value) {
@@ -13,26 +14,42 @@ function formatDate(value) {
   return date.toLocaleDateString()
 }
 
-export default function Home({ plans, loading, onCreatePlan, onOpenPlan, onRenamePlan, onDeletePlan }) {
+export default function Home({
+  isAuthenticated,
+  plans,
+  loading,
+  onSignIn,
+  onCreatePlan,
+  onOpenPlan,
+  onRenamePlan,
+  onDeletePlan,
+}) {
   const [openMenuId, setOpenMenuId] = useState('')
+
+  if (!isAuthenticated) {
+    return (
+      <section className="screen home-signin-screen">
+        <button type="button" onClick={onSignIn}>Sign in</button>
+      </section>
+    )
+  }
 
   return (
     <section className="screen">
-      <h1>Home</h1>
-      <p>Your workout plans.</p>
-
-      <div className="planner-results home-list">
+      <div className="planner-results home-list scroll-safe-list">
         {loading ? <p>Loading…</p> : null}
 
         {!loading && plans.map((plan) => (
           <article key={plan.id} className="planner-list-item home-plan-card">
             <button type="button" className="plan-open-button" onClick={() => onOpenPlan(plan.id)}>
               <span>{plan.name}</span>
-              <small>{plan.items.length} exercises • Updated {formatDate(plan.updatedAt)}</small>
+              <small>{plan.exercises.length} exercises • Updated {formatDate(plan.updatedAt)}</small>
             </button>
 
             <div className="kebab-wrap">
-              <button type="button" className="text-button kebab-button" onClick={() => setOpenMenuId((value) => (value === plan.id ? '' : plan.id))}>⋯</button>
+              <button type="button" className="text-button kebab-button" onClick={() => setOpenMenuId((value) => (value === plan.id ? '' : plan.id))} aria-label="Plan options">
+                <Icon name="more_vert" />
+              </button>
               {openMenuId === plan.id ? (
                 <div className="kebab-menu">
                   <button
@@ -57,7 +74,9 @@ export default function Home({ plans, loading, onCreatePlan, onOpenPlan, onRenam
         {!loading && !plans.length ? <p>No workout plans yet.</p> : null}
       </div>
 
-      <button type="button" className="fab" onClick={onCreatePlan} aria-label="Create workout plan">+</button>
+      <button type="button" className="fab" onClick={onCreatePlan} aria-label="Create workout plan">
+        <Icon name="add" />
+      </button>
     </section>
   )
 }
