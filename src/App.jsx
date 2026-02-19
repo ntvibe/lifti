@@ -199,6 +199,7 @@ export default function App() {
                 <Home
                   isAuthenticated={isAuthenticated}
                   plans={homePlans}
+                  allExercises={catalog}
                   loading={loading || authLoading}
                   onSignIn={handleLogin}
                   onCreatePlan={async () => {
@@ -215,14 +216,6 @@ export default function App() {
                     if (existing) {
                       setDraftPlan(existing)
                       navigate('/planner')
-                    }
-                  }}
-                  onRenamePlan={async (planId, name) => {
-                    try {
-                      await updatePlan(planId, { name })
-                      handleToast('success', 'Plan renamed')
-                    } catch (error) {
-                      handleToast('error', error.message)
                     }
                   }}
                   onDeletePlan={async (planId) => {
