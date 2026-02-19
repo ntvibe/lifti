@@ -68,3 +68,11 @@ The Pages workflow passes the secret into Vite at build time:
 
 - Data is written to Google Drive `appDataFolder` and is **not visible in My Drive**.
 - The access token is stored in `sessionStorage` only (not `localStorage`).
+
+
+## PWA install verification
+
+1. Open Chrome DevTools → **Application** and click **Clear storage** for the site.
+2. Reload the app and confirm the **Manifest** is detected from `/lifti/manifest.webmanifest`.
+3. Confirm the **Service Workers** panel shows `sw.js` as active and running.
+4. Visit the app twice (or use the browser menu) and check **Install app** appears.

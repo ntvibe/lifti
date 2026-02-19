@@ -57,8 +57,8 @@ export default function CustomNumberPad({ isOpen, type, value, onClose, onDone }
   }
 
   return (
-    <div className="modal-backdrop" role="presentation" onClick={onClose}>
-      <section className="number-pad-sheet" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+    <div className="modal-backdrop select-none" role="presentation" onClick={onClose}>
+      <section className="number-pad-sheet glass glass-strong" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
         <h3>{type === 'restSec' ? 'Rest (sec)' : type === 'reps' ? 'Reps' : 'Weight'}</h3>
         <p className="number-pad-value">{draft}</p>
 

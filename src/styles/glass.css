@@ -1,0 +1,34 @@
+.glass {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.glass-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  color: #e8edff;
+  transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.glass-chip:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.glass-chip.selected,
+.glass-chip[aria-pressed='true'] {
+  background: rgba(122, 162, 255, 0.32);
+  border-color: rgba(175, 202, 255, 0.44);
+}
+
+.select-none {
+  user-select: none;
+  -webkit-user-select: none;
+}

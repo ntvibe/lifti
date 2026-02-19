@@ -12,6 +12,8 @@ function createId(prefix) {
 }
 
 const FALLBACK_SET = { reps: 10, weight: 0, restSec: 90 }
+const HOLD_MS = 250
+const TAP_MOVE_THRESHOLD = 6
 
 function parseDefaults(exercise = {}) {
   const hasPerSet = Array.isArray(exercise.defaultSets)
@@ -66,7 +68,17 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
   const [sheetOffsetY, setSheetOffsetY] = useState(0)
   const [scrub, setScrub] = useState({ active: false, rowIndex: -1, type: '', startY: 0, startValue: 0, pointerId: null, x: 0, y: 0 })
   const holdTimer = useRef(null)
-  const pointerState = useRef({ startX: 0, startY: 0, moved: 0, holdTriggered: false, scrollMode: false })
+  const pointerState = useRef({
+    startX: 0,
+    startY: 0,
+    moved: 0,
+    holdTriggered: false,
+    scrollMode: false,
+    rowIndex: -1,
+    field: '',
+    pointerId: null,
+    startValue: 0,
+  })
 
   const sets = useMemo(() => {
     if (draftSets.length) {
@@ -86,20 +98,32 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
     }
   }, [isOpen, item, exercise])
 
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined
+    }
+
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = originalOverflow
+    }
+  }, [isOpen])
+
+  useEffect(() => () => {
+    if (holdTimer.current) {
+      window.clearTimeout(holdTimer.current)
+      holdTimer.current = null
+    }
+  }, [])
+
   if (!isOpen || !item) {
     return null
   }
 
   const updateSet = (rowIndex, field, nextValue) => {
     setDraftSets((current) => current.map((set, index) => (index === rowIndex ? { ...set, [field]: clampValue(field, nextValue) } : set)))
-  }
-
-  const saveAndClose = () => {
-    onSave(sets)
-    onClose()
-    setKeypadTarget(null)
-    setSheetOffsetY(0)
-    setScrub({ active: false, rowIndex: -1, type: '', startY: 0, startValue: 0, pointerId: null, x: 0, y: 0 })
   }
 
   const resetHold = () => {
@@ -109,62 +133,106 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
     }
   }
 
+  const clearScrub = () => {
+    setScrub({ active: false, rowIndex: -1, type: '', startY: 0, startValue: 0, pointerId: null, x: 0, y: 0 })
+    pointerState.current = { startX: 0, startY: 0, moved: 0, holdTriggered: false, scrollMode: false, rowIndex: -1, field: '', pointerId: null, startValue: 0 }
+  }
+
+  const saveAndClose = () => {
+    onSave(sets)
+    onClose()
+    setKeypadTarget(null)
+    setSheetOffsetY(0)
+    resetHold()
+    clearScrub()
+  }
+
   const onPointerDownField = (event, rowIndex, field) => {
+    event.preventDefault()
+    event.stopPropagation()
+    event.currentTarget.setPointerCapture(event.pointerId)
+
     const originY = event.clientY
     const originX = event.clientX
-    pointerState.current = { startX: originX, startY: originY, moved: 0, holdTriggered: false, scrollMode: false }
     const currentValue = Number(sets[rowIndex]?.[field] ?? 0)
+
+    pointerState.current = {
+      startX: originX,
+      startY: originY,
+      moved: 0,
+      holdTriggered: false,
+      scrollMode: false,
+      rowIndex,
+      field,
+      pointerId: event.pointerId,
+      startValue: currentValue,
+    }
 
     resetHold()
     holdTimer.current = window.setTimeout(() => {
       pointerState.current.holdTriggered = true
-    }, 250)
-
-    setScrub((current) => ({ ...current, pointerId: event.pointerId, rowIndex, type: field, startY: originY, startValue: currentValue, x: originX, y: originY }))
+      pointerState.current.scrollMode = true
+      setScrub({ active: true, rowIndex, type: field, startY: originY, startValue: currentValue, pointerId: event.pointerId, x: originX, y: originY })
+    }, HOLD_MS)
   }
 
-  const onPointerMoveField = (event, rowIndex, field) => {
-    const moved = Math.hypot(event.clientY - pointerState.current.startY, event.clientX - pointerState.current.startX)
-    pointerState.current.moved = moved
-
-    if (!pointerState.current.holdTriggered && moved > 10) {
-      resetHold()
+  const onPointerMoveField = (event) => {
+    const state = pointerState.current
+    if (event.pointerId !== state.pointerId) {
       return
     }
 
-    if (!pointerState.current.holdTriggered) {
+    const moved = Math.hypot(event.clientY - state.startY, event.clientX - state.startX)
+    state.moved = moved
+
+    if (!state.holdTriggered) {
+      if (moved > TAP_MOVE_THRESHOLD) {
+        resetHold()
+      }
       return
     }
 
-    pointerState.current.scrollMode = true
     event.preventDefault()
     event.stopPropagation()
 
-    const deltaY = scrub.startY - event.clientY
+    const deltaY = state.startY - event.clientY
     const stepCount = Math.trunc(deltaY / 14)
-    const next = clampValue(scrub.type, scrub.startValue + stepCount)
+    const next = clampValue(state.field, state.startValue + stepCount)
 
     setScrub((current) => ({ ...current, active: true, x: event.clientX, y: event.clientY }))
-    updateSet(rowIndex, field, next)
+    updateSet(state.rowIndex, state.field, next)
   }
 
-  const onPointerUpField = (rowIndex, field) => {
-    resetHold()
-
-    if (pointerState.current.scrollMode) {
-      setScrub({ active: false, rowIndex: -1, type: '', startY: 0, startValue: 0, pointerId: null, x: 0, y: 0 })
+  const onPointerUpField = (event) => {
+    const state = pointerState.current
+    if (event.pointerId !== state.pointerId) {
       return
     }
 
-    if (!pointerState.current.holdTriggered && pointerState.current.moved < 10) {
-      setKeypadTarget({ rowIndex, field })
+    event.preventDefault()
+    event.stopPropagation()
+    resetHold()
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
     }
+
+    if (state.scrollMode || state.holdTriggered) {
+      clearScrub()
+      return
+    }
+
+    if (state.moved < TAP_MOVE_THRESHOLD) {
+      setKeypadTarget({ rowIndex: state.rowIndex, field: state.field })
+    }
+
+    clearScrub()
   }
 
   return (
-    <div className="modal-backdrop bottom-sheet-backdrop" role="presentation" onClick={(event) => { if (event.target === event.currentTarget) saveAndClose() }}>
+    <div className="modal-backdrop bottom-sheet-backdrop select-none" role="presentation" onClick={(event) => { if (event.target === event.currentTarget) saveAndClose() }}>
       <section
-        className="modal-sheet bottom-sheet"
+        className="modal-sheet bottom-sheet glass glass-strong"
         role="dialog"
         aria-modal="true"
         style={{ transform: `translateY(${sheetOffsetY}px)` }}
@@ -172,6 +240,9 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
           pointerState.current.startY = event.clientY
         }}
         onPointerMove={(event) => {
+          if (keypadTarget) {
+            return
+          }
           const delta = event.clientY - pointerState.current.startY
           if (delta > 0) {
             setSheetOffsetY(delta)
@@ -207,11 +278,12 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
                 <button
                   key={field}
                   type="button"
-                  className="field-button"
+                  className="field-button select-none"
+                  style={{ touchAction: 'none', WebkitUserSelect: 'none' }}
                   onPointerDown={(event) => onPointerDownField(event, index, field)}
-                  onPointerMove={(event) => onPointerMoveField(event, index, field)}
-                  onPointerUp={() => onPointerUpField(index, field)}
-                  onPointerCancel={() => onPointerUpField(index, field)}
+                  onPointerMove={onPointerMoveField}
+                  onPointerUp={onPointerUpField}
+                  onPointerCancel={onPointerUpField}
                 >
                   {setRow[field]}
                 </button>

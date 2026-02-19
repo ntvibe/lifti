@@ -17,11 +17,11 @@ export default function AvatarMenu({ profileName, profilePicture, onSignOut }) {
 
   return (
     <div className="avatar-menu" ref={wrapperRef}>
-      <button type="button" className="avatar-button" onClick={() => setOpen((value) => !value)} aria-label="Account menu">
+      <button type="button" className="avatar-button select-none" onClick={() => setOpen((value) => !value)} aria-label="Account menu">
         {profilePicture ? <img src={profilePicture} alt={profileName || 'Profile'} /> : <span>{(profileName || 'U').slice(0, 1).toUpperCase()}</span>}
       </button>
       {open ? (
-        <div className="avatar-dropdown">
+        <div className="avatar-dropdown glass">
           <button
             type="button"
             onClick={() => {

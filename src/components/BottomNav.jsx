@@ -9,7 +9,7 @@ const tabs = [
 
 export default function BottomNav() {
   return (
-    <nav className="bottom-tabs" aria-label="Primary">
+    <nav className="bottom-tabs select-none glass" aria-label="Primary">
       {tabs.map((item) => (
         <NavLink key={item.to} to={item.to} end={item.to === '/'} className={({ isActive }) => `tab-link ${isActive ? 'active' : ''}`}>
           <Icon name={item.icon} />
