@@ -1,4 +1,7 @@
 import { DRIVE_SCOPE, GOOGLE_CLIENT_ID } from '../config/google'
+import { loadGis } from '../lib/loadGis'
+
+export const GIS_LOAD_ERROR_MESSAGE = 'Failed to load Google Identity Services.'
 
 const STORAGE_KEYS = {
   token: 'lifti_access_token',
@@ -8,37 +11,6 @@ const STORAGE_KEYS = {
 }
 
 let tokenClient
-let gisLoadingPromise
-
-function loadGoogleIdentityScript() {
-  if (window.google?.accounts?.oauth2) {
-    return Promise.resolve()
-  }
-
-  if (gisLoadingPromise) {
-    return gisLoadingPromise
-  }
-
-  gisLoadingPromise = new Promise((resolve, reject) => {
-    const existingScript = document.querySelector('script[data-google-identity="true"]')
-    if (existingScript) {
-      existingScript.addEventListener('load', () => resolve(), { once: true })
-      existingScript.addEventListener('error', () => reject(new Error('Failed to load Google Identity Services.')), { once: true })
-      return
-    }
-
-    const script = document.createElement('script')
-    script.src = 'https://accounts.google.com/gsi/client'
-    script.async = true
-    script.defer = true
-    script.dataset.googleIdentity = 'true'
-    script.onload = () => resolve()
-    script.onerror = () => reject(new Error('Failed to load Google Identity Services.'))
-    document.head.appendChild(script)
-  })
-
-  return gisLoadingPromise
-}
 
 function getTokenClient() {
   if (!GOOGLE_CLIENT_ID) {
@@ -85,11 +57,20 @@ export function clearStoredAuth() {
 }
 
 export async function hydrateGoogleIdentity() {
-  await loadGoogleIdentityScript()
+  try {
+    await loadGis()
+  } catch {
+    throw new Error(GIS_LOAD_ERROR_MESSAGE)
+  }
 }
 
 export async function requestAccessToken(prompt = 'consent') {
-  await loadGoogleIdentityScript()
+  try {
+    await loadGis()
+  } catch {
+    throw new Error(GIS_LOAD_ERROR_MESSAGE)
+  }
+
   const client = getTokenClient()
 
   return new Promise((resolve, reject) => {
