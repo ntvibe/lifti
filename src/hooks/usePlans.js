@@ -20,7 +20,7 @@ function normalizeSetRow(setRow = {}) {
   }
 }
 
-function normalizePlanItem(item = {}) {
+function normalizePlanExercise(item = {}) {
   return {
     id: item.id || createId('item'),
     exerciseId: item.exerciseId || '',
@@ -33,12 +33,28 @@ function normalizePlanItem(item = {}) {
 
 function normalizePlan(plan = {}) {
   const now = new Date().toISOString()
+  const exercises = Array.isArray(plan.exercises)
+    ? plan.exercises.map(normalizePlanExercise)
+    : Array.isArray(plan.items)
+      ? plan.items.map(normalizePlanExercise)
+      : []
+
   return {
     id: plan.id || createId('plan'),
     name: typeof plan.name === 'string' ? plan.name : 'New Plan',
     createdAt: plan.createdAt || now,
     updatedAt: plan.updatedAt || now,
-    items: Array.isArray(plan.items) ? plan.items.map(normalizePlanItem) : [],
+    exercises,
+  }
+}
+
+function toPersistedPlan(plan) {
+  return {
+    id: plan.id,
+    name: plan.name,
+    createdAt: plan.createdAt,
+    updatedAt: plan.updatedAt,
+    exercises: plan.exercises,
   }
 }
 
@@ -51,44 +67,34 @@ export default function usePlans({ accessToken, fileIds }) {
       throw new Error('Missing account connection for plans.')
     }
 
-    await updateJson(accessToken, fileIds.plans, { ...DEFAULT_PAYLOAD, plans: nextPlans })
+    await updateJson(accessToken, fileIds.plans, { ...DEFAULT_PAYLOAD, plans: nextPlans.map(toPersistedPlan) })
     setPlans(nextPlans)
     return nextPlans
   }, [accessToken, fileIds])
 
-  useEffect(() => {
-    let mounted = true
-
-    const load = async () => {
-      if (!accessToken || !fileIds?.plans) {
-        setPlans([])
-        return
-      }
-
-      setLoading(true)
-      try {
-        const payload = await readJson(accessToken, fileIds.plans).catch(() => DEFAULT_PAYLOAD)
-        const loadedPlans = Array.isArray(payload?.plans) ? payload.plans.map(normalizePlan) : []
-        if (mounted) {
-          setPlans(loadedPlans)
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false)
-        }
-      }
+  const loadPlans = useCallback(async () => {
+    if (!accessToken || !fileIds?.plans) {
+      setPlans([])
+      return
     }
 
-    load()
-
-    return () => {
-      mounted = false
+    setLoading(true)
+    try {
+      const payload = await readJson(accessToken, fileIds.plans).catch(() => DEFAULT_PAYLOAD)
+      const loadedPlans = Array.isArray(payload?.plans) ? payload.plans.map(normalizePlan) : []
+      setPlans(loadedPlans)
+    } finally {
+      setLoading(false)
     }
   }, [accessToken, fileIds])
 
+  useEffect(() => {
+    loadPlans()
+  }, [loadPlans])
+
   const createPlan = useCallback(async (name = 'New Plan') => {
     const now = new Date().toISOString()
-    const plan = normalizePlan({ name, createdAt: now, updatedAt: now, items: [] })
+    const plan = normalizePlan({ name, createdAt: now, updatedAt: now, exercises: [] })
     await persistPlans([...plans, plan])
     return plan
   }, [persistPlans, plans])
@@ -142,6 +148,7 @@ export default function usePlans({ accessToken, fileIds }) {
   return {
     plans,
     loading,
+    loadPlans,
     createPlan,
     updatePlan,
     deletePlan,

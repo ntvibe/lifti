@@ -43,7 +43,7 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onDon
   const [openMenuId, setOpenMenuId] = useState('')
   const [editingItemId, setEditingItemId] = useState('')
 
-  const activeEditItem = useMemo(() => plan.items.find((item) => item.id === editingItemId) || null, [plan.items, editingItemId])
+  const activeEditItem = useMemo(() => plan.exercises.find((item) => item.id === editingItemId) || null, [plan.exercises, editingItemId])
   const activeExercise = useMemo(() => allExercises.find((exercise) => exercise.id === activeEditItem?.exerciseId), [allExercises, activeEditItem])
 
   const addExercise = (exercise) => {
@@ -56,12 +56,12 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onDon
       sets: createDefaultSets(exercise),
     }
 
-    onPlanChange({ ...plan, items: [...plan.items, item] })
+    onPlanChange({ ...plan, exercises: [...plan.exercises, item] })
     setEditingItemId(item.id)
   }
 
   const updateItemSets = (itemId, sets) => {
-    onPlanChange({ ...plan, items: plan.items.map((item) => (item.id === itemId ? { ...item, sets } : item)) })
+    onPlanChange({ ...plan, exercises: plan.exercises.map((item) => (item.id === itemId ? { ...item, sets } : item)) })
   }
 
   return (
@@ -77,8 +77,8 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onDon
         <button type="button" className="circle-add" onClick={() => setIsAddOpen(true)} aria-label="Add exercise">+</button>
       </div>
 
-      <div className="plan-items">
-        {plan.items.map((item) => (
+      <div className="plan-items scroll-safe-list">
+        {plan.exercises.map((item) => (
           <article key={item.id} className="plan-item-row">
             <div>
               <strong>{toTitleCase(item.exerciseName)}</strong>
@@ -90,7 +90,7 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onDon
               {openMenuId === item.id ? (
                 <div className="kebab-menu">
                   <button type="button" onClick={() => { setOpenMenuId(''); setEditingItemId(item.id) }}>Edit</button>
-                  <button type="button" onClick={() => { setOpenMenuId(''); onPlanChange({ ...plan, items: plan.items.filter((entry) => entry.id !== item.id) }) }}>Delete</button>
+                  <button type="button" onClick={() => { setOpenMenuId(''); onPlanChange({ ...plan, exercises: plan.exercises.filter((entry) => entry.id !== item.id) }) }}>Delete</button>
                 </div>
               ) : null}
             </div>
