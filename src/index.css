@@ -817,3 +817,105 @@ input {
 .kebab-menu {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+.plans-grid-padded {
+  padding-bottom: 110px;
+}
+
+.modern-plan-card {
+  min-height: 25vh;
+  padding: 1rem;
+  position: relative;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
+}
+
+.plan-card-content {
+  display: grid;
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.plan-card-content h3 {
+  margin: 0;
+}
+
+.plan-card-heatmap,
+.plan-editor-heatmap {
+  pointer-events: none;
+}
+
+.plan-heatmap-svg svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.inline-card-actions {
+  position: absolute;
+  right: 0.9rem;
+  top: 0.9rem;
+}
+
+.filled-plan-name {
+  background: rgba(255, 255, 255, 0.09);
+  border: none;
+  border-radius: 0.95rem;
+  max-width: none;
+  padding: 0.8rem 1rem;
+  text-align: left;
+}
+
+.plan-editor-heatmap {
+  margin-top: 0.75rem;
+}
+
+.plan-item-touch {
+  position: relative;
+}
+
+.bottom-sheet-backdrop {
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.34);
+  padding: 0;
+}
+
+.bottom-sheet {
+  border-radius: 1.1rem 1.1rem 0 0;
+  height: 66vh;
+  margin: 0;
+  max-height: 66vh;
+  width: 100%;
+}
+
+.sheet-handle {
+  width: 52px;
+  height: 5px;
+  border-radius: 999px;
+  margin: 0 auto 0.8rem;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.centered-headers span {
+  text-align: center;
+}
+
+.add-set-full {
+  width: 100%;
+}
+
+.slot-overlay {
+  min-width: 90px;
+}
+
+.slot-value-stack {
+  display: grid;
+  gap: 0.2rem;
+  text-align: center;
+}
+
+.slot-value-stack span {
+  opacity: 0.7;
+  font-size: 0.85rem;
+}

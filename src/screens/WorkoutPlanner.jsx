@@ -1,8 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { normalizeKey, titleCaseLabel } from '../utils/normalize'
 import { toTitleCase } from '../utils/label'
+import { getPublicAssetUrl } from '../services/exerciseCatalog'
 import AddExerciseModal from '../components/AddExerciseModal'
 import ExerciseEditorModal, { createDefaultSets } from '../components/ExerciseEditorModal'
+import PlanMuscleHeatmapSVG from '../components/PlanMuscleHeatmapSVG'
+import { computePlanMuscleIntensities } from '../utils/planIntensity'
 
 const MUSCLE_FIELD_CANDIDATES = ['primaryMuscles', 'muscles', 'muscleGroups', 'muscleGroup', 'targetMuscles', 'targets']
 const EQUIPMENT_FIELD_CANDIDATES = ['equipment', 'equipments', 'gear', 'machine']
@@ -40,11 +43,13 @@ function extractKeys(exercise, fieldNames) {
 
 export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onDone }) {
   const [isAddOpen, setIsAddOpen] = useState(false)
-  const [openMenuId, setOpenMenuId] = useState('')
   const [editingItemId, setEditingItemId] = useState('')
+  const [contextItemId, setContextItemId] = useState('')
+  const holdTimerRef = useRef(null)
 
   const activeEditItem = useMemo(() => plan.exercises.find((item) => item.id === editingItemId) || null, [plan.exercises, editingItemId])
   const activeExercise = useMemo(() => allExercises.find((exercise) => exercise.id === activeEditItem?.exerciseId), [allExercises, activeEditItem])
+  const intensities = useMemo(() => computePlanMuscleIntensities(plan.exercises, allExercises), [plan.exercises, allExercises])
 
   const addExercise = (exercise) => {
     const item = {
@@ -64,36 +69,72 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onDon
     onPlanChange({ ...plan, exercises: plan.exercises.map((item) => (item.id === itemId ? { ...item, sets } : item)) })
   }
 
+  const clearHold = () => {
+    if (holdTimerRef.current) {
+      window.clearTimeout(holdTimerRef.current)
+      holdTimerRef.current = null
+    }
+  }
+
   return (
     <section className="screen planner-screen">
       <input
-        className="plan-name-input"
+        className="plan-name-input filled-plan-name"
         value={plan.name}
         onChange={(event) => onPlanChange({ ...plan, name: event.target.value })}
         aria-label="Plan Name"
+      />
+
+      <PlanMuscleHeatmapSVG
+        svgPath={getPublicAssetUrl('svg/muscle-groups.svg')}
+        intensities={intensities}
+        className="plan-editor-heatmap"
       />
 
       <div className="add-exercise-wrap">
         <button type="button" className="circle-add" onClick={() => setIsAddOpen(true)} aria-label="Add exercise">+</button>
       </div>
 
-      <div className="plan-items scroll-safe-list">
+      <div className="plan-items scroll-safe-list plans-grid-padded">
         {plan.exercises.map((item) => (
-          <article key={item.id} className="plan-item-row">
+          <article
+            key={item.id}
+            className="plan-item-row plan-item-touch"
+            onPointerDown={() => {
+              clearHold()
+              holdTimerRef.current = window.setTimeout(() => setContextItemId(item.id), 350)
+            }}
+            onPointerUp={() => {
+              const isContextOpen = contextItemId === item.id
+              clearHold()
+              if (!isContextOpen) {
+                setEditingItemId(item.id)
+              }
+            }}
+            onPointerLeave={clearHold}
+          >
             <div>
               <strong>{toTitleCase(item.exerciseName)}</strong>
               <small>{item.sets.length} sets</small>
               <small>{item.muscles.map(titleCaseLabel).join(', ')}</small>
             </div>
-            <div className="kebab-wrap">
-              <button type="button" className="text-button kebab-button" onClick={() => setOpenMenuId((value) => (value === item.id ? '' : item.id))}>⋯</button>
-              {openMenuId === item.id ? (
-                <div className="kebab-menu">
-                  <button type="button" onClick={() => { setOpenMenuId(''); setEditingItemId(item.id) }}>Edit</button>
-                  <button type="button" onClick={() => { setOpenMenuId(''); onPlanChange({ ...plan, exercises: plan.exercises.filter((entry) => entry.id !== item.id) }) }}>Delete</button>
-                </div>
-              ) : null}
-            </div>
+
+            {contextItemId === item.id ? (
+              <div className="inline-card-actions" onClick={(event) => event.stopPropagation()}>
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={() => {
+                    setContextItemId('')
+                    if (window.confirm('Delete this exercise?')) {
+                      onPlanChange({ ...plan, exercises: plan.exercises.filter((entry) => entry.id !== item.id) })
+                    }
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+            ) : null}
           </article>
         ))}
       </div>
