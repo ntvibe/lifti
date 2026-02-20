@@ -1,14 +1,9 @@
 import { DRIVE_SCOPE, GOOGLE_CLIENT_ID } from '../config/google'
 import { loadGis } from '../lib/loadGis'
 
-export const GIS_LOAD_ERROR_MESSAGE = 'Failed to load Google Identity Services.'
-
-const STORAGE_KEYS = {
-  token: 'lifti_access_token',
-  expiry: 'lifti_token_expiry',
-  profileName: 'lifti_profile_name',
-  profilePicture: 'lifti_profile_picture',
-}
+export const GIS_LOAD_ERROR_MESSAGE = 'Google Sign-in unavailable.'
+const AUTH_STORAGE_KEY = 'lifti_auth'
+const EXPIRY_SAFETY_MS = 60_000
 
 let tokenClient
 
@@ -25,6 +20,7 @@ function getTokenClient() {
     tokenClient = window.google.accounts.oauth2.initTokenClient({
       client_id: GOOGLE_CLIENT_ID,
       scope: `${DRIVE_SCOPE} openid profile email`,
+      ux_mode: 'popup',
       callback: () => {},
     })
   }
@@ -32,28 +28,48 @@ function getTokenClient() {
   return tokenClient
 }
 
-export function isTokenExpired(expiry) {
-  return !expiry || Number(expiry) <= Date.now() + 30_000
+export function isTokenExpired(expiresAt) {
+  return !expiresAt || Number(expiresAt) <= Date.now() + EXPIRY_SAFETY_MS
 }
 
 export function readStoredAuth() {
-  return {
-    token: localStorage.getItem(STORAGE_KEYS.token) || '',
-    expiry: Number(localStorage.getItem(STORAGE_KEYS.expiry) || 0),
-    profileName: localStorage.getItem(STORAGE_KEYS.profileName) || '',
-    profilePicture: localStorage.getItem(STORAGE_KEYS.profilePicture) || '',
+  try {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY)
+    if (!raw) {
+      return { accessToken: '', expiresAt: 0, profile: null }
+    }
+
+    const parsed = JSON.parse(raw)
+    return {
+      accessToken: parsed.access_token || '',
+      expiresAt: Number(parsed.expires_at) || 0,
+      profile: parsed.profile || null,
+    }
+  } catch {
+    return { accessToken: '', expiresAt: 0, profile: null }
   }
 }
 
-export function storeAuth({ token, expiry, profileName, profilePicture }) {
-  localStorage.setItem(STORAGE_KEYS.token, token || '')
-  localStorage.setItem(STORAGE_KEYS.expiry, String(expiry || 0))
-  localStorage.setItem(STORAGE_KEYS.profileName, profileName || '')
-  localStorage.setItem(STORAGE_KEYS.profilePicture, profilePicture || '')
+export function storeAuth({ accessToken, expiresIn, profile }) {
+  const expiresAt = Date.now() + (Number(expiresIn) || 3600) * 1000 - EXPIRY_SAFETY_MS
+  localStorage.setItem(
+    AUTH_STORAGE_KEY,
+    JSON.stringify({
+      access_token: accessToken,
+      expires_at: expiresAt,
+      profile: {
+        name: profile?.name || '',
+        picture: profile?.picture || '',
+        email: profile?.email || '',
+      },
+    }),
+  )
+
+  return expiresAt
 }
 
 export function clearStoredAuth() {
-  Object.values(STORAGE_KEYS).forEach((key) => localStorage.removeItem(key))
+  localStorage.removeItem(AUTH_STORAGE_KEY)
 }
 
 export async function hydrateGoogleIdentity() {
@@ -64,7 +80,7 @@ export async function hydrateGoogleIdentity() {
   }
 }
 
-export async function requestAccessToken(prompt = 'consent') {
+export async function requestAccessToken(prompt = '') {
   try {
     await loadGis()
   } catch {
@@ -85,6 +101,14 @@ export async function requestAccessToken(prompt = 'consent') {
 
     client.requestAccessToken({ prompt })
   })
+}
+
+export async function loginWithPopupTokenFlow() {
+  try {
+    return await requestAccessToken('')
+  } catch {
+    return requestAccessToken('consent')
+  }
 }
 
 export async function fetchGoogleProfile(accessToken) {
