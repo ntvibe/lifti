@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Route, Routes, useNavigate } from 'react-router-dom'
-import { upsertJsonByName } from './services/driveAppData'
+import { isAuthExpiredError, upsertJsonByName } from './services/driveAppData'
 import Exercises from './pages/Exercises'
 import ExerciseDetail from './pages/ExerciseDetail'
 import PlanBuilder from './pages/PlanBuilder'
@@ -86,8 +86,12 @@ export default function App() {
   const [selectedGroups, setSelectedGroups] = useState([])
   const [draftPlan, setDraftPlan] = useState({ id: '', name: 'New Plan', createdAt: '', updatedAt: '', exercises: [] })
   const catalog = useExerciseCatalog()
-  const { accessToken, profileName, profilePicture, isAuthenticated, authLoading, login, logout } = useAuth()
-  const { plans, loading, loadPlans, createPlan, updatePlan, deletePlan, upsertPlan } = usePlans({ accessToken, fileIds })
+  const { accessToken, profileName, profilePicture, isAuthenticated, authLoading, login, logout, clearAuthState } = useAuth()
+  const { plans, loading, loadPlans, createPlan, updatePlan, deletePlan, upsertPlan } = usePlans({
+    accessToken,
+    fileIds,
+    onAuthExpired: handleSessionExpired,
+  })
 
   useEffect(() => {
     if (!toast) {
@@ -100,6 +104,23 @@ export default function App() {
 
   const handleToast = (type, message) => {
     setToast({ type, message })
+  }
+
+  function handleSessionExpired() {
+    clearAuthState()
+    setFileIds({ history: '', plans: '', exercises: '' })
+    localStorage.removeItem('lifti_file_ids')
+    handleToast('info', 'Session expired. Please sign in again.')
+    navigate('/')
+  }
+
+  const handleDriveError = (error, fallbackMessage = 'Something went wrong.') => {
+    if (isAuthExpiredError(error)) {
+      handleSessionExpired()
+      return
+    }
+
+    handleToast('error', error?.message || fallbackMessage)
   }
 
   useEffect(() => {
@@ -138,7 +159,7 @@ export default function App() {
         localStorage.setItem('lifti_file_ids', JSON.stringify(ids))
       } catch (error) {
         if (mounted) {
-          handleToast('error', error.message)
+          handleDriveError(error, 'Failed to initialize account files.')
         }
       }
     }
@@ -155,7 +176,8 @@ export default function App() {
       await login()
       handleToast('success', 'Signed in successfully.')
     } catch (error) {
-      handleToast('error', error.message)
+      console.warn('Login failed.', error)
+      handleToast('info', error?.message || 'Google Sign-in unavailable.')
     }
   }
 
@@ -208,7 +230,7 @@ export default function App() {
                       setDraftPlan(newPlan)
                       navigate('/planner')
                     } catch (error) {
-                      handleToast('error', error.message)
+                      handleDriveError(error)
                     }
                   }}
                   onOpenPlan={(planId) => {
@@ -223,7 +245,7 @@ export default function App() {
                       await deletePlan(planId)
                       handleToast('success', 'Plan deleted')
                     } catch (error) {
-                      handleToast('error', error.message)
+                      handleDriveError(error)
                     }
                   }}
                 />
@@ -250,7 +272,7 @@ export default function App() {
                       handleToast('success', 'Plan saved')
                       navigate('/')
                     } catch (error) {
-                      handleToast('error', error.message)
+                      handleDriveError(error)
                     }
                   }}
                 />

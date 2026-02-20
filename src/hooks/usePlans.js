@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { readJson, updateJson } from '../services/driveAppData'
+import { isAuthExpiredError, readJson, updateJson } from '../services/driveAppData'
 
 const DEFAULT_PAYLOAD = { plans: [] }
 
@@ -58,7 +58,7 @@ function toPersistedPlan(plan) {
   }
 }
 
-export default function usePlans({ accessToken, fileIds }) {
+export default function usePlans({ accessToken, fileIds, onAuthExpired }) {
   const [plans, setPlans] = useState([])
   const [loading, setLoading] = useState(false)
 
@@ -70,7 +70,7 @@ export default function usePlans({ accessToken, fileIds }) {
     await updateJson(accessToken, fileIds.plans, { ...DEFAULT_PAYLOAD, plans: nextPlans.map(toPersistedPlan) })
     setPlans(nextPlans)
     return nextPlans
-  }, [accessToken, fileIds])
+  }, [accessToken, fileIds, onAuthExpired])
 
   const loadPlans = useCallback(async () => {
     if (!accessToken || !fileIds?.plans) {
@@ -80,13 +80,20 @@ export default function usePlans({ accessToken, fileIds }) {
 
     setLoading(true)
     try {
-      const payload = await readJson(accessToken, fileIds.plans).catch(() => DEFAULT_PAYLOAD)
+      const payload = await readJson(accessToken, fileIds.plans).catch((error) => {
+        if (isAuthExpiredError(error)) {
+          onAuthExpired?.()
+          return DEFAULT_PAYLOAD
+        }
+
+        return DEFAULT_PAYLOAD
+      })
       const loadedPlans = Array.isArray(payload?.plans) ? payload.plans.map(normalizePlan) : []
       setPlans(loadedPlans)
     } finally {
       setLoading(false)
     }
-  }, [accessToken, fileIds])
+  }, [accessToken, fileIds, onAuthExpired])
 
   useEffect(() => {
     loadPlans()

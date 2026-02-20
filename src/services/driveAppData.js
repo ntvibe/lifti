@@ -1,6 +1,12 @@
 const DRIVE_API = 'https://www.googleapis.com/drive/v3/files'
 const DRIVE_UPLOAD_API = 'https://www.googleapis.com/upload/drive/v3/files'
 
+export const AUTH_EXPIRED_ERROR_CODE = 'AUTH_EXPIRED'
+
+export function isAuthExpiredError(error) {
+  return error?.code === AUTH_EXPIRED_ERROR_CODE || error?.status === 401
+}
+
 async function driveFetch(url, accessToken, options = {}) {
   const response = await fetch(url, {
     ...options,
@@ -12,7 +18,12 @@ async function driveFetch(url, accessToken, options = {}) {
 
   if (!response.ok) {
     const details = await response.text()
-    throw new Error(`Google Drive request failed (${response.status}): ${details}`)
+    const error = new Error(`Google Drive request failed (${response.status}): ${details}`)
+    error.status = response.status
+    if (response.status === 401) {
+      error.code = AUTH_EXPIRED_ERROR_CODE
+    }
+    throw error
   }
 
   return response
