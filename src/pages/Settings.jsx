@@ -30,7 +30,7 @@ function humanizeType(name) {
   return 'Unknown'
 }
 
-export default function Settings({ accessToken, onResetPlans }) {
+export default function Settings({ accessToken, onFilesChanged }) {
   const navigate = useNavigate()
   const [files, setFiles] = useState([])
   const [loading, setLoading] = useState(true)
@@ -95,7 +95,7 @@ export default function Settings({ accessToken, onResetPlans }) {
                   try {
                     await deleteDriveFile(accessToken, file.id)
                     setFiles((current) => current.filter((entry) => entry.id !== file.id))
-                    onResetPlans?.()
+                    onFilesChanged?.()
                   } finally {
                     setBusyId('')
                   }
@@ -124,7 +124,7 @@ export default function Settings({ accessToken, onResetPlans }) {
               })
               setDeleteAllState('')
               setFiles([])
-              onResetPlans?.()
+              onFilesChanged?.()
               navigate('/')
             }}
           >
