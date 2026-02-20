@@ -37,6 +37,9 @@ export default function Settings({ accessToken, onFilesChanged }) {
   const [busyId, setBusyId] = useState('')
   const [deleteAllState, setDeleteAllState] = useState('')
   const [error, setError] = useState('')
+  const [installPrompt, setInstallPrompt] = useState(null)
+  const [installState, setInstallState] = useState('')
+  const [isStandalone, setIsStandalone] = useState(() => window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true)
 
   const loadFiles = async () => {
     if (!accessToken) {
@@ -61,6 +64,34 @@ export default function Settings({ accessToken, onFilesChanged }) {
     loadFiles()
   }, [accessToken])
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia?.('(display-mode: standalone)')
+    const handleModeChange = () => {
+      setIsStandalone(mediaQuery?.matches || window.navigator.standalone === true)
+    }
+
+    const handleBeforeInstallPrompt = (event) => {
+      event.preventDefault()
+      setInstallPrompt(event)
+    }
+
+    const handleInstalled = () => {
+      setInstallPrompt(null)
+      setInstallState('Installed')
+      setIsStandalone(true)
+    }
+
+    mediaQuery?.addEventListener?.('change', handleModeChange)
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    window.addEventListener('appinstalled', handleInstalled)
+
+    return () => {
+      mediaQuery?.removeEventListener?.('change', handleModeChange)
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('appinstalled', handleInstalled)
+    }
+  }, [])
+
   const sortedFiles = useMemo(
     () => files.slice().sort((a, b) => new Date(b.modifiedTime).getTime() - new Date(a.modifiedTime).getTime()),
     [files],
@@ -70,6 +101,30 @@ export default function Settings({ accessToken, onFilesChanged }) {
     <section className="screen select-none">
       <button type="button" className="ghost" onClick={() => navigate('/')}>← Back</button>
       <h1>Settings</h1>
+
+      <article className="glass settings-card">
+        <h2>Install app</h2>
+        <p>{isStandalone ? 'Lifti is installed on this device.' : 'Install Lifti for full-screen launch and better offline behavior.'}</p>
+        {installPrompt && !isStandalone ? (
+          <button
+            type="button"
+            onClick={async () => {
+              setInstallState('Opening prompt…')
+              installPrompt.prompt()
+              const choice = await installPrompt.userChoice
+              setInstallState(choice.outcome === 'accepted' ? 'Install accepted' : 'Install dismissed')
+              if (choice.outcome === 'accepted') {
+                setInstallPrompt(null)
+              }
+            }}
+          >
+            Install Lifti
+          </button>
+        ) : null}
+        {!installPrompt && !isStandalone ? <small>On iPhone/iPad use Safari Share → Add to Home Screen.</small> : null}
+        {installState ? <small>{installState}</small> : null}
+      </article>
+
       <article className="glass settings-card">
         <h2>Storage (Google Drive)</h2>
         <p>Scope: <strong>appDataFolder</strong></p>

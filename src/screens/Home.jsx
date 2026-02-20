@@ -35,7 +35,6 @@ export default function Home({
   driveError,
   onRetry,
   onSignIn,
-  onCreatePlan,
   onOpenPlan,
   onPlayPlan,
   onDeletePlan,
@@ -128,10 +127,6 @@ export default function Home({
 
         {driveStatus === 'ready' && !plans.length ? <p className="subtle-empty">No workout plans yet. Tap + to create your first plan.</p> : null}
       </div>
-
-      <button type="button" className="fab select-none" onClick={onCreatePlan} aria-label="Create workout plan">
-        <Icon name="add" />
-      </button>
     </section>
   )
 }
