@@ -64,7 +64,7 @@ function toPersistedPlan(plan) {
   }
 }
 
-export default function usePlans({ accessToken, authStatus, onAuthExpired }) {
+export default function usePlans({ accessToken, onAuthExpired }) {
   const [plans, setPlans] = useState([])
   const [driveStatus, setDriveStatus] = useState('idle')
   const [driveError, setDriveError] = useState(null)
@@ -78,7 +78,7 @@ export default function usePlans({ accessToken, authStatus, onAuthExpired }) {
   }, [])
 
   const loadPlans = useCallback(async () => {
-    if (!accessToken || authStatus !== 'signed_in') {
+    if (!accessToken) {
       clearWatchdog()
       setPlans([])
       setDriveStatus('idle')
@@ -113,7 +113,7 @@ export default function usePlans({ accessToken, authStatus, onAuthExpired }) {
     } finally {
       clearWatchdog()
     }
-  }, [accessToken, authStatus, clearWatchdog, onAuthExpired])
+  }, [accessToken, clearWatchdog, onAuthExpired])
 
   useEffect(() => {
     loadPlans()

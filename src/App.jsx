@@ -138,7 +138,6 @@ export default function App() {
     setPlans,
   } = usePlans({
     accessToken,
-    authStatus,
     onAuthExpired: handleSessionExpired,
   })
 
