@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Route, Routes, useNavigate } from 'react-router-dom'
-import { isAuthExpiredError, upsertJsonByName } from './services/driveAppData'
+import { ensureDriveClientReady, isAuthExpiredError, upsertJsonByName } from './services/driveAppData'
 import Exercises from './pages/Exercises'
 import ExerciseDetail from './pages/ExerciseDetail'
 import PlanBuilder from './pages/PlanBuilder'
+import Settings from './pages/Settings'
 import { fetchExerciseCatalog, getPublicAssetUrl } from './services/exerciseCatalog'
 import usePlans from './hooks/usePlans'
 import Home from './screens/Home'
@@ -13,11 +14,9 @@ import AvatarMenu from './components/AvatarMenu'
 import useAuth from './hooks/useAuth'
 
 const HISTORY_FILE = 'lifti_history.json'
-const PLANS_FILE = 'lifti_plans.json'
 const EXERCISES_FILE = 'lifti_exercises.json'
 
 const DEFAULT_HISTORY = { entries: [] }
-const DEFAULT_PLANS = { plans: [] }
 
 const primaryTabs = [
   { to: '/', label: 'Home' },
@@ -78,18 +77,46 @@ function Toast({ toast }) {
 
 export default function App() {
   const navigate = useNavigate()
-  const [fileIds, setFileIds] = useState(() => {
+  const [, setFileIds] = useState(() => {
     const raw = localStorage.getItem('lifti_file_ids')
-    return raw ? JSON.parse(raw) : { history: '', plans: '', exercises: '' }
+    return raw ? JSON.parse(raw) : { history: '', exercises: '' }
   })
   const [toast, setToast] = useState(null)
   const [selectedGroups, setSelectedGroups] = useState([])
   const [draftPlan, setDraftPlan] = useState({ id: '', name: 'New Plan', createdAt: '', updatedAt: '', exercises: [] })
   const catalog = useExerciseCatalog()
-  const { accessToken, profileName, profilePicture, isAuthenticated, authLoading, login, logout, clearAuthState } = useAuth()
-  const { plans, loading, loadPlans, createPlan, updatePlan, deletePlan, upsertPlan } = usePlans({
+  const {
     accessToken,
-    fileIds,
+    profileName,
+    profilePicture,
+    authStatus,
+    isAuthenticated,
+    authLoading,
+    login,
+    logout,
+    clearAuthState,
+  } = useAuth()
+
+  function handleSessionExpired() {
+    clearAuthState()
+    setFileIds({ history: '', exercises: '' })
+    localStorage.removeItem('lifti_file_ids')
+    handleToast('info', 'Session expired. Please sign in again.')
+    navigate('/')
+  }
+
+  const {
+    plans,
+    driveStatus,
+    driveError,
+    loadPlans,
+    createPlan,
+    deletePlan,
+    upsertPlan,
+    setPlans,
+  } = usePlans({
+    accessToken,
+    authStatus,
     onAuthExpired: handleSessionExpired,
   })
 
@@ -106,21 +133,13 @@ export default function App() {
     setToast({ type, message })
   }
 
-  function handleSessionExpired() {
-    clearAuthState()
-    setFileIds({ history: '', plans: '', exercises: '' })
-    localStorage.removeItem('lifti_file_ids')
-    handleToast('info', 'Session expired. Please sign in again.')
-    navigate('/')
-  }
-
   const handleDriveError = (error, fallbackMessage = 'Something went wrong.') => {
     if (isAuthExpiredError(error)) {
       handleSessionExpired()
       return
     }
 
-    handleToast('error', error?.message || fallbackMessage)
+    handleToast('info', error?.message || fallbackMessage)
   }
 
   useEffect(() => {
@@ -128,7 +147,7 @@ export default function App() {
 
     const ensureAppFiles = async () => {
       if (!isAuthenticated || !accessToken) {
-        setFileIds({ history: '', plans: '', exercises: '' })
+        setFileIds({ history: '', exercises: '' })
         localStorage.removeItem('lifti_file_ids')
         return
       }
@@ -139,9 +158,8 @@ export default function App() {
           ? await exerciseSeedResponse.json()
           : { schemaVersion: 1, updatedAt: new Date().toISOString(), exercises: [] }
 
-        const [history, planFiles, exercises] = await Promise.all([
+        const [history, exercises] = await Promise.all([
           upsertJsonByName(accessToken, HISTORY_FILE, DEFAULT_HISTORY),
-          upsertJsonByName(accessToken, PLANS_FILE, DEFAULT_PLANS),
           upsertJsonByName(accessToken, EXERCISES_FILE, exercisesSeed),
         ])
 
@@ -151,7 +169,6 @@ export default function App() {
 
         const ids = {
           history: history.fileId,
-          plans: planFiles.fileId,
           exercises: exercises.fileId,
         }
 
@@ -173,7 +190,9 @@ export default function App() {
 
   const handleLogin = async () => {
     try {
-      await login()
+      const token = await login()
+      await ensureDriveClientReady(token)
+      await loadPlans()
       handleToast('success', 'Signed in successfully.')
     } catch (error) {
       console.warn('Login failed.', error)
@@ -183,7 +202,8 @@ export default function App() {
 
   const handleLogout = () => {
     logout()
-    setFileIds({ history: '', plans: '', exercises: '' })
+    setFileIds({ history: '', exercises: '' })
+    setPlans([])
     localStorage.removeItem('lifti_file_ids')
     handleToast('success', 'Signed out')
     navigate('/')
@@ -192,14 +212,19 @@ export default function App() {
   const homePlans = useMemo(() => plans.slice().sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()), [plans])
 
   return (
-    <div className="app-shell">
+    <div className="app-shell select-none">
       <header className="top-bar glass select-none">
         <h1>Lifti</h1>
         <div className="top-bar-actions">
           {isAuthenticated ? (
-            <AvatarMenu profileName={profileName} profilePicture={profilePicture} onSignOut={handleLogout} />
+            <AvatarMenu
+              profileName={profileName}
+              profilePicture={profilePicture}
+              onSettings={() => navigate('/settings')}
+              onSignOut={handleLogout}
+            />
           ) : (
-            <button type="button" className="ghost select-none" onClick={handleLogin}>Login</button>
+            <button type="button" className="ghost select-none" onClick={handleLogin}>Sign in</button>
           )}
         </div>
       </header>
@@ -219,10 +244,12 @@ export default function App() {
               path="/"
               element={(
                 <Home
-                  isAuthenticated={isAuthenticated}
+                  authStatus={authStatus}
                   plans={homePlans}
                   allExercises={catalog}
-                  loading={loading || authLoading}
+                  driveStatus={authLoading ? 'loading' : driveStatus}
+                  driveError={driveError}
+                  onRetry={loadPlans}
                   onSignIn={handleLogin}
                   onCreatePlan={async () => {
                     try {
@@ -251,6 +278,7 @@ export default function App() {
                 />
               )}
             />
+            <Route path="/settings" element={<Settings accessToken={accessToken} onResetPlans={() => setPlans([])} />} />
             <Route path="/exercises" element={<Exercises exercises={catalog} selectedGroups={selectedGroups} onSelectedGroupsChange={setSelectedGroups} />} />
             <Route path="/exercises/:id" element={<ExerciseDetail exercises={catalog} />} />
             <Route

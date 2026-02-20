@@ -1,7 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
-import { isAuthExpiredError, readJson, updateJson } from '../services/driveAppData'
-
-const DEFAULT_PAYLOAD = { plans: [] }
+import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  createJson,
+  deleteDriveFile,
+  ensureDriveClientReady,
+  isAuthExpiredError,
+  readPlanFiles,
+  updateJson,
+} from '../services/driveAppData'
 
 function createId(prefix) {
   if (globalThis.crypto?.randomUUID) {
@@ -45,6 +50,7 @@ function normalizePlan(plan = {}) {
     createdAt: plan.createdAt || now,
     updatedAt: plan.updatedAt || now,
     exercises,
+    fileId: plan.fileId || plan._fileId || '',
   }
 }
 
@@ -58,107 +64,146 @@ function toPersistedPlan(plan) {
   }
 }
 
-export default function usePlans({ accessToken, fileIds, onAuthExpired }) {
+export default function usePlans({ accessToken, authStatus, onAuthExpired }) {
   const [plans, setPlans] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [driveStatus, setDriveStatus] = useState('idle')
+  const [driveError, setDriveError] = useState(null)
+  const timeoutRef = useRef(null)
 
-  const persistPlans = useCallback(async (nextPlans) => {
-    if (!accessToken || !fileIds?.plans) {
-      throw new Error('Missing account connection for plans.')
+  const clearWatchdog = useCallback(() => {
+    if (timeoutRef.current) {
+      window.clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
     }
-
-    await updateJson(accessToken, fileIds.plans, { ...DEFAULT_PAYLOAD, plans: nextPlans.map(toPersistedPlan) })
-    setPlans(nextPlans)
-    return nextPlans
-  }, [accessToken, fileIds, onAuthExpired])
+  }, [])
 
   const loadPlans = useCallback(async () => {
-    if (!accessToken || !fileIds?.plans) {
+    if (!accessToken || authStatus !== 'signed_in') {
+      clearWatchdog()
       setPlans([])
+      setDriveStatus('idle')
+      setDriveError(null)
       return
     }
 
-    setLoading(true)
-    try {
-      const payload = await readJson(accessToken, fileIds.plans).catch((error) => {
-        if (isAuthExpiredError(error)) {
-          onAuthExpired?.()
-          return DEFAULT_PAYLOAD
-        }
+    setDriveStatus('loading')
+    setDriveError(null)
+    clearWatchdog()
 
-        return DEFAULT_PAYLOAD
-      })
-      const loadedPlans = Array.isArray(payload?.plans) ? payload.plans.map(normalizePlan) : []
-      setPlans(loadedPlans)
+    timeoutRef.current = window.setTimeout(() => {
+      setDriveStatus('error')
+      setDriveError('Couldn’t load your plans. Tap Retry.')
+    }, 10_000)
+
+    try {
+      await ensureDriveClientReady(accessToken)
+      const { plans: loadedPlans } = await readPlanFiles(accessToken)
+      const normalizedPlans = loadedPlans.map((plan) => normalizePlan(plan))
+      setPlans(normalizedPlans)
+      setDriveStatus('ready')
+    } catch (error) {
+      console.warn('[drive] loadPlans failed', error)
+      if (isAuthExpiredError(error)) {
+        onAuthExpired?.()
+        return
+      }
+
+      setDriveStatus('error')
+      setDriveError(error?.message?.slice(0, 180) || 'Couldn’t load your plans. Tap Retry.')
     } finally {
-      setLoading(false)
+      clearWatchdog()
     }
-  }, [accessToken, fileIds, onAuthExpired])
+  }, [accessToken, authStatus, clearWatchdog, onAuthExpired])
 
   useEffect(() => {
     loadPlans()
-  }, [loadPlans])
+    return () => clearWatchdog()
+  }, [loadPlans, clearWatchdog])
 
   const createPlan = useCallback(async (name = 'New Plan') => {
+    if (!accessToken) {
+      throw new Error('Missing account connection for plans.')
+    }
+
     const now = new Date().toISOString()
     const plan = normalizePlan({ name, createdAt: now, updatedAt: now, exercises: [] })
-    await persistPlans([...plans, plan])
-    return plan
-  }, [persistPlans, plans])
+    const createdFile = await createJson(accessToken, `lifti_plan_${plan.id}.json`, toPersistedPlan(plan))
+    const nextPlan = { ...plan, fileId: createdFile.id }
+    setPlans((current) => [...current, nextPlan])
+    setDriveStatus('ready')
+    return nextPlan
+  }, [accessToken])
 
   const updatePlan = useCallback(async (planId, patch) => {
-    let updatedPlan = null
-    const now = new Date().toISOString()
+    if (!accessToken) {
+      throw new Error('Missing account connection for plans.')
+    }
 
-    const nextPlans = plans.map((plan) => {
-      if (plan.id !== planId) {
-        return plan
-      }
-
-      updatedPlan = normalizePlan({
-        ...plan,
-        ...patch,
-        id: plan.id,
-        createdAt: plan.createdAt,
-        updatedAt: now,
-      })
-
-      return updatedPlan
-    })
-
-    if (!updatedPlan) {
+    const currentPlan = plans.find((plan) => plan.id === planId)
+    if (!currentPlan) {
       throw new Error('Plan not found.')
     }
 
-    await persistPlans(nextPlans)
+    const now = new Date().toISOString()
+    const updatedPlan = normalizePlan({
+      ...currentPlan,
+      ...patch,
+      id: currentPlan.id,
+      createdAt: currentPlan.createdAt,
+      updatedAt: now,
+      fileId: currentPlan.fileId,
+    })
+
+    if (currentPlan.fileId) {
+      await updateJson(accessToken, currentPlan.fileId, toPersistedPlan(updatedPlan))
+    } else {
+      const created = await createJson(accessToken, `lifti_plan_${updatedPlan.id}.json`, toPersistedPlan(updatedPlan))
+      updatedPlan.fileId = created.id
+    }
+
+    setPlans((current) => current.map((plan) => (plan.id === planId ? updatedPlan : plan)))
     return updatedPlan
-  }, [persistPlans, plans])
+  }, [accessToken, plans])
 
   const upsertPlan = useCallback(async (plan) => {
-    const normalized = normalizePlan(plan)
-    const now = new Date().toISOString()
-    const exists = plans.some((entry) => entry.id === normalized.id)
-    const nextPlan = { ...normalized, updatedAt: now, createdAt: normalized.createdAt || now }
-    const nextPlans = exists
-      ? plans.map((entry) => (entry.id === nextPlan.id ? nextPlan : entry))
-      : [...plans, nextPlan]
+    if (!accessToken) {
+      throw new Error('Missing account connection for plans.')
+    }
 
-    await persistPlans(nextPlans)
+    const normalized = normalizePlan(plan)
+    const exists = plans.some((entry) => entry.id === normalized.id)
+    if (exists) {
+      return updatePlan(normalized.id, normalized)
+    }
+
+    const createdFile = await createJson(accessToken, `lifti_plan_${normalized.id}.json`, toPersistedPlan(normalized))
+    const nextPlan = { ...normalized, fileId: createdFile.id }
+    setPlans((current) => [...current, nextPlan])
     return nextPlan
-  }, [persistPlans, plans])
+  }, [accessToken, plans, updatePlan])
 
   const deletePlan = useCallback(async (planId) => {
-    const nextPlans = plans.filter((plan) => plan.id !== planId)
-    await persistPlans(nextPlans)
-  }, [persistPlans, plans])
+    if (!accessToken) {
+      throw new Error('Missing account connection for plans.')
+    }
+
+    const existing = plans.find((plan) => plan.id === planId)
+    if (existing?.fileId) {
+      await deleteDriveFile(accessToken, existing.fileId)
+    }
+
+    setPlans((current) => current.filter((plan) => plan.id !== planId))
+  }, [accessToken, plans])
 
   return {
     plans,
-    loading,
+    driveStatus,
+    driveError,
     loadPlans,
     createPlan,
     updatePlan,
     deletePlan,
     upsertPlan,
+    setPlans,
   }
 }

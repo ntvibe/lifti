@@ -16,7 +16,7 @@ export default function useAuth() {
   const [tokenExpiry, setTokenExpiry] = useState(stored.expiresAt)
   const [profileName, setProfileName] = useState(stored.profile?.name || '')
   const [profilePicture, setProfilePicture] = useState(stored.profile?.picture || '')
-  const [loading, setLoading] = useState(true)
+  const [authStatus, setAuthStatus] = useState('initializing')
 
   const clearAuthState = useCallback(() => {
     clearStoredAuth()
@@ -24,16 +24,16 @@ export default function useAuth() {
     setTokenExpiry(0)
     setProfileName('')
     setProfilePicture('')
+    setAuthStatus('signed_out')
   }, [])
 
   useEffect(() => {
     if (stored.accessToken && !isTokenExpired(stored.expiresAt)) {
-      setLoading(false)
+      setAuthStatus('signed_in')
       return
     }
 
     clearAuthState()
-    setLoading(false)
   }, [clearAuthState, stored.accessToken, stored.expiresAt])
 
   useEffect(() => {
@@ -53,6 +53,8 @@ export default function useAuth() {
     setTokenExpiry(expiresAt)
     setProfileName(profile?.name || '')
     setProfilePicture(profile?.picture || '')
+    setAuthStatus('signed_in')
+    return tokenPayload.access_token
   }, [])
 
   const logout = useCallback(() => {
@@ -65,8 +67,9 @@ export default function useAuth() {
     tokenExpiry,
     profileName,
     profilePicture,
-    isAuthenticated: Boolean(accessToken) && !isTokenExpired(tokenExpiry),
-    authLoading: loading,
+    authStatus,
+    isAuthenticated: authStatus === 'signed_in' && Boolean(accessToken) && !isTokenExpired(tokenExpiry),
+    authLoading: authStatus === 'initializing',
     login,
     logout,
     clearAuthState,

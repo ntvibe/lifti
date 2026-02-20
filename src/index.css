@@ -1076,3 +1076,92 @@ button,
 .field-button {
   touch-action: none;
 }
+
+.loading-skeleton {
+  min-height: 24vh;
+  opacity: 0.6;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% { opacity: 0.45; }
+  50% { opacity: 0.75; }
+}
+
+.drive-error-card {
+  border-radius: 1rem;
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem;
+}
+
+.drive-error-card p,
+.drive-error-card summary,
+.drive-error-card small {
+  color: #dbe4ff;
+}
+
+.drive-error-card details {
+  font-size: 0.72rem;
+  opacity: 0.8;
+}
+
+.subtle-empty {
+  color: #c9d3f0;
+  opacity: 0.88;
+}
+
+.avatar-button span {
+  color: #e7edff;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.avatar-dropdown {
+  min-width: 150px;
+}
+
+.avatar-dropdown button {
+  width: 100%;
+}
+
+.settings-card {
+  border-radius: 1rem;
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+.settings-file-list {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+}
+
+.settings-file-row {
+  align-items: center;
+  border-radius: 0.9rem;
+  display: flex;
+  gap: 0.65rem;
+  justify-content: space-between;
+  padding: 0.7rem;
+}
+
+.settings-file-row div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.settings-file-row small {
+  color: #c8d4f4;
+}
+
+.destructive {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #fecaca;
+}
+
+.settings-danger-zone {
+  margin-top: 1rem;
+}

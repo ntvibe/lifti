@@ -16,11 +16,23 @@ function formatDate(value) {
   return date.toLocaleDateString()
 }
 
+function LoadingSkeletons() {
+  return (
+    <div className="planner-results home-list scroll-safe-list plans-grid-padded">
+      {[1, 2, 3].map((entry) => (
+        <article key={entry} className="modern-plan-card glass loading-skeleton" aria-hidden="true" />
+      ))}
+    </div>
+  )
+}
+
 export default function Home({
-  isAuthenticated,
+  authStatus,
   plans,
   allExercises,
-  loading,
+  driveStatus,
+  driveError,
+  onRetry,
   onSignIn,
   onCreatePlan,
   onOpenPlan,
@@ -41,23 +53,36 @@ export default function Home({
     }
   }
 
-  if (!isAuthenticated) {
+  if (authStatus !== 'signed_in') {
     return (
-      <section className="screen home-signin-screen">
-        <button type="button" onClick={onSignIn}>Sign in</button>
+      <section className="screen home-signin-screen select-none">
+        <button type="button" className="ghost" onClick={onSignIn}>Sign in</button>
       </section>
     )
   }
 
-  return (
-    <section className="screen">
-      <div className="planner-results home-list scroll-safe-list plans-grid-padded">
-        {loading ? <p>Loading…</p> : null}
+  if (driveStatus === 'loading') {
+    return <LoadingSkeletons />
+  }
 
-        {!loading && plans.map((plan) => (
+  return (
+    <section className="screen select-none">
+      <div className="planner-results home-list scroll-safe-list plans-grid-padded">
+        {driveStatus === 'error' ? (
+          <article className="glass drive-error-card">
+            <p>Couldn’t load your plans. Tap Retry.</p>
+            <button type="button" className="ghost" onClick={onRetry}>Retry</button>
+            <details>
+              <summary>Details</summary>
+              <small>{driveError || 'Unknown Drive error.'}</small>
+            </details>
+          </article>
+        ) : null}
+
+        {driveStatus === 'ready' && plans.map((plan) => (
           <article
             key={plan.id}
-            className="planner-list-item home-plan-card modern-plan-card glass select-none"
+            className="planner-list-item home-plan-card modern-plan-card glass"
             onPointerDown={() => {
               clearLongPress()
               longPressTimerRef.current = window.setTimeout(() => {
@@ -102,7 +127,7 @@ export default function Home({
           </article>
         ))}
 
-        {!loading && !plans.length ? <p>No workout plans yet.</p> : null}
+        {driveStatus === 'ready' && !plans.length ? <p className="subtle-empty">No workout plans yet. Tap + to create your first plan.</p> : null}
       </div>
 
       <button type="button" className="fab select-none" onClick={onCreatePlan} aria-label="Create workout plan">
