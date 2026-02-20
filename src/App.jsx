@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Route, Routes, useNavigate } from 'react-router-dom'
-import { ensureDriveClientReady, isAuthExpiredError, upsertJsonByName } from './services/driveAppData'
-import Exercises from './pages/Exercises'
-import ExerciseDetail from './pages/ExerciseDetail'
+import {
+  createJson,
+  ensureDriveClientReady,
+  isAuthExpiredError,
+  upsertJsonByName,
+} from './services/driveAppData'
 import PlanBuilder from './pages/PlanBuilder'
 import Settings from './pages/Settings'
 import { fetchExerciseCatalog, getPublicAssetUrl } from './services/exerciseCatalog'
@@ -12,15 +15,17 @@ import WorkoutPlanner from './screens/WorkoutPlanner'
 import BottomNav from './components/BottomNav'
 import AvatarMenu from './components/AvatarMenu'
 import useAuth from './hooks/useAuth'
+import Training from './screens/Training'
+import History from './screens/History'
 
 const HISTORY_FILE = 'lifti_history.json'
 const EXERCISES_FILE = 'lifti_exercises.json'
+const ACTIVE_SESSION_KEY = 'lifti_active_session'
 
 const DEFAULT_HISTORY = { entries: [] }
 
 const primaryTabs = [
-  { to: '/', label: 'Home' },
-  { to: '/exercises', label: 'Exercises' },
+  { to: '/', label: 'Plans' },
   { to: '/history', label: 'History' },
 ]
 
@@ -32,13 +37,18 @@ function createId(prefix) {
   return `${prefix}-${Date.now()}`
 }
 
-function Page({ title, description }) {
-  return (
-    <section className="screen">
-      <h1>{title}</h1>
-      <p>{description}</p>
-    </section>
-  )
+function hydrateSession() {
+  const raw = localStorage.getItem(ACTIVE_SESSION_KEY)
+  if (!raw) {
+    return null
+  }
+
+  try {
+    return JSON.parse(raw)
+  } catch {
+    localStorage.removeItem(ACTIVE_SESSION_KEY)
+    return null
+  }
 }
 
 function useExerciseCatalog() {
@@ -82,8 +92,8 @@ export default function App() {
     return raw ? JSON.parse(raw) : { history: '', exercises: '' }
   })
   const [toast, setToast] = useState(null)
-  const [selectedGroups, setSelectedGroups] = useState([])
   const [draftPlan, setDraftPlan] = useState({ id: '', name: 'New Plan', createdAt: '', updatedAt: '', exercises: [] })
+  const [activeSession, setActiveSession] = useState(() => hydrateSession())
   const catalog = useExerciseCatalog()
   const {
     accessToken,
@@ -97,10 +107,21 @@ export default function App() {
     clearAuthState,
   } = useAuth()
 
+  const persistActiveSession = (session) => {
+    setActiveSession(session)
+    if (session) {
+      localStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify(session))
+      return
+    }
+
+    localStorage.removeItem(ACTIVE_SESSION_KEY)
+  }
+
   function handleSessionExpired() {
     clearAuthState()
     setFileIds({ history: '', exercises: '' })
     localStorage.removeItem('lifti_file_ids')
+    persistActiveSession(null)
     handleToast('info', 'Session expired. Please sign in again.')
     navigate('/')
   }
@@ -204,12 +225,55 @@ export default function App() {
     logout()
     setFileIds({ history: '', exercises: '' })
     setPlans([])
+    persistActiveSession(null)
     localStorage.removeItem('lifti_file_ids')
     handleToast('success', 'Signed out')
     navigate('/')
   }
 
   const homePlans = useMemo(() => plans.slice().sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()), [plans])
+
+  const handleStartSession = (plan) => {
+    const now = new Date().toISOString()
+    const nextSession = {
+      id: createId('session'),
+      planId: plan.id,
+      planName: plan.name,
+      startedAt: now,
+      paused: false,
+      pausedAt: '',
+      totalPausedMs: 0,
+      activeExerciseIndex: 0,
+      exerciseStates: (plan.exercises || []).map((exercise, index) => ({
+        exerciseId: exercise.exerciseId || exercise.id || createId('exercise'),
+        name: exercise.exerciseName || exercise.name || `Exercise ${index + 1}`,
+        status: index === 0 ? 'in_progress' : 'not_started',
+      })),
+    }
+
+    persistActiveSession(nextSession)
+    navigate('/training')
+  }
+
+  const handleTogglePauseResume = () => {
+    if (!activeSession) {
+      return
+    }
+
+    const now = Date.now()
+    const isPaused = Boolean(activeSession.paused)
+    const totalPausedMs = isPaused && activeSession.pausedAt
+      ? activeSession.totalPausedMs + Math.max(0, now - new Date(activeSession.pausedAt).getTime())
+      : activeSession.totalPausedMs
+
+    persistActiveSession({
+      ...activeSession,
+      paused: !isPaused,
+      pausedAt: isPaused ? '' : new Date(now).toISOString(),
+      totalPausedMs,
+    })
+    navigate('/training')
+  }
 
   return (
     <div className="app-shell select-none">
@@ -267,6 +331,12 @@ export default function App() {
                       navigate('/planner')
                     }
                   }}
+                  onPlayPlan={(planId) => {
+                    const existing = plans.find((entry) => entry.id === planId)
+                    if (existing) {
+                      handleStartSession(existing)
+                    }
+                  }}
                   onDeletePlan={async (planId) => {
                     try {
                       await deletePlan(planId)
@@ -278,42 +348,61 @@ export default function App() {
                 />
               )}
             />
-            <Route path="/settings" element={<Settings accessToken={accessToken} onResetPlans={() => setPlans([])} />} />
-            <Route path="/exercises" element={<Exercises exercises={catalog} selectedGroups={selectedGroups} onSelectedGroupsChange={setSelectedGroups} />} />
-            <Route path="/exercises/:id" element={<ExerciseDetail exercises={catalog} />} />
             <Route
-              path="/planner"
+              path="/training"
               element={(
-                <WorkoutPlanner
-                  plan={draftPlan}
-                  allExercises={catalog}
-                  onPlanChange={setDraftPlan}
-                  onDone={async () => {
+                <Training
+                  activeSession={activeSession}
+                  onSessionChange={persistActiveSession}
+                  onTogglePauseResume={handleTogglePauseResume}
+                  onFinish={async (session) => {
                     try {
-                      const saved = await upsertPlan({
-                        ...draftPlan,
-                        id: draftPlan.id || createId('plan'),
-                        createdAt: draftPlan.createdAt || new Date().toISOString(),
-                      })
-                      setDraftPlan(saved)
-                      await loadPlans()
-                      handleToast('success', 'Plan saved')
+                      await createJson(accessToken, `lifti_session_${session.id}.json`, session)
+                      persistActiveSession(null)
+                      handleToast('success', 'Session saved')
                       navigate('/')
                     } catch (error) {
-                      handleDriveError(error)
+                      handleDriveError(error, 'Couldn’t save this training session.')
                     }
+                  }}
+                  onDiscard={() => {
+                    persistActiveSession(null)
+                    navigate('/')
                   }}
                 />
               )}
             />
+            <Route path="/settings" element={<Settings accessToken={accessToken} onFilesChanged={loadPlans} />} />
+            <Route path="/planner" element={(
+              <WorkoutPlanner
+                plan={draftPlan}
+                allExercises={catalog}
+                onPlanChange={setDraftPlan}
+                onDone={async () => {
+                  try {
+                    const saved = await upsertPlan({
+                      ...draftPlan,
+                      id: draftPlan.id || createId('plan'),
+                      createdAt: draftPlan.createdAt || new Date().toISOString(),
+                    })
+                    setDraftPlan(saved)
+                    await loadPlans()
+                    handleToast('success', 'Plan saved')
+                    navigate('/')
+                  } catch (error) {
+                    handleDriveError(error)
+                  }
+                }}
+              />
+            )}
+            />
             <Route path="/plan-builder" element={<PlanBuilder />} />
-            <Route path="/workout-player" element={<Page title="Workout Player" description="Follow your workout step-by-step with timers and logging." />} />
-            <Route path="/history" element={<Page title="History" description="Review completed workouts, trends, and personal records." />} />
+            <Route path="/history" element={<History />} />
           </Routes>
         </main>
       </div>
 
-      <BottomNav />
+      <BottomNav isAuthenticated={isAuthenticated} activeSession={activeSession} onTogglePauseResume={handleTogglePauseResume} />
 
       <Toast toast={toast} />
     </div>

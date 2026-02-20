@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
+import Icon from '../components/Icon'
 import { getPublicAssetUrl } from '../services/exerciseCatalog'
 import { computePlanMuscleIntensities } from '../utils/planIntensity'
 import PlanMuscleHeatmapSVG from '../components/PlanMuscleHeatmapSVG'
@@ -36,10 +37,11 @@ export default function Home({
   onSignIn,
   onCreatePlan,
   onOpenPlan,
+  onPlayPlan,
   onDeletePlan,
 }) {
-  const [contextPlanId, setContextPlanId] = useState('')
   const longPressTimerRef = useRef(null)
+  const longPressTriggeredRef = useRef(false)
 
   const intensitiesByPlanId = useMemo(
     () => Object.fromEntries(plans.map((plan) => [plan.id, computePlanMuscleIntensities(plan.exercises, allExercises)])),
@@ -70,12 +72,9 @@ export default function Home({
       <div className="planner-results home-list scroll-safe-list plans-grid-padded">
         {driveStatus === 'error' ? (
           <article className="glass drive-error-card">
-            <p>Couldn’t load your plans. Tap Retry.</p>
+            <p>We couldn’t load your plans right now.</p>
             <button type="button" className="ghost" onClick={onRetry}>Retry</button>
-            <details>
-              <summary>Details</summary>
-              <small>{driveError || 'Unknown Drive error.'}</small>
-            </details>
+            {driveError ? <small>{driveError}</small> : null}
           </article>
         ) : null}
 
@@ -85,16 +84,20 @@ export default function Home({
             className="planner-list-item home-plan-card modern-plan-card glass"
             onPointerDown={() => {
               clearLongPress()
+              longPressTriggeredRef.current = false
               longPressTimerRef.current = window.setTimeout(() => {
-                setContextPlanId(plan.id)
-              }, 350)
+                longPressTriggeredRef.current = true
+                if (window.confirm(`Delete ${plan.name}?`)) {
+                  onDeletePlan(plan.id)
+                }
+              }, 400)
             }}
             onPointerUp={() => {
-              const isContextOpen = contextPlanId === plan.id
               clearLongPress()
-              if (!isContextOpen) {
+              if (!longPressTriggeredRef.current) {
                 onOpenPlan(plan.id)
               }
+              longPressTriggeredRef.current = false
             }}
             onPointerLeave={clearLongPress}
           >
@@ -108,22 +111,18 @@ export default function Home({
               />
             </div>
 
-            {contextPlanId === plan.id ? (
-              <div className="inline-card-actions" onClick={(event) => event.stopPropagation()}>
-                <button
-                  type="button"
-                  className="ghost"
-                  onClick={() => {
-                    setContextPlanId('')
-                    if (window.confirm('Delete this plan?')) {
-                      onDeletePlan(plan.id)
-                    }
-                  }}
-                >
-                  Delete plan
-                </button>
-              </div>
-            ) : null}
+            <button
+              type="button"
+              className="ghost play-plan-button"
+              onClick={(event) => {
+                event.stopPropagation()
+                onPlayPlan(plan.id)
+              }}
+              aria-label={`Start ${plan.name}`}
+            >
+              <Icon name="play_arrow" />
+              <span>Play</span>
+            </button>
           </article>
         ))}
 
@@ -131,7 +130,7 @@ export default function Home({
       </div>
 
       <button type="button" className="fab select-none" onClick={onCreatePlan} aria-label="Create workout plan">
-        +
+        <Icon name="add" />
       </button>
     </section>
   )
