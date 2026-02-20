@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { NavLink, Route, Routes, useNavigate } from 'react-router-dom'
+import { NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import {
   createJson,
   ensureDriveClientReady,
@@ -87,6 +87,7 @@ function Toast({ toast }) {
 
 export default function App() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [, setFileIds] = useState(() => {
     const raw = localStorage.getItem('lifti_file_ids')
     return raw ? JSON.parse(raw) : { history: '', exercises: '' }
@@ -255,6 +256,18 @@ export default function App() {
     navigate('/training')
   }
 
+  const handleCreatePlan = async () => {
+    try {
+      const newPlan = await createPlan('New Plan')
+      setDraftPlan(newPlan)
+      navigate('/planner')
+    } catch (error) {
+      handleDriveError(error)
+    }
+  }
+
+  const shouldShowHomeFab = isAuthenticated && location.pathname === '/'
+
   const handleTogglePauseResume = () => {
     if (!activeSession) {
       return
@@ -315,15 +328,6 @@ export default function App() {
                   driveError={driveError}
                   onRetry={loadPlans}
                   onSignIn={handleLogin}
-                  onCreatePlan={async () => {
-                    try {
-                      const newPlan = await createPlan('New Plan')
-                      setDraftPlan(newPlan)
-                      navigate('/planner')
-                    } catch (error) {
-                      handleDriveError(error)
-                    }
-                  }}
                   onOpenPlan={(planId) => {
                     const existing = plans.find((entry) => entry.id === planId)
                     if (existing) {
@@ -401,6 +405,12 @@ export default function App() {
           </Routes>
         </main>
       </div>
+
+      {shouldShowHomeFab ? (
+        <button type="button" className="fab select-none" onClick={handleCreatePlan} aria-label="Create workout plan">
+          <span className="material-symbols-rounded app-icon">add</span>
+        </button>
+      ) : null}
 
       <BottomNav isAuthenticated={isAuthenticated} activeSession={activeSession} onTogglePauseResume={handleTogglePauseResume} />
 
