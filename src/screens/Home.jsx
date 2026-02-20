@@ -17,16 +17,6 @@ function formatDate(value) {
   return date.toLocaleDateString()
 }
 
-function LoadingSkeletons() {
-  return (
-    <div className="planner-results home-list scroll-safe-list plans-grid-padded">
-      {[1, 2, 3].map((entry) => (
-        <article key={entry} className="modern-plan-card glass loading-skeleton" aria-hidden="true" />
-      ))}
-    </div>
-  )
-}
-
 export default function Home({
   authStatus,
   plans,
@@ -62,13 +52,15 @@ export default function Home({
     )
   }
 
-  if (driveStatus === 'loading') {
-    return <LoadingSkeletons />
-  }
-
   return (
     <section className="screen select-none">
       <div className="planner-results home-list scroll-safe-list plans-grid-padded">
+        {driveStatus === 'loading' && !plans.length ? (
+          <article className="glass drive-error-card">
+            <p>Loading your plans…</p>
+          </article>
+        ) : null}
+
         {driveStatus === 'error' ? (
           <article className="glass drive-error-card">
             <p>We couldn’t load your plans right now.</p>
@@ -77,7 +69,7 @@ export default function Home({
           </article>
         ) : null}
 
-        {driveStatus === 'ready' && plans.map((plan) => (
+        {plans.map((plan) => (
           <article
             key={plan.id}
             className="planner-list-item home-plan-card modern-plan-card glass"
