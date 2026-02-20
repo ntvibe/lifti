@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toTitleCase } from '../utils/label'
+import useHoldScrubNumber from '../hooks/useHoldScrubNumber'
 import CustomNumberPad from './CustomNumberPad'
 import ScrubNumberOverlay from './ScrubNumberOverlay'
 
@@ -12,8 +13,12 @@ function createId(prefix) {
 }
 
 const FALLBACK_SET = { reps: 10, weight: 0, restSec: 90 }
-const HOLD_MS = 250
-const TAP_MOVE_THRESHOLD = 6
+
+const FIELD_CONFIG = {
+  reps: { step: 1, min: 0, max: 200, unit: '' },
+  weight: { step: 0.5, min: 0, max: 500, unit: 'kg' },
+  restSec: { step: 5, min: 0, max: 600, unit: 's' },
+}
 
 function parseDefaults(exercise = {}) {
   const hasPerSet = Array.isArray(exercise.defaultSets)
@@ -62,23 +67,47 @@ function clampValue(type, value) {
   return Math.max(0, Math.round(num))
 }
 
+function NumericFieldButton({ value, field, onTap, onScrub }) {
+  const config = FIELD_CONFIG[field]
+  const { bind, overlay, overlayRef } = useHoldScrubNumber({
+    value,
+    onChange: onScrub,
+    onTap,
+    step: config.step,
+    min: config.min,
+    max: config.max,
+    longPressMs: 250,
+  })
+
+  return (
+    <>
+      <button
+        type="button"
+        className="field-button select-none"
+        style={{ touchAction: 'none', WebkitUserSelect: 'none' }}
+        aria-label={`${field} value ${value}`}
+        {...bind}
+      >
+        {value}
+      </button>
+      <ScrubNumberOverlay
+        open={overlay.open}
+        anchorRect={overlay.anchorRect}
+        value={overlay.displayValue}
+        step={config.step}
+        unit={config.unit}
+        pulseKey={overlay.pulseKey}
+        overlayRef={overlayRef}
+      />
+    </>
+  )
+}
+
 export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, onSave }) {
   const [keypadTarget, setKeypadTarget] = useState(null)
   const [draftSets, setDraftSets] = useState([])
   const [sheetOffsetY, setSheetOffsetY] = useState(0)
-  const [scrub, setScrub] = useState({ active: false, rowIndex: -1, type: '', startY: 0, startValue: 0, pointerId: null, x: 0, y: 0 })
-  const holdTimer = useRef(null)
-  const pointerState = useRef({
-    startX: 0,
-    startY: 0,
-    moved: 0,
-    holdTriggered: false,
-    scrollMode: false,
-    rowIndex: -1,
-    field: '',
-    pointerId: null,
-    startValue: 0,
-  })
+  const sheetPointerStart = useRef(0)
 
   const sets = useMemo(() => {
     if (draftSets.length) {
@@ -111,13 +140,6 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
     }
   }, [isOpen])
 
-  useEffect(() => () => {
-    if (holdTimer.current) {
-      window.clearTimeout(holdTimer.current)
-      holdTimer.current = null
-    }
-  }, [])
-
   if (!isOpen || !item) {
     return null
   }
@@ -126,107 +148,11 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
     setDraftSets((current) => current.map((set, index) => (index === rowIndex ? { ...set, [field]: clampValue(field, nextValue) } : set)))
   }
 
-  const resetHold = () => {
-    if (holdTimer.current) {
-      window.clearTimeout(holdTimer.current)
-      holdTimer.current = null
-    }
-  }
-
-  const clearScrub = () => {
-    setScrub({ active: false, rowIndex: -1, type: '', startY: 0, startValue: 0, pointerId: null, x: 0, y: 0 })
-    pointerState.current = { startX: 0, startY: 0, moved: 0, holdTriggered: false, scrollMode: false, rowIndex: -1, field: '', pointerId: null, startValue: 0 }
-  }
-
   const saveAndClose = () => {
     onSave(sets)
     onClose()
     setKeypadTarget(null)
     setSheetOffsetY(0)
-    resetHold()
-    clearScrub()
-  }
-
-  const onPointerDownField = (event, rowIndex, field) => {
-    event.preventDefault()
-    event.stopPropagation()
-    event.currentTarget.setPointerCapture(event.pointerId)
-
-    const originY = event.clientY
-    const originX = event.clientX
-    const currentValue = Number(sets[rowIndex]?.[field] ?? 0)
-
-    pointerState.current = {
-      startX: originX,
-      startY: originY,
-      moved: 0,
-      holdTriggered: false,
-      scrollMode: false,
-      rowIndex,
-      field,
-      pointerId: event.pointerId,
-      startValue: currentValue,
-    }
-
-    resetHold()
-    holdTimer.current = window.setTimeout(() => {
-      pointerState.current.holdTriggered = true
-      pointerState.current.scrollMode = true
-      setScrub({ active: true, rowIndex, type: field, startY: originY, startValue: currentValue, pointerId: event.pointerId, x: originX, y: originY })
-    }, HOLD_MS)
-  }
-
-  const onPointerMoveField = (event) => {
-    const state = pointerState.current
-    if (event.pointerId !== state.pointerId) {
-      return
-    }
-
-    const moved = Math.hypot(event.clientY - state.startY, event.clientX - state.startX)
-    state.moved = moved
-
-    if (!state.holdTriggered) {
-      if (moved > TAP_MOVE_THRESHOLD) {
-        resetHold()
-      }
-      return
-    }
-
-    event.preventDefault()
-    event.stopPropagation()
-
-    const deltaY = state.startY - event.clientY
-    const stepCount = Math.trunc(deltaY / 14)
-    const next = clampValue(state.field, state.startValue + stepCount)
-
-    setScrub((current) => ({ ...current, active: true, x: event.clientX, y: event.clientY }))
-    updateSet(state.rowIndex, state.field, next)
-  }
-
-  const onPointerUpField = (event) => {
-    const state = pointerState.current
-    if (event.pointerId !== state.pointerId) {
-      return
-    }
-
-    event.preventDefault()
-    event.stopPropagation()
-    resetHold()
-
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId)
-    }
-
-    if (state.scrollMode || state.holdTriggered) {
-      clearScrub()
-      return
-    }
-
-    if (state.moved < TAP_MOVE_THRESHOLD) {
-      setKeypadTarget({ rowIndex: state.rowIndex, field: state.field })
-    }
-
-    clearScrub()
   }
 
   return (
@@ -237,13 +163,13 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
         aria-modal="true"
         style={{ transform: `translateY(${sheetOffsetY}px)` }}
         onPointerDown={(event) => {
-          pointerState.current.startY = event.clientY
+          sheetPointerStart.current = event.clientY
         }}
         onPointerMove={(event) => {
           if (keypadTarget) {
             return
           }
-          const delta = event.clientY - pointerState.current.startY
+          const delta = event.clientY - sheetPointerStart.current
           if (delta > 0) {
             setSheetOffsetY(delta)
           }
@@ -275,18 +201,13 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
             <div key={setRow.id || `${item.id}-set-${index + 1}`} className="set-row sets-grid-extended">
               <span className="set-index">{index + 1}</span>
               {['reps', 'weight', 'restSec'].map((field) => (
-                <button
+                <NumericFieldButton
                   key={field}
-                  type="button"
-                  className="field-button select-none"
-                  style={{ touchAction: 'none', WebkitUserSelect: 'none' }}
-                  onPointerDown={(event) => onPointerDownField(event, index, field)}
-                  onPointerMove={onPointerMoveField}
-                  onPointerUp={onPointerUpField}
-                  onPointerCancel={onPointerUpField}
-                >
-                  {setRow[field]}
-                </button>
+                  field={field}
+                  value={setRow[field]}
+                  onTap={() => setKeypadTarget({ rowIndex: index, field })}
+                  onScrub={(nextValue) => updateSet(index, field, nextValue)}
+                />
               ))}
               <button type="button" className="text-button" onClick={() => setDraftSets(sets.filter((_, rowIndex) => rowIndex !== index))}>✕</button>
             </div>
@@ -316,14 +237,6 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
           }
           setKeypadTarget(null)
         }}
-      />
-
-      <ScrubNumberOverlay
-        active={scrub.active}
-        x={scrub.x}
-        y={scrub.y}
-        label={scrub.type}
-        value={scrub.active && scrub.rowIndex >= 0 ? sets[scrub.rowIndex]?.[scrub.type] : 0}
       />
     </div>
   )
