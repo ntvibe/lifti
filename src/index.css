@@ -1216,3 +1216,27 @@ button,
   gap: 0.6rem;
   margin-top: 1rem;
 }
+
+.history-list {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.history-item {
+  align-items: center;
+  border-radius: 0.95rem;
+  display: flex;
+  gap: 0.65rem;
+  justify-content: space-between;
+  padding: 0.8rem;
+}
+
+.history-item div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.history-item small {
+  color: #c8d4f4;
+}

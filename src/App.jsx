@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import {
   createJson,
+  deleteDriveFile,
   ensureDriveClientReady,
   isAuthExpiredError,
+  listDriveFiles,
+  readFileJson,
   upsertJsonByName,
 } from './services/driveAppData'
 import PlanBuilder from './pages/PlanBuilder'
@@ -23,6 +26,7 @@ const EXERCISES_FILE = 'lifti_exercises.json'
 const ACTIVE_SESSION_KEY = 'lifti_active_session'
 
 const DEFAULT_HISTORY = { entries: [] }
+const SESSION_FILES_QUERY = "name contains 'lifti_session_' and mimeType='application/json'"
 
 const primaryTabs = [
   { to: '/', label: 'Plans' },
@@ -48,6 +52,21 @@ function hydrateSession() {
   } catch {
     localStorage.removeItem(ACTIVE_SESSION_KEY)
     return null
+  }
+}
+
+function mapSessionFromDrive(file, payload = {}) {
+  return {
+    id: payload.id || file.name.replace('lifti_session_', '').replace('.json', '') || file.id,
+    fileId: file.id,
+    fileName: file.name,
+    modifiedTime: file.modifiedTime,
+    planId: payload.planId || '',
+    planName: payload.planName || 'Workout Session',
+    startedAt: payload.startedAt || '',
+    endedAt: payload.endedAt || '',
+    totalPausedMs: Number.isFinite(payload.totalPausedMs) ? payload.totalPausedMs : 0,
+    exerciseStates: Array.isArray(payload.exerciseStates) ? payload.exerciseStates : [],
   }
 }
 
@@ -95,6 +114,9 @@ export default function App() {
   const [toast, setToast] = useState(null)
   const [draftPlan, setDraftPlan] = useState({ id: '', name: 'New Plan', createdAt: '', updatedAt: '', exercises: [] })
   const [activeSession, setActiveSession] = useState(() => hydrateSession())
+  const [historySessions, setHistorySessions] = useState([])
+  const [historyStatus, setHistoryStatus] = useState('idle')
+  const [historyError, setHistoryError] = useState('')
   const catalog = useExerciseCatalog()
   const {
     accessToken,
@@ -162,6 +184,65 @@ export default function App() {
 
     handleToast('info', error?.message || fallbackMessage)
   }
+
+  const loadHistorySessions = useCallback(async () => {
+    if (!accessToken) {
+      setHistorySessions([])
+      setHistoryStatus('idle')
+      setHistoryError('')
+      return
+    }
+
+    setHistoryStatus('loading')
+    setHistoryError('')
+
+    try {
+      const files = await listDriveFiles(accessToken, SESSION_FILES_QUERY)
+
+      const sessions = await Promise.all(
+        files.map(async (file) => {
+          try {
+            const payload = await readFileJson(accessToken, file.id)
+            return mapSessionFromDrive(file, payload)
+          } catch {
+            return null
+          }
+        }),
+      )
+
+      const sorted = sessions
+        .filter(Boolean)
+        .sort((a, b) => {
+          const aTime = new Date(a.endedAt || a.modifiedTime || a.startedAt || 0).getTime()
+          const bTime = new Date(b.endedAt || b.modifiedTime || b.startedAt || 0).getTime()
+          return bTime - aTime
+        })
+
+      setHistorySessions(sorted)
+      setHistoryStatus('ready')
+    } catch (error) {
+      if (isAuthExpiredError(error)) {
+        handleSessionExpired()
+        return
+      }
+
+      setHistoryStatus('error')
+      setHistoryError(error?.message?.slice(0, 180) || 'Couldn’t load your workout history.')
+    }
+  }, [accessToken])
+
+  useEffect(() => {
+    loadHistorySessions()
+  }, [loadHistorySessions])
+
+  const handleDeleteHistorySession = useCallback(async (session) => {
+    if (!accessToken) {
+      throw new Error('Missing account connection for workout history.')
+    }
+
+    await deleteDriveFile(accessToken, session.fileId)
+    setHistorySessions((current) => current.filter((entry) => entry.fileId !== session.fileId))
+  }, [accessToken])
 
   useEffect(() => {
     let mounted = true
@@ -360,7 +441,17 @@ export default function App() {
                   onTogglePauseResume={handleTogglePauseResume}
                   onFinish={async (session) => {
                     try {
-                      await createJson(accessToken, `lifti_session_${session.id}.json`, session)
+                      const file = await createJson(accessToken, `lifti_session_${session.id}.json`, session)
+                      const nextSession = mapSessionFromDrive(
+                        {
+                          id: file.id,
+                          name: file.name || `lifti_session_${session.id}.json`,
+                          modifiedTime: file.modifiedTime || new Date().toISOString(),
+                        },
+                        session,
+                      )
+                      setHistorySessions((current) => [nextSession, ...current.filter((entry) => entry.fileId !== nextSession.fileId)])
+                      setHistoryStatus('ready')
                       persistActiveSession(null)
                       handleToast('success', 'Session saved')
                       navigate('/')
@@ -401,7 +492,26 @@ export default function App() {
             )}
             />
             <Route path="/plan-builder" element={<PlanBuilder />} />
-            <Route path="/history" element={<History />} />
+            <Route
+              path="/history"
+              element={(
+                <History
+                  authStatus={authStatus}
+                  sessions={historySessions}
+                  status={historyStatus}
+                  error={historyError}
+                  onRetry={loadHistorySessions}
+                  onDeleteSession={async (session) => {
+                    try {
+                      await handleDeleteHistorySession(session)
+                      handleToast('success', 'Session deleted')
+                    } catch (error) {
+                      handleDriveError(error, 'Couldn’t delete that session.')
+                    }
+                  }}
+                />
+              )}
+            />
           </Routes>
         </main>
       </div>
