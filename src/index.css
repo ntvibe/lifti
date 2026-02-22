@@ -1240,3 +1240,95 @@ button,
 .history-item small {
   color: #c8d4f4;
 }
+
+
+.home-plan-card {
+  align-items: stretch;
+  display: block;
+}
+
+.plan-card-content {
+  align-items: center;
+  display: grid;
+  gap: 0.4rem;
+  justify-items: center;
+  text-align: center;
+  width: 100%;
+}
+
+.plan-card-content small {
+  font-size: 0.8rem;
+}
+
+.play-plan-button {
+  bottom: 0.85rem;
+  position: absolute;
+  right: 0.85rem;
+}
+
+.plan-item-shell {
+  overflow: hidden;
+  position: relative;
+}
+
+.plan-item-delete {
+  align-items: center;
+  background: #8e2232;
+  border: none;
+  border-radius: 0.9rem;
+  color: #fff;
+  display: inline-flex;
+  font-weight: 600;
+  height: calc(100% - 0.4rem);
+  justify-content: center;
+  position: absolute;
+  right: 0.2rem;
+  top: 0.2rem;
+  width: 82px;
+  z-index: 1;
+}
+
+.plan-item-row {
+  position: relative;
+  z-index: 2;
+}
+
+.plan-item-row.dragging {
+  opacity: 0.75;
+}
+
+.plan-item-shell.drag-target {
+  outline: 1px dashed rgba(174, 197, 232, 0.7);
+  border-radius: 0.9rem;
+}
+
+.plan-item-expanded {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0 0 0.9rem 0.9rem;
+  display: grid;
+  gap: 0.4rem;
+  margin-top: -0.1rem;
+  padding: 0.45rem 0.55rem 0.6rem;
+}
+
+.plan-inline-set-row {
+  align-items: end;
+  display: grid;
+  gap: 0.35rem;
+  grid-template-columns: 26px repeat(3, minmax(0, 1fr));
+}
+
+.plan-inline-set-row label {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.plan-inline-set-row input {
+  background: #11141b;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.55rem;
+  color: #f6f8ff;
+  min-height: 36px;
+  padding: 0.25rem 0.45rem;
+  width: 100%;
+}
