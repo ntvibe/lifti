@@ -510,15 +510,6 @@ input {
   z-index: 60;
 }
 
-.done-fab {
-  font-size: 1.5rem;
-}
-
-.play-fab {
-  left: 1rem;
-  right: auto;
-}
-
 .plan-name-input {
   background: transparent;
   border: none;
@@ -527,6 +518,14 @@ input {
   margin: 0 auto;
   max-width: 360px;
   text-align: center;
+}
+
+.plan-name-display {
+  cursor: text;
+}
+
+.done-fab {
+  font-size: 1.5rem;
 }
 
 .plan-items {
@@ -574,8 +573,21 @@ input {
 
 .add-exercise-wrap {
   display: flex;
+  margin: 0.85rem 0 5.2rem;
+  width: 100%;
+}
+
+.add-exercise-full {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.35rem;
   justify-content: center;
-  margin: 1rem 0 5rem;
+  min-height: 52px;
+  width: 100%;
+}
+
+.start-plan-fab {
+  right: 1rem;
 }
 
 .circle-add {
@@ -1300,35 +1312,4 @@ button,
 .plan-item-shell.drag-target {
   outline: 1px dashed rgba(174, 197, 232, 0.7);
   border-radius: 0.9rem;
-}
-
-.plan-item-expanded {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 0 0 0.9rem 0.9rem;
-  display: grid;
-  gap: 0.4rem;
-  margin-top: -0.1rem;
-  padding: 0.45rem 0.55rem 0.6rem;
-}
-
-.plan-inline-set-row {
-  align-items: end;
-  display: grid;
-  gap: 0.35rem;
-  grid-template-columns: 26px repeat(3, minmax(0, 1fr));
-}
-
-.plan-inline-set-row label {
-  display: grid;
-  gap: 0.18rem;
-}
-
-.plan-inline-set-row input {
-  background: #11141b;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 0.55rem;
-  color: #f6f8ff;
-  min-height: 36px;
-  padding: 0.25rem 0.45rem;
-  width: 100%;
 }
