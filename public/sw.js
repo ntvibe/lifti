@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lifti-shell-v3'
+const CACHE_NAME = 'lifti-shell-v4'
 const APP_BASE = new URL(self.registration.scope).pathname
 
 const APP_SHELL = [
