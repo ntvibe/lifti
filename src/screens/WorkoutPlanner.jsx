@@ -6,6 +6,7 @@ import AddExerciseModal from '../components/AddExerciseModal'
 import ExerciseEditorModal, { createDefaultSets } from '../components/ExerciseEditorModal'
 import PlanMuscleHeatmapSVG from '../components/PlanMuscleHeatmapSVG'
 import { computePlanMuscleIntensities } from '../utils/planIntensity'
+import Icon from '../components/Icon'
 
 const MUSCLE_FIELD_CANDIDATES = ['primaryMuscles', 'muscles', 'muscleGroups', 'muscleGroup', 'targetMuscles', 'targets']
 const EQUIPMENT_FIELD_CANDIDATES = ['equipment', 'equipments', 'gear', 'machine']
@@ -41,7 +42,7 @@ function extractKeys(exercise, fieldNames) {
   return []
 }
 
-export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onDone }) {
+export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onDone, onStartWorkout }) {
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [editingItemId, setEditingItemId] = useState('')
   const [contextItemId, setContextItemId] = useState('')
@@ -140,6 +141,14 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onDon
       </div>
 
       <button type="button" className="fab done-fab" onClick={onDone} aria-label="Done">✓</button>
+      <button
+        type="button"
+        className="fab play-fab"
+        onClick={() => onStartWorkout?.(plan)}
+        aria-label={`Start ${plan.name}`}
+      >
+        <Icon name="play_arrow" />
+      </button>
 
       <AddExerciseModal
         isOpen={isAddOpen}

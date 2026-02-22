@@ -105,6 +105,18 @@ export default function Home({
             <button
               type="button"
               className="ghost play-plan-button"
+              onPointerDown={(event) => {
+                event.stopPropagation()
+                clearLongPress()
+              }}
+              onPointerUp={(event) => {
+                event.stopPropagation()
+                clearLongPress()
+              }}
+              onPointerLeave={(event) => {
+                event.stopPropagation()
+                clearLongPress()
+              }}
               onClick={(event) => {
                 event.stopPropagation()
                 onPlayPlan(plan.id)

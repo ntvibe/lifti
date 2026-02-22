@@ -514,6 +514,11 @@ input {
   font-size: 1.5rem;
 }
 
+.play-fab {
+  left: 1rem;
+  right: auto;
+}
+
 .plan-name-input {
   background: transparent;
   border: none;

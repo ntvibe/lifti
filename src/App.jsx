@@ -381,6 +381,7 @@ export default function App() {
                 plan={draftPlan}
                 allExercises={catalog}
                 onPlanChange={setDraftPlan}
+                onStartWorkout={handleStartSession}
                 onDone={async () => {
                   try {
                     const saved = await upsertPlan({
