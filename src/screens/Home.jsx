@@ -4,19 +4,6 @@ import { getPublicAssetUrl } from '../services/exerciseCatalog'
 import { computePlanMuscleIntensities } from '../utils/planIntensity'
 import PlanMuscleHeatmapSVG from '../components/PlanMuscleHeatmapSVG'
 
-function formatDate(value) {
-  if (!value) {
-    return 'Unknown update'
-  }
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return 'Unknown update'
-  }
-
-  return date.toLocaleDateString()
-}
-
 export default function Home({
   authStatus,
   plans,
@@ -93,13 +80,13 @@ export default function Home({
             onPointerLeave={clearLongPress}
           >
             <div className="plan-card-content">
-              <h3>{plan.name}</h3>
-              <small>{plan.exercises.length} exercises • Updated {formatDate(plan.updatedAt)}</small>
               <PlanMuscleHeatmapSVG
                 svgPath={getPublicAssetUrl('svg/muscle-groups.svg')}
                 intensities={intensitiesByPlanId[plan.id] || {}}
                 className="plan-card-heatmap"
               />
+              <h3>{plan.name}</h3>
+              <small>{plan.exercises.length} exercises</small>
             </div>
 
             <button
