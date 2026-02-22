@@ -10,8 +10,6 @@ import Icon from '../components/Icon'
 
 const MUSCLE_FIELD_CANDIDATES = ['primaryMuscles', 'muscles', 'muscleGroups', 'muscleGroup', 'targetMuscles', 'targets']
 const EQUIPMENT_FIELD_CANDIDATES = ['equipment', 'equipments', 'gear', 'machine']
-const SWIPE_REVEAL_PX = 86
-
 function createId(prefix) {
   if (globalThis.crypto?.randomUUID) {
     return `${prefix}-${globalThis.crypto.randomUUID()}`
@@ -51,18 +49,17 @@ const EMPTY_GESTURE = {
   moved: false,
   holdReady: false,
   mode: '',
-  swipeX: 0,
 }
 
 export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onStartWorkout }) {
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [isTitleEditing, setIsTitleEditing] = useState(false)
   const [editingItemId, setEditingItemId] = useState('')
-  const [revealedItemId, setRevealedItemId] = useState('')
-  const [swipeOffset, setSwipeOffset] = useState({ id: '', x: 0 })
+  const [openMenuItemId, setOpenMenuItemId] = useState('')
   const [draggingItemId, setDraggingItemId] = useState('')
   const [dragOverItemId, setDragOverItemId] = useState('')
   const titleInputRef = useRef(null)
+  const menuRef = useRef(null)
   const holdTimerRef = useRef(null)
   const gestureRef = useRef(EMPTY_GESTURE)
 
@@ -79,6 +76,21 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
       })
     }
   }, [isTitleEditing])
+
+  useEffect(() => {
+    if (!openMenuItemId) {
+      return undefined
+    }
+
+    const onPointerDown = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenMenuItemId('')
+      }
+    }
+
+    window.addEventListener('pointerdown', onPointerDown)
+    return () => window.removeEventListener('pointerdown', onPointerDown)
+  }, [openMenuItemId])
 
   const clearHold = () => {
     if (holdTimerRef.current) {
@@ -169,32 +181,13 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
 
       <div className="plan-items scroll-safe-list plans-grid-padded">
         {plan.exercises.map((item) => {
-          const isRevealed = revealedItemId === item.id
-          const rowOffset = swipeOffset.id === item.id ? swipeOffset.x : (isRevealed ? -SWIPE_REVEAL_PX : 0)
           const isDragging = draggingItemId === item.id
           const isDragTarget = dragOverItemId === item.id && draggingItemId && draggingItemId !== item.id
 
           return (
             <article key={item.id} className={`plan-item-shell ${isDragTarget ? 'drag-target' : ''}`}>
-              <button
-                type="button"
-                className="plan-item-delete"
-                onClick={() => {
-                  if (window.confirm('Delete this exercise?')) {
-                    setExercises(plan.exercises.filter((entry) => entry.id !== item.id))
-                    setRevealedItemId('')
-                    if (editingItemId === item.id) {
-                      setEditingItemId('')
-                    }
-                  }
-                }}
-              >
-                Delete
-              </button>
-
               <div
                 className={`plan-item-row plan-item-touch ${isDragging ? 'dragging' : ''}`}
-                style={{ transform: `translateX(${rowOffset}px)` }}
                 onPointerDown={(event) => {
                   gestureRef.current = {
                     id: item.id,
@@ -204,7 +197,6 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
                     moved: false,
                     holdReady: false,
                     mode: '',
-                    swipeX: 0,
                   }
                   clearHold()
                   holdTimerRef.current = window.setTimeout(() => {
@@ -249,23 +241,12 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
                     return
                   }
 
-                  if (!gestureRef.current.mode && deltaX < -10 && Math.abs(deltaX) > Math.abs(deltaY)) {
-                    gestureRef.current.mode = 'swipe'
-                    clearHold()
-                  }
-
                   if (!gestureRef.current.mode && Math.abs(deltaY) > 8 && Math.abs(deltaY) >= Math.abs(deltaX)) {
                     gestureRef.current.mode = 'drag'
                     setDraggingItemId(item.id)
                     setDragOverItemId(item.id)
                     clearHold()
                     return
-                  }
-
-                  if (gestureRef.current.mode === 'swipe') {
-                    const nextSwipeX = Math.max(-SWIPE_REVEAL_PX, Math.min(0, deltaX))
-                    gestureRef.current.swipeX = nextSwipeX
-                    setSwipeOffset({ id: item.id, x: nextSwipeX })
                   }
                 }}
                 onPointerUp={(event) => {
@@ -279,25 +260,13 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
                     reorderExercises(item.id, dragOverItemId)
                     setDraggingItemId('')
                     setDragOverItemId('')
-                    setSwipeOffset({ id: '', x: 0 })
-                    resetGesture()
-                    return
-                  }
-
-                  if (gestureRef.current.mode === 'swipe') {
-                    const shouldReveal = gestureRef.current.swipeX <= -SWIPE_REVEAL_PX / 2
-                    setRevealedItemId(shouldReveal ? item.id : '')
-                    setSwipeOffset({ id: '', x: 0 })
                     resetGesture()
                     return
                   }
 
                   if (!gestureRef.current.moved) {
-                    if (revealedItemId && revealedItemId !== item.id) {
-                      setRevealedItemId('')
-                    } else {
-                      setEditingItemId(item.id)
-                    }
+                    setEditingItemId(item.id)
+                    setOpenMenuItemId('')
                   }
 
                   resetGesture()
@@ -307,7 +276,6 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
                 }}
                 onPointerCancel={() => {
                   clearHold()
-                  setSwipeOffset({ id: '', x: 0 })
                   resetGesture()
                 }}
                 data-plan-item-id={item.id}
@@ -317,7 +285,42 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
                   <small>{(item.sets || []).length} sets</small>
                   <small>{item.muscles.map(titleCaseLabel).join(', ')}</small>
                 </div>
-                <Icon name="drag_indicator" />
+                <div className="kebab-wrap" ref={openMenuItemId === item.id ? menuRef : null}>
+                  <button
+                    type="button"
+                    className="ghost kebab-button"
+                    aria-label={`Exercise menu for ${item.exerciseName}`}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onPointerUp={(event) => event.stopPropagation()}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      setOpenMenuItemId((current) => (current === item.id ? '' : item.id))
+                    }}
+                  >
+                    <Icon name="drag_indicator" />
+                  </button>
+
+                  {openMenuItemId === item.id ? (
+                    <div className="kebab-menu glass">
+                      <button
+                        type="button"
+                        className="destructive"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          setOpenMenuItemId('')
+                          if (window.confirm('Delete this exercise?')) {
+                            setExercises(plan.exercises.filter((entry) => entry.id !== item.id))
+                            if (editingItemId === item.id) {
+                              setEditingItemId('')
+                            }
+                          }
+                        }}
+                      >
+                        Delete exercise
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </article>
           )

@@ -47,9 +47,23 @@ a {
   z-index: 30;
 }
 
-.top-bar h1 {
-  font-size: 1.1rem;
-  margin: 0;
+.brand-home {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 0.7rem;
+  display: inline-flex;
+  justify-content: center;
+  min-height: 40px;
+  min-width: 40px;
+  padding: 0;
+}
+
+.brand-home img {
+  border-radius: 0.7rem;
+  display: block;
+  height: 36px;
+  width: 36px;
 }
 
 .top-bar-actions {
@@ -90,6 +104,8 @@ a {
 
 main {
   padding: 1rem 1rem calc(6rem + env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 .screen h1 {
@@ -386,6 +402,12 @@ input {
 
   .pose-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .plan-editor-heatmap {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 520px;
   }
 }
 
@@ -814,6 +836,7 @@ input {
   background: rgba(255, 255, 255, 0.04);
   border-radius: 14px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  touch-action: pan-y;
 }
 
 .scroll-safe-list {
@@ -984,7 +1007,7 @@ body {
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  touch-action: manipulation;
+  touch-action: auto;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
@@ -1257,6 +1280,7 @@ button,
 .home-plan-card {
   align-items: stretch;
   display: block;
+  position: relative;
 }
 
 .plan-card-content {
@@ -1278,26 +1302,16 @@ button,
   right: 0.85rem;
 }
 
+.home-plan-card .kebab-wrap {
+  position: absolute;
+  right: 0.75rem;
+  top: 0.75rem;
+  z-index: 6;
+}
+
 .plan-item-shell {
   overflow: hidden;
   position: relative;
-}
-
-.plan-item-delete {
-  align-items: center;
-  background: #8e2232;
-  border: none;
-  border-radius: 0.9rem;
-  color: #fff;
-  display: inline-flex;
-  font-weight: 600;
-  height: calc(100% - 0.4rem);
-  justify-content: center;
-  position: absolute;
-  right: 0.2rem;
-  top: 0.2rem;
-  width: 82px;
-  z-index: 1;
 }
 
 .plan-item-row {

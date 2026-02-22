@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Icon from '../components/Icon'
 import { getPublicAssetUrl } from '../services/exerciseCatalog'
 import { computePlanMuscleIntensities } from '../utils/planIntensity'
@@ -16,20 +16,28 @@ export default function Home({
   onPlayPlan,
   onDeletePlan,
 }) {
-  const longPressTimerRef = useRef(null)
-  const longPressTriggeredRef = useRef(false)
+  const menuRef = useRef(null)
+  const [openMenuPlanId, setOpenMenuPlanId] = useState('')
 
   const intensitiesByPlanId = useMemo(
     () => Object.fromEntries(plans.map((plan) => [plan.id, computePlanMuscleIntensities(plan.exercises, allExercises)])),
     [plans, allExercises],
   )
 
-  const clearLongPress = () => {
-    if (longPressTimerRef.current) {
-      window.clearTimeout(longPressTimerRef.current)
-      longPressTimerRef.current = null
+  useEffect(() => {
+    if (!openMenuPlanId) {
+      return undefined
     }
-  }
+
+    const onPointerDown = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenMenuPlanId('')
+      }
+    }
+
+    window.addEventListener('pointerdown', onPointerDown)
+    return () => window.removeEventListener('pointerdown', onPointerDown)
+  }, [openMenuPlanId])
 
   if (authStatus !== 'signed_in') {
     return (
@@ -60,25 +68,45 @@ export default function Home({
           <article
             key={plan.id}
             className="planner-list-item home-plan-card modern-plan-card glass"
-            onPointerDown={() => {
-              clearLongPress()
-              longPressTriggeredRef.current = false
-              longPressTimerRef.current = window.setTimeout(() => {
-                longPressTriggeredRef.current = true
-                if (window.confirm(`Delete ${plan.name}?`)) {
-                  onDeletePlan(plan.id)
-                }
-              }, 400)
+            onClick={() => {
+              setOpenMenuPlanId('')
+              onOpenPlan(plan.id)
             }}
-            onPointerUp={() => {
-              clearLongPress()
-              if (!longPressTriggeredRef.current) {
-                onOpenPlan(plan.id)
-              }
-              longPressTriggeredRef.current = false
-            }}
-            onPointerLeave={clearLongPress}
           >
+            <div className="kebab-wrap" ref={openMenuPlanId === plan.id ? menuRef : null}>
+              <button
+                type="button"
+                className="ghost kebab-button"
+                aria-label={`Plan menu for ${plan.name}`}
+                onPointerDown={(event) => event.stopPropagation()}
+                onPointerUp={(event) => event.stopPropagation()}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setOpenMenuPlanId((current) => (current === plan.id ? '' : plan.id))
+                }}
+              >
+                <Icon name="drag_indicator" />
+              </button>
+
+              {openMenuPlanId === plan.id ? (
+                <div className="kebab-menu glass">
+                  <button
+                    type="button"
+                    className="destructive"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      setOpenMenuPlanId('')
+                      if (window.confirm(`Delete ${plan.name}?`)) {
+                        onDeletePlan(plan.id)
+                      }
+                    }}
+                  >
+                    Delete plan
+                  </button>
+                </div>
+              ) : null}
+            </div>
+
             <div className="plan-card-content">
               <PlanMuscleHeatmapSVG
                 svgPath={getPublicAssetUrl('svg/muscle-groups.svg')}
@@ -94,18 +122,16 @@ export default function Home({
               className="ghost play-plan-button"
               onPointerDown={(event) => {
                 event.stopPropagation()
-                clearLongPress()
               }}
               onPointerUp={(event) => {
                 event.stopPropagation()
-                clearLongPress()
               }}
               onPointerLeave={(event) => {
                 event.stopPropagation()
-                clearLongPress()
               }}
               onClick={(event) => {
                 event.stopPropagation()
+                setOpenMenuPlanId('')
                 onPlayPlan(plan.id)
               }}
               aria-label={`Start ${plan.name}`}

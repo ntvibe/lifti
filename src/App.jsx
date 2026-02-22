@@ -463,7 +463,9 @@ export default function App() {
   return (
     <div className="app-shell select-none">
       <header className="top-bar glass select-none">
-        <h1>Lifti</h1>
+        <button type="button" className="brand-home" onClick={() => navigate('/')} aria-label="Open home">
+          <img src={getPublicAssetUrl('icons/icon-192.png')} alt="" />
+        </button>
         <div className="top-bar-actions">
           {isAuthenticated ? (
             <AvatarMenu
