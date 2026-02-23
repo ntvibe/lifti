@@ -2,6 +2,8 @@ import { MUSCLE_GROUPS } from '../constants/muscles'
 import { toTitleCase } from '../utils/label'
 import { normalizeKey } from '../utils/normalize'
 import { logExerciseValidationErrors } from './validateExercises'
+import { db } from '../storage/db'
+import { ExerciseRepo } from '../storage/repositories/ExerciseRepo'
 
 export function getPublicAssetUrl(path) {
   return `${import.meta.env.BASE_URL}${path}`
@@ -9,7 +11,25 @@ export function getPublicAssetUrl(path) {
 
 const CATALOG_PATH = getPublicAssetUrl('data/exercises.seed.json')
 
-export async function fetchExerciseCatalog() {
+function mapSeedExercise(exercise = {}) {
+  return {
+    ...exercise,
+    id: exercise.id,
+    name: exercise.name || 'Unnamed Exercise',
+    muscles: [
+      ...(Array.isArray(exercise.primaryMuscles) ? exercise.primaryMuscles : []),
+      ...(Array.isArray(exercise.secondaryMuscles) ? exercise.secondaryMuscles : []),
+    ],
+    equipment: Array.isArray(exercise.equipment) ? exercise.equipment : [],
+  }
+}
+
+export async function seedExercises() {
+  const count = await db.exercises.count()
+  if (count > 0) {
+    return
+  }
+
   const response = await fetch(CATALOG_PATH)
   if (!response.ok) {
     throw new Error('Failed to load exercise catalog.')
@@ -18,10 +38,19 @@ export async function fetchExerciseCatalog() {
   const payload = await response.json()
   logExerciseValidationErrors(payload)
 
+  for (const seed of payload.exercises ?? []) {
+    await ExerciseRepo.upsert(mapSeedExercise(seed))
+  }
+}
+
+export async function fetchExerciseCatalog() {
+  await seedExercises()
+  const exercises = await ExerciseRepo.list()
+
   return {
-    schemaVersion: payload.schemaVersion,
-    updatedAt: payload.updatedAt,
-    exercises: payload.exercises ?? [],
+    schemaVersion: 1,
+    updatedAt: new Date().toISOString(),
+    exercises,
   }
 }
 
