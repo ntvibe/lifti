@@ -5,6 +5,10 @@ const TAP_THRESHOLD = 6
 const DEFAULT_PIXELS_PER_STEP = 16
 const SCROLL_GUARD_MS = 140
 
+function getScrollElement() {
+  return document.scrollingElement || document.documentElement
+}
+
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
 }
@@ -31,6 +35,16 @@ export default function useHoldScrubNumber({
 }) {
   const timerRef = useRef(null)
   const overlayRef = useRef(null)
+  const scrollLockRef = useRef({
+    active: false,
+    x: 0,
+    y: 0,
+    bodyTop: '',
+    bodyLeft: '',
+    bodyRight: '',
+    bodyPosition: '',
+    bodyWidth: '',
+  })
   const lastScrollAtRef = useRef(0)
   const pointerRef = useRef({
     pointerId: null,
@@ -65,8 +79,28 @@ export default function useHoldScrubNumber({
       }
     }
 
+    const lock = scrollLockRef.current
     document.body.classList.remove('no-scroll', 'scrub-active')
     document.documentElement.classList.remove('no-scroll')
+
+    if (lock.active) {
+      document.body.style.position = lock.bodyPosition
+      document.body.style.top = lock.bodyTop
+      document.body.style.left = lock.bodyLeft
+      document.body.style.right = lock.bodyRight
+      document.body.style.width = lock.bodyWidth
+      window.scrollTo(lock.x, lock.y)
+      scrollLockRef.current = {
+        active: false,
+        x: 0,
+        y: 0,
+        bodyTop: '',
+        bodyLeft: '',
+        bodyRight: '',
+        bodyPosition: '',
+        bodyWidth: '',
+      }
+    }
 
     pointerRef.current = {
       pointerId: null,
@@ -216,6 +250,26 @@ export default function useHoldScrubNumber({
 
         state.holdTriggered = true
         state.anchorEl.setPointerCapture(event.pointerId)
+        const scrollEl = getScrollElement()
+        const lockX = window.scrollX || scrollEl.scrollLeft || 0
+        const lockY = window.scrollY || scrollEl.scrollTop || 0
+
+        scrollLockRef.current = {
+          active: true,
+          x: lockX,
+          y: lockY,
+          bodyTop: document.body.style.top,
+          bodyLeft: document.body.style.left,
+          bodyRight: document.body.style.right,
+          bodyPosition: document.body.style.position,
+          bodyWidth: document.body.style.width,
+        }
+
+        document.body.style.position = 'fixed'
+        document.body.style.top = `${-lockY}px`
+        document.body.style.left = `${-lockX}px`
+        document.body.style.right = '0'
+        document.body.style.width = '100%'
         document.body.classList.add('no-scroll', 'scrub-active')
         document.documentElement.classList.add('no-scroll')
         setOverlay({
