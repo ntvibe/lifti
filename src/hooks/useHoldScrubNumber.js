@@ -141,6 +141,35 @@ export default function useHoldScrubNumber({
 
   useEffect(() => () => close(), [close])
 
+  useEffect(() => {
+    const onWindowPointerDone = (event) => {
+      const state = pointerRef.current
+      if (!state.anchorEl) {
+        return
+      }
+
+      if (state.pointerId === null || event.pointerId === state.pointerId || state.holdTriggered) {
+        close()
+      }
+    }
+
+    const onWindowBlur = () => {
+      if (pointerRef.current.anchorEl) {
+        close()
+      }
+    }
+
+    window.addEventListener('pointerup', onWindowPointerDone)
+    window.addEventListener('pointercancel', onWindowPointerDone)
+    window.addEventListener('blur', onWindowBlur)
+
+    return () => {
+      window.removeEventListener('pointerup', onWindowPointerDone)
+      window.removeEventListener('pointercancel', onWindowPointerDone)
+      window.removeEventListener('blur', onWindowBlur)
+    }
+  }, [close])
+
   const bind = useMemo(() => ({
     onPointerDown: (event) => {
       if (event.button !== undefined && event.button !== 0) {
@@ -220,7 +249,7 @@ export default function useHoldScrubNumber({
     },
     onPointerUp: (event) => {
       const state = pointerRef.current
-      if (event.pointerId !== state.pointerId) {
+      if (!state.holdTriggered && event.pointerId !== state.pointerId) {
         return
       }
 
