@@ -1353,3 +1353,25 @@ input.field-button {
   outline: 1px dashed rgba(174, 197, 232, 0.7);
   border-radius: 0.9rem;
 }
+
+.planner-screen .filled-plan-name {
+  text-align: center;
+}
+
+.planner-exercise-editor-screen {
+  padding-bottom: 7rem;
+}
+
+.exercise-editor-top-row {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.exercise-editor-heatmap {
+  margin-top: 0.35rem;
+}
+
+.exercise-editor-title {
+  margin: 0.5rem 0 0;
+  text-align: center;
+}
