@@ -1,8 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toTitleCase } from '../utils/label'
-import useHoldScrubNumber from '../hooks/useHoldScrubNumber'
-import CustomNumberPad from './CustomNumberPad'
-import ScrubNumberOverlay from './ScrubNumberOverlay'
 
 function createId(prefix) {
   if (globalThis.crypto?.randomUUID) {
@@ -12,13 +9,7 @@ function createId(prefix) {
   return `${prefix}-${Date.now()}-${Math.round(Math.random() * 10_000)}`
 }
 
-const FALLBACK_SET = { reps: 10, weight: 0, restSec: 90 }
-
-const FIELD_CONFIG = {
-  reps: { step: 1, min: 0, max: 200, unit: '' },
-  weight: { step: 0.5, min: 0, max: 500, unit: 'kg' },
-  restSec: { step: 5, min: 0, max: 600, unit: 's' },
-}
+const FALLBACK_SET = { reps: 10, weight: 0, restSec: 60 }
 
 function parseDefaults(exercise = {}) {
   const hasPerSet = Array.isArray(exercise.defaultSets)
@@ -57,7 +48,7 @@ export function createDefaultSets(exercise) {
 function clampValue(type, value) {
   const num = Number(value)
   if (!Number.isFinite(num)) {
-    return 0
+    return type === 'restSec' ? FALLBACK_SET.restSec : 0
   }
 
   if (type === 'weight') {
@@ -67,44 +58,16 @@ function clampValue(type, value) {
   return Math.max(0, Math.round(num))
 }
 
-function NumericFieldButton({ value, field, onTap, onScrub }) {
-  const config = FIELD_CONFIG[field]
-  const { bind, overlay, overlayRef } = useHoldScrubNumber({
-    value,
-    onChange: onScrub,
-    onTap,
-    step: config.step,
-    min: config.min,
-    max: config.max,
-    longPressMs: 250,
-  })
-
-  return (
-    <>
-      <button
-        type="button"
-        className="field-button select-none"
-        style={{ touchAction: 'none', WebkitUserSelect: 'none' }}
-        aria-label={`${field} value ${value}`}
-        {...bind}
-      >
-        {value}
-      </button>
-      <ScrubNumberOverlay
-        open={overlay.open}
-        anchorRect={overlay.anchorRect}
-        value={overlay.displayValue}
-        step={config.step}
-        unit={config.unit}
-        pulseKey={overlay.pulseKey}
-        overlayRef={overlayRef}
-      />
-    </>
-  )
+function normalizeSet(setRow = {}) {
+  return {
+    id: setRow.id || createId('set'),
+    reps: clampValue('reps', setRow.reps),
+    weight: clampValue('weight', setRow.weight),
+    restSec: clampValue('restSec', setRow.restSec),
+  }
 }
 
 export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, onSave }) {
-  const [keypadTarget, setKeypadTarget] = useState(null)
   const [draftSets, setDraftSets] = useState([])
   const [sheetOffsetY, setSheetOffsetY] = useState(0)
   const sheetPointerStart = useRef(0)
@@ -115,7 +78,7 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
     }
 
     if (item?.sets?.length) {
-      return item.sets
+      return item.sets.map(normalizeSet)
     }
 
     return createDefaultSets(exercise)
@@ -123,7 +86,7 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
 
   useEffect(() => {
     if (isOpen && item) {
-      setDraftSets(item.sets?.length ? item.sets : createDefaultSets(exercise))
+      setDraftSets(item.sets?.length ? item.sets.map(normalizeSet) : createDefaultSets(exercise))
     }
   }, [isOpen, item, exercise])
 
@@ -144,14 +107,19 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
     return null
   }
 
+  const commitSets = (nextSets) => {
+    setDraftSets(nextSets)
+    onSave(nextSets)
+  }
+
   const updateSet = (rowIndex, field, nextValue) => {
-    setDraftSets((current) => current.map((set, index) => (index === rowIndex ? { ...set, [field]: clampValue(field, nextValue) } : set)))
+    const nextSets = sets.map((set, index) => (index === rowIndex ? { ...set, [field]: clampValue(field, nextValue) } : set))
+    commitSets(nextSets)
   }
 
   const saveAndClose = () => {
     onSave(sets)
     onClose()
-    setKeypadTarget(null)
     setSheetOffsetY(0)
   }
 
@@ -166,9 +134,6 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
           sheetPointerStart.current = event.clientY
         }}
         onPointerMove={(event) => {
-          if (keypadTarget) {
-            return
-          }
           const delta = event.clientY - sheetPointerStart.current
           if (delta > 0) {
             setSheetOffsetY(delta)
@@ -186,12 +151,12 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
         <div className="sheet-handle" />
         <div className="filter-header-row">
           <h2>{toTitleCase(item.exerciseName)}</h2>
-          <button type="button" className="text-button" onClick={saveAndClose}>✕</button>
+          <button type="button" className="text-button" onClick={saveAndClose}>X</button>
         </div>
 
         <div className="sets-table">
           <div className="sets-header sets-grid-extended centered-headers">
-            <span>Sets</span>
+            <span>Set #</span>
             <span>Reps</span>
             <span>Weight</span>
             <span>Rest</span>
@@ -200,16 +165,44 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
           {sets.map((setRow, index) => (
             <div key={setRow.id || `${item.id}-set-${index + 1}`} className="set-row sets-grid-extended">
               <span className="set-index">{index + 1}</span>
-              {['reps', 'weight', 'restSec'].map((field) => (
-                <NumericFieldButton
-                  key={field}
-                  field={field}
-                  value={setRow[field]}
-                  onTap={() => setKeypadTarget({ rowIndex: index, field })}
-                  onScrub={(nextValue) => updateSet(index, field, nextValue)}
-                />
-              ))}
-              <button type="button" className="text-button" onClick={() => setDraftSets(sets.filter((_, rowIndex) => rowIndex !== index))}>✕</button>
+              <input
+                type="number"
+                inputMode="numeric"
+                className="field-button"
+                value={setRow.reps}
+                min={0}
+                step={1}
+                aria-label={`Set ${index + 1} reps`}
+                onChange={(event) => updateSet(index, 'reps', event.target.value)}
+              />
+              <input
+                type="number"
+                inputMode="decimal"
+                className="field-button"
+                value={setRow.weight}
+                min={0}
+                step={0.5}
+                aria-label={`Set ${index + 1} weight`}
+                onChange={(event) => updateSet(index, 'weight', event.target.value)}
+              />
+              <input
+                type="number"
+                inputMode="numeric"
+                className="field-button"
+                value={setRow.restSec}
+                min={0}
+                step={5}
+                aria-label={`Set ${index + 1} rest in seconds`}
+                onChange={(event) => updateSet(index, 'restSec', event.target.value)}
+              />
+              <button
+                type="button"
+                className="text-button"
+                aria-label={`Delete set ${index + 1}`}
+                onClick={() => commitSets(sets.filter((_, rowIndex) => rowIndex !== index))}
+              >
+                X
+              </button>
             </div>
           ))}
         </div>
@@ -219,25 +212,12 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
           className="ghost add-set-full"
           onClick={() => {
             const last = sets[sets.length - 1] || FALLBACK_SET
-            setDraftSets([...sets, { id: createId('set'), reps: last.reps, weight: last.weight, restSec: last.restSec }])
+            commitSets([...sets, { id: createId('set'), reps: last.reps, weight: last.weight, restSec: last.restSec }])
           }}
         >
-          + Add Set
+          + Add set
         </button>
       </section>
-
-      <CustomNumberPad
-        isOpen={Boolean(keypadTarget)}
-        type={keypadTarget?.field}
-        value={keypadTarget ? sets[keypadTarget.rowIndex]?.[keypadTarget.field] : 0}
-        onClose={() => setKeypadTarget(null)}
-        onDone={(nextValue) => {
-          if (keypadTarget) {
-            updateSet(keypadTarget.rowIndex, keypadTarget.field, nextValue)
-          }
-          setKeypadTarget(null)
-        }}
-      />
     </div>
   )
 }
