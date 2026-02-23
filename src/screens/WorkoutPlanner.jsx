@@ -9,14 +9,16 @@ import PlanMuscleHeatmapSVG from '../components/PlanMuscleHeatmapSVG'
 import { computePlanMuscleIntensities } from '../utils/planIntensity'
 import Icon from '../components/Icon'
 import useNumberInputController from '../hooks/useNumberInputController'
+import useHoldScrubNumber from '../hooks/useHoldScrubNumber'
+import ScrubNumberOverlay from '../components/ScrubNumberOverlay'
 
 const MUSCLE_FIELD_CANDIDATES = ['primaryMuscles', 'muscles', 'muscleGroups', 'muscleGroup', 'targetMuscles', 'targets']
 const EQUIPMENT_FIELD_CANDIDATES = ['equipment', 'equipments', 'gear', 'machine']
 const FALLBACK_SET = { reps: 10, weight: 0, restSec: 60 }
 const FIELD_CONFIG = {
-  reps: { step: 1, allowDecimal: false },
-  weight: { step: 0.5, allowDecimal: true },
-  restSec: { step: 5, allowDecimal: false },
+  reps: { step: 1, allowDecimal: false, min: 0, max: 200, unit: '' },
+  weight: { step: 0.5, allowDecimal: true, min: 0, max: 500, unit: 'kg' },
+  restSec: { step: 5, allowDecimal: false, min: 0, max: 600, unit: 's' },
 }
 
 function createId(prefix) {
@@ -42,14 +44,56 @@ function extractKeys(exercise, fieldNames) {
 }
 
 function clampValue(type, value) {
+  const config = FIELD_CONFIG[type] || FIELD_CONFIG.reps
   const num = Number(value)
   if (!Number.isFinite(num)) return type === 'restSec' ? FALLBACK_SET.restSec : 0
-  if (type === 'weight') return Math.max(0, Math.round(num * 100) / 100)
-  return Math.max(0, Math.round(num))
+
+  const rounded = config.allowDecimal ? Math.round(num * 100) / 100 : Math.round(num)
+  return Math.max(config.min, Math.min(config.max, rounded))
+}
+
+function ScrubbableNumberField({ id, label, value, config, onTap, onScrubChange }) {
+  const { bind, overlay, overlayRef } = useHoldScrubNumber({
+    value,
+    onChange: onScrubChange,
+    onTap: (event) => onTap(event.currentTarget),
+    step: config.step,
+    min: config.min,
+    max: config.max,
+    longPressMs: 250,
+    pixelsPerStep: 14,
+  })
+
+  return (
+    <>
+      <button
+        id={id}
+        type="button"
+        className="field-button numeric-field-trigger"
+        aria-label={label}
+        role="button"
+        {...bind}
+      >
+        {value}
+      </button>
+      <ScrubNumberOverlay
+        open={overlay.open}
+        anchorRect={overlay.anchorRect}
+        value={overlay.displayValue}
+        step={config.step}
+        unit={config.unit}
+        pulseKey={overlay.pulseKey}
+        overlayRef={overlayRef}
+      />
+    </>
+  )
 }
 
 function NumberKeypad({ isOpen, fieldKey, value, onChange, onDone, onClose }) {
-  if (!isOpen) return null
+  if (!isOpen || !fieldKey) return null
+
+  const config = FIELD_CONFIG[fieldKey]
+  const nudges = config.allowDecimal ? [-10, -5, -2.5, 2.5, 5, 10] : [-10, -5, 5, 10]
 
   return (
     <div className="modal-backdrop keypad-backdrop" role="presentation" onClick={onClose}>
@@ -59,7 +103,7 @@ function NumberKeypad({ isOpen, fieldKey, value, onChange, onDone, onClose }) {
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
             <button key={digit} type="button" onClick={() => onChange((prev) => `${prev || ''}${digit}`)}>{digit}</button>
           ))}
-          {fieldKey === 'weight'
+          {config.allowDecimal
             ? <button type="button" onClick={() => onChange((prev) => (prev.includes('.') ? prev : `${prev || '0'}.`))}>.</button>
             : <button type="button" onClick={() => onChange((prev) => (prev ? prev.slice(0, -1) : ''))}>⌫</button>}
           <button type="button" onClick={() => onChange((prev) => `${prev || ''}0`)}>0</button>
@@ -67,14 +111,14 @@ function NumberKeypad({ isOpen, fieldKey, value, onChange, onDone, onClose }) {
         </div>
 
         <div className="nudge-row">
-          {[-10, -5, -2.5, 2.5, 5, 10].map((step) => (
+          {nudges.map((step) => (
             <button
               key={step}
               type="button"
               className="ghost"
               onClick={() => onChange((prev) => {
                 const base = Number(prev || 0)
-                return String(Math.max(0, (Number.isFinite(base) ? base : 0) + step))
+                return String(Math.max(config.min, Math.min(config.max, (Number.isFinite(base) ? base : 0) + step)))
               })}
             >
               {step > 0 ? `+${step}` : step}
@@ -208,33 +252,25 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
                   <span className="set-index">{index + 1}</span>
                   {['reps', 'weight', 'restSec'].map((fieldKey) => {
                     const config = FIELD_CONFIG[fieldKey]
-                    const isActive = numberInputController.activeField?.setId === setId && numberInputController.activeField?.fieldKey === fieldKey
 
                     return (
                       <div key={fieldKey} className="number-input-wrap">
-                        <input
-                          type="text"
-                          inputMode={config.allowDecimal ? 'decimal' : 'numeric'}
-                          className="field-button"
-                          value={isActive ? numberInputController.currentValue : String(setRow[fieldKey])}
-                          aria-label={`Set ${index + 1} ${fieldKey === 'restSec' ? 'rest in seconds' : fieldKey}`}
-                          onFocus={() => numberInputController.openField({ setId, fieldKey }, setRow[fieldKey])}
-                          onChange={(event) => {
-                            const nextValue = event.target.value
-                            if (!config.allowDecimal && /[^\d]/.test(nextValue)) return
-                            if (config.allowDecimal && /[^\d.]/.test(nextValue)) return
-                            if (config.allowDecimal && nextValue.split('.').length > 2) return
-                            numberInputController.setCurrentValue(nextValue)
+                        <ScrubbableNumberField
+                          id={`${setId}-${fieldKey}`}
+                          label={`Set ${index + 1} ${fieldKey === 'restSec' ? 'rest in seconds' : fieldKey}`}
+                          value={setRow[fieldKey]}
+                          config={config}
+                          onScrubChange={(nextValue) => {
+                            numberInputController.openField({ setId, fieldKey }, nextValue)
+                            numberInputController.commit(nextValue)
                           }}
-                          onBlur={(event) => numberInputController.commit(event.currentTarget.value || '0')}
+                          onTap={(target) => {
+                            numberInputController.openField({ setId, fieldKey }, setRow[fieldKey], { openKeypad: true })
+                            window.requestAnimationFrame(() => {
+                              target?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' })
+                            })
+                          }}
                         />
-
-                        {isActive ? (
-                          <div className="input-stepper-overlay" aria-hidden="true">
-                            <button type="button" className="ghost stepper-btn" tabIndex={-1} onMouseDown={(event) => event.preventDefault()} onClick={() => numberInputController.nudge(config.step)}>+{config.step}</button>
-                            <button type="button" className="ghost stepper-btn" tabIndex={-1} onMouseDown={(event) => event.preventDefault()} onClick={() => numberInputController.nudge(-config.step)}>-{config.step}</button>
-                          </div>
-                        ) : null}
                       </div>
                     )
                   })}
@@ -254,10 +290,6 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
         </div>
 
         <button type="button" className="fab done-fab" onClick={() => { numberInputController.close(); navigate('/planner') }} aria-label="Done"><Icon name="check" /></button>
-
-        {numberInputController.activeField ? (
-          <button type="button" className="open-keypad-fab" onClick={numberInputController.openKeypad} aria-label="Open keypad"><Icon name="calculate" /></button>
-        ) : null}
 
         <NumberKeypad
           isOpen={numberInputController.isKeypadOpen}
@@ -359,7 +391,7 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
                         }
                       }}
                     >
-                      Delete exercise
+                      Delete
                     </button>
                   </div>
                 ) : null}
@@ -369,17 +401,29 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
         ))}
       </div>
 
-      <div className="add-exercise-wrap">
-        <button type="button" className="ghost add-exercise-full" onClick={() => setIsAddOpen(true)} aria-label="Add exercise"><Icon name="add" /><span>Add exercise</span></button>
-      </div>
+      <button type="button" className="fab" aria-label="Add exercise" onClick={() => setIsAddOpen(true)}>
+        <Icon name="add" />
+      </button>
 
-      <button type="button" className="fab start-plan-fab" onClick={() => onStartWorkout?.(plan)} aria-label={`Start ${plan.name}`}><Icon name="play_arrow" /></button>
+      <button
+        type="button"
+        className="fab planner-play-fab"
+        aria-label="Start workout"
+        onClick={() => onStartWorkout(plan)}
+        style={{ right: '5rem' }}
+      >
+        <Icon name="play_arrow" />
+      </button>
 
       <AddExerciseModal
         isOpen={isAddOpen}
-        allExercises={allExercises}
         onClose={() => setIsAddOpen(false)}
-        onSelectExercise={(exercise) => { addExercise(exercise); setIsAddOpen(false) }}
+        allExercises={allExercises}
+        selectedIds={new Set(plan.exercises.map((item) => item.exerciseId))}
+        onAdd={(exercise) => {
+          addExercise(exercise)
+          setIsAddOpen(false)
+        }}
       />
     </section>
   )

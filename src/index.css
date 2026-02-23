@@ -126,7 +126,7 @@ main {
 .card {
   background: #141417;
   border: 1px solid #242429;
-  border-radius: 1rem;
+  border-radius: 1.1rem;
   box-shadow: 0 8px 26px rgba(0, 0, 0, 0.25);
   margin-top: 1rem;
   padding: 1rem;
@@ -736,6 +736,14 @@ input.field-button {
   -webkit-user-select: text;
 }
 
+.numeric-field-trigger {
+  justify-content: center;
+  text-align: center;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 .number-pad-sheet {
   background: #0e1015;
   border-radius: 1rem;
@@ -800,6 +808,14 @@ input.field-button {
   height: 100%;
   object-fit: cover;
   width: 100%;
+}
+
+.avatar-button-unsynced {
+  border: 2px solid #ff4d4f;
+}
+
+.avatar-button-synced {
+  border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
 .avatar-dropdown {
@@ -976,8 +992,8 @@ input.field-button {
   -webkit-backdrop-filter: blur(16px);
   display: grid;
   gap: 0.35rem;
-  min-width: 108px;
-  padding: 0.55rem 0.8rem 0.65rem;
+  min-width: 120px;
+  padding: 0.65rem 0.85rem 0.75rem;
 }
 
 .slot-handle {
