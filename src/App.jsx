@@ -483,6 +483,15 @@ export default function App() {
               />
             )}
             />
+            <Route path="/planner/exercise/:exerciseItemId" element={(
+              <WorkoutPlanner
+                plan={draftPlan}
+                allExercises={catalog}
+                onPlanChange={handleDraftPlanChange}
+                onStartWorkout={handleStartSession}
+              />
+            )}
+            />
             <Route path="/plan-builder" element={<PlanBuilder />} />
             <Route
               path="/history"
