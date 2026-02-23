@@ -10,6 +10,7 @@ import {
   readJson,
   readFileJson,
   readPlanFiles,
+  updateJson,
   upsertJsonByName,
 } from './services/driveAppData'
 import PlanBuilder from './pages/PlanBuilder'
@@ -28,6 +29,7 @@ const HISTORY_FILE = 'lifti_history.json'
 const EXERCISES_FILE = 'lifti_exercises.json'
 const PLAN_SNAPSHOT_FILE = 'lifti_sync_snapshot.json'
 const ACTIVE_SESSION_KEY = 'lifti_active_session'
+const PLAN_FILE_INDEX_KEY = 'lifti_plan_file_index'
 
 const DEFAULT_HISTORY = { entries: [] }
 const SESSION_FILES_QUERY = "name contains 'lifti_session_' and mimeType='application/json'"
@@ -57,6 +59,25 @@ function hydrateSession() {
     localStorage.removeItem(ACTIVE_SESSION_KEY)
     return null
   }
+}
+
+function hydratePlanFileIndex() {
+  const raw = localStorage.getItem(PLAN_FILE_INDEX_KEY)
+  if (!raw) {
+    return {}
+  }
+
+  try {
+    const parsed = JSON.parse(raw)
+    return typeof parsed === 'object' && parsed ? parsed : {}
+  } catch {
+    localStorage.removeItem(PLAN_FILE_INDEX_KEY)
+    return {}
+  }
+}
+
+function persistPlanFileIndex(index) {
+  localStorage.setItem(PLAN_FILE_INDEX_KEY, JSON.stringify(index))
 }
 
 function mapSessionFromDrive(file, payload = {}) {
@@ -119,6 +140,7 @@ export default function App() {
   const [draftPlan, setDraftPlan] = useState({ id: '', name: 'New Plan', createdAt: '', updatedAt: '', exercises: [] })
   const [activeSession, setActiveSession] = useState(() => hydrateSession())
   const [historySessions, setHistorySessions] = useState([])
+  const [planFileIndex, setPlanFileIndex] = useState(() => hydratePlanFileIndex())
   const [historyStatus, setHistoryStatus] = useState('idle')
   const [historyError, setHistoryError] = useState('')
   const [isDriveSynced, setIsDriveSynced] = useState(false)
@@ -151,6 +173,8 @@ export default function App() {
     setFileIds({ history: '', exercises: '' })
     localStorage.removeItem('lifti_file_ids')
     persistActiveSession(null)
+    setPlanFileIndex({})
+    localStorage.removeItem(PLAN_FILE_INDEX_KEY)
     handleToast('info', 'Session expired. Please sign in again.')
     navigate('/')
   }
@@ -304,17 +328,28 @@ export default function App() {
       const snapshotFileId = await findFileIdByName(token, PLAN_SNAPSHOT_FILE)
       let remotePlans = []
 
+      const { plans: drivePlans } = await readPlanFiles(token)
+      const nextPlanFileIndex = drivePlans.reduce((accumulator, plan) => {
+        if (plan?.id && plan?._fileId) {
+          accumulator[plan.id] = plan._fileId
+        }
+
+        return accumulator
+      }, {})
+
       if (snapshotFileId) {
         const snapshot = await readJson(token, snapshotFileId)
         remotePlans = Array.isArray(snapshot?.plans) ? snapshot.plans : []
       } else {
-        const { plans: drivePlans } = await readPlanFiles(token)
         remotePlans = Array.isArray(drivePlans) ? drivePlans : []
       }
 
       if (remotePlans.length > 0) {
         await replacePlans(remotePlans)
       }
+
+      setPlanFileIndex(nextPlanFileIndex)
+      persistPlanFileIndex(nextPlanFileIndex)
 
       await loadPlans()
       handleToast('success', 'Signed in and pulled latest plans from Google Drive.')
@@ -329,8 +364,10 @@ export default function App() {
     setFileIds({ history: '', exercises: '' })
     setPlans([])
     persistActiveSession(null)
+    setPlanFileIndex({})
     setIsDriveSynced(false)
     localStorage.removeItem('lifti_file_ids')
+    localStorage.removeItem(PLAN_FILE_INDEX_KEY)
     handleToast('success', 'Signed out')
     navigate('/')
   }
@@ -389,10 +426,39 @@ export default function App() {
     setIsSyncingDrive(true)
     try {
       const latestPlans = await getPlansSnapshot()
-      await upsertJsonByName(accessToken, 'lifti_sync_snapshot.json', {
+
+      const nextPlanFileIndex = { ...planFileIndex }
+
+      for (const plan of latestPlans) {
+        const existingFileId = nextPlanFileIndex[plan.id]
+        if (existingFileId) {
+          // eslint-disable-next-line no-await-in-loop
+          await updateJson(accessToken, existingFileId, plan)
+          continue
+        }
+
+        // eslint-disable-next-line no-await-in-loop
+        const created = await createJson(accessToken, `lifti_plan_${plan.id}.json`, plan)
+        if (created?.id) {
+          nextPlanFileIndex[plan.id] = created.id
+        }
+      }
+
+      persistPlanFileIndex(nextPlanFileIndex)
+      setPlanFileIndex(nextPlanFileIndex)
+
+      const snapshotFileId = await findFileIdByName(accessToken, PLAN_SNAPSHOT_FILE)
+      const snapshotPayload = {
         updatedAt: new Date().toISOString(),
         plans: latestPlans,
-      })
+      }
+
+      if (snapshotFileId) {
+        await updateJson(accessToken, snapshotFileId, snapshotPayload)
+      } else {
+        await createJson(accessToken, PLAN_SNAPSHOT_FILE, snapshotPayload)
+      }
+
       setIsDriveSynced(true)
       handleToast('success', 'Synced latest local changes to Google Drive.')
     } catch (error) {
@@ -417,6 +483,21 @@ export default function App() {
           : []
 
       await replacePlans(remotePlans)
+
+      if (Array.isArray(payload?.plans)) {
+        const snapshotFileId = await findFileIdByName(accessToken, PLAN_SNAPSHOT_FILE)
+        if (snapshotFileId) {
+          await updateJson(accessToken, snapshotFileId, {
+            updatedAt: new Date().toISOString(),
+            plans: remotePlans,
+          })
+        }
+      } else if (remotePlans[0]?.id) {
+        const nextPlanFileIndex = { ...planFileIndex, [remotePlans[0].id]: fileId }
+        setPlanFileIndex(nextPlanFileIndex)
+        persistPlanFileIndex(nextPlanFileIndex)
+      }
+
       setIsDriveSynced(true)
       handleToast('success', 'Pulled plans from selected Google Drive file.')
     } catch (error) {
