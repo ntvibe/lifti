@@ -75,7 +75,13 @@ function formatExerciseName(name) {
     .join(' ')
 }
 
-export default function AddExerciseModal({ isOpen, allExercises = [], onClose, onSelectExercise }) {
+export default function AddExerciseModal({
+  isOpen,
+  allExercises = [],
+  onClose,
+  onSelectExercise,
+  onAdd,
+}) {
   const [search, setSearch] = useState('')
   const [selectedGroups, setSelectedGroups] = useState([])
   const [muscleGroups, setMuscleGroups] = useState([])
@@ -105,6 +111,18 @@ export default function AddExerciseModal({ isOpen, allExercises = [], onClose, o
 
     return matchesName && matchesMuscles && matchesEquipment
   }), [allExercises, search, selectedMuscles, selectedEquipment])
+
+
+  const handleExerciseSelect = (exercise) => {
+    if (typeof onSelectExercise === 'function') {
+      onSelectExercise(exercise)
+      return
+    }
+
+    if (typeof onAdd === 'function') {
+      onAdd(exercise)
+    }
+  }
 
   if (!isOpen) {
     return null
@@ -166,7 +184,7 @@ export default function AddExerciseModal({ isOpen, allExercises = [], onClose, o
               key={exercise.id}
               type="button"
               className="planner-list-item"
-              onClick={() => onSelectExercise(exercise)}
+              onClick={() => handleExerciseSelect(exercise)}
             >
               <span>{formatExerciseName(exercise.name)}</span>
               <small>Muscles: {getExerciseMuscles(exercise).map(titleCaseLabel).join(', ')}</small>

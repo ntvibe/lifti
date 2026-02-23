@@ -420,7 +420,7 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
         onClose={() => setIsAddOpen(false)}
         allExercises={allExercises}
         selectedIds={new Set(plan.exercises.map((item) => item.exerciseId))}
-        onAdd={(exercise) => {
+        onSelectExercise={(exercise) => {
           addExercise(exercise)
           setIsAddOpen(false)
         }}
