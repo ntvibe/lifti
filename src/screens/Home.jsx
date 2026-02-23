@@ -85,7 +85,7 @@ export default function Home({
                   setOpenMenuPlanId((current) => (current === plan.id ? '' : plan.id))
                 }}
               >
-                <Icon name="drag_indicator" />
+                <Icon name="more_vert" />
               </button>
 
               {openMenuPlanId === plan.id ? (
