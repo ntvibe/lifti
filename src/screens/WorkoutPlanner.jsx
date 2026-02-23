@@ -83,7 +83,6 @@ function ScrubbableNumberField({ id, label, value, config, onTap, onScrubChange 
       <ScrubNumberOverlay
         open={overlay.open}
         anchorRect={overlay.anchorRect}
-        anchorPoint={overlay.anchorPoint}
         value={overlay.displayValue}
         step={config.step}
         unit={config.unit}

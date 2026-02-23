@@ -45,7 +45,6 @@ export default function useHoldScrubNumber({
   const [overlay, setOverlay] = useState({
     open: false,
     anchorRect: null,
-    anchorPoint: null,
     displayValue: Number(value || 0),
     pulseKey: 0,
   })
@@ -84,7 +83,6 @@ export default function useHoldScrubNumber({
       ...currentOverlay,
       open: false,
       anchorRect: null,
-      anchorPoint: null,
     }))
   }, [])
 
@@ -223,7 +221,6 @@ export default function useHoldScrubNumber({
         setOverlay({
           open: true,
           anchorRect: state.anchorEl.getBoundingClientRect(),
-          anchorPoint: { x: state.startX, y: state.startY },
           displayValue: state.startValue,
           pulseKey: 0,
         })
@@ -253,7 +250,6 @@ export default function useHoldScrubNumber({
 
       setOverlay((current) => ({
         ...current,
-        anchorPoint: { x: event.clientX, y: event.clientY },
         displayValue: nextValue,
         pulseKey: increments !== state.increments ? current.pulseKey + 1 : current.pulseKey,
       }))

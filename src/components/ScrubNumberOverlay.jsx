@@ -15,16 +15,16 @@ function formatNumber(value) {
   return Number.isInteger(numeric) ? String(numeric) : String(numeric)
 }
 
-export default function ScrubNumberOverlay({ open, anchorRect, anchorPoint, value, step = 1, unit = '', pulseKey = 0, overlayRef }) {
+export default function ScrubNumberOverlay({ open, anchorRect, value, step = 1, unit = '', pulseKey = 0, overlayRef }) {
   if (!open || !anchorRect) {
     return null
   }
 
   const viewportWidth = window.innerWidth
-  const anchorX = anchorPoint?.x ?? (anchorRect.left + anchorRect.width / 2)
+  const anchorX = anchorRect.left + anchorRect.width / 2
   const clampedLeft = clamp(anchorX, VIEWPORT_PADDING, viewportWidth - VIEWPORT_PADDING)
   const viewportHeight = window.innerHeight
-  const anchorY = anchorPoint?.y ?? (anchorRect.top + anchorRect.height / 2)
+  const anchorY = anchorRect.top + anchorRect.height / 2
   const clampedTop = clamp(anchorY, VIEWPORT_PADDING, viewportHeight - VIEWPORT_PADDING)
 
   const style = {
