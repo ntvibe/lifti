@@ -313,11 +313,6 @@ export default function App() {
 
       if (remotePlans.length > 0) {
         await replacePlans(remotePlans)
-      } else if (plans.length > 0) {
-        await upsertJsonByName(token, PLAN_SNAPSHOT_FILE, {
-          updatedAt: new Date().toISOString(),
-          plans,
-        })
       }
 
       await loadPlans()
@@ -403,6 +398,27 @@ export default function App() {
       handleDriveError(error, 'Couldn’t sync latest local changes.')
     } finally {
       setIsSyncingDrive(false)
+    }
+  }
+
+  const handleSyncFromDriveFile = async (fileId) => {
+    if (!accessToken || !fileId) {
+      return
+    }
+
+    try {
+      const payload = await readFileJson(accessToken, fileId)
+      const remotePlans = Array.isArray(payload?.plans)
+        ? payload.plans
+        : payload
+          ? [payload]
+          : []
+
+      await replacePlans(remotePlans)
+      setIsDriveSynced(true)
+      handleToast('success', 'Pulled plans from selected Google Drive file.')
+    } catch (error) {
+      handleDriveError(error, 'Couldn’t sync from selected Drive file.')
     }
   }
 
@@ -531,7 +547,10 @@ export default function App() {
                 />
               )}
             />
-            <Route path="/settings" element={<Settings accessToken={accessToken} onFilesChanged={loadPlans} />} />
+            <Route
+              path="/settings"
+              element={<Settings accessToken={accessToken} onFilesChanged={loadPlans} onSyncFromFile={handleSyncFromDriveFile} />}
+            />
             <Route path="/planner" element={(
               <WorkoutPlanner
                 plan={draftPlan}

@@ -1260,9 +1260,14 @@ input.field-button {
   padding: 0.7rem;
 }
 
-.settings-file-row div {
+.settings-file-row > div {
   display: grid;
   gap: 0.2rem;
+}
+
+.settings-file-actions {
+  display: flex;
+  gap: 0.45rem;
 }
 
 .settings-file-row small {

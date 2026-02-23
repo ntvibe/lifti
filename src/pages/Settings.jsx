@@ -23,6 +23,22 @@ function humanizeType(name) {
     return 'Plan'
   }
 
+  if (name === 'lifti_sync_snapshot.json') {
+    return 'Plans Snapshot'
+  }
+
+  if (name.startsWith('lifti_session_')) {
+    return 'Workout Session'
+  }
+
+  if (name === 'lifti_history.json') {
+    return 'History'
+  }
+
+  if (name === 'lifti_exercises.json') {
+    return 'Exercises'
+  }
+
   if (name === 'lifti_index.json') {
     return 'Index'
   }
@@ -30,12 +46,13 @@ function humanizeType(name) {
   return 'Unknown'
 }
 
-export default function Settings({ accessToken, onFilesChanged }) {
+export default function Settings({ accessToken, onFilesChanged, onSyncFromFile }) {
   const navigate = useNavigate()
   const [files, setFiles] = useState([])
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState('')
   const [deleteAllState, setDeleteAllState] = useState('')
+  const [syncFromFileId, setSyncFromFileId] = useState('')
   const [error, setError] = useState('')
   const [installPrompt, setInstallPrompt] = useState(null)
   const [installState, setInstallState] = useState('')
@@ -141,23 +158,43 @@ export default function Settings({ accessToken, onFilesChanged }) {
                 <strong>{file.name.replace('lifti_plan_', 'Plan ').replace('.json', '')}</strong>
                 <small>{formatRelativeDate(file.modifiedTime)} • {Math.max(1, Math.round((Number(file.size) || 0) / 1024))} KB • {humanizeType(file.name)}</small>
               </div>
-              <button
-                type="button"
-                className="ghost destructive"
-                disabled={busyId === file.id}
-                onClick={async () => {
-                  setBusyId(file.id)
-                  try {
-                    await deleteDriveFile(accessToken, file.id)
-                    setFiles((current) => current.filter((entry) => entry.id !== file.id))
-                    onFilesChanged?.()
-                  } finally {
-                    setBusyId('')
-                  }
-                }}
-              >
-                Delete
-              </button>
+              <div className="settings-file-actions">
+                {file.mimeType === 'application/json' ? (
+                  <button
+                    type="button"
+                    className="ghost"
+                    disabled={busyId === file.id || syncFromFileId === file.id}
+                    onClick={async () => {
+                      setSyncFromFileId(file.id)
+                      try {
+                        await onSyncFromFile?.(file.id)
+                        onFilesChanged?.()
+                      } finally {
+                        setSyncFromFileId('')
+                      }
+                    }}
+                  >
+                    {syncFromFileId === file.id ? 'Syncing…' : 'Sync from file'}
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  className="ghost destructive"
+                  disabled={busyId === file.id || syncFromFileId === file.id}
+                  onClick={async () => {
+                    setBusyId(file.id)
+                    try {
+                      await deleteDriveFile(accessToken, file.id)
+                      setFiles((current) => current.filter((entry) => entry.id !== file.id))
+                      onFilesChanged?.()
+                    } finally {
+                      setBusyId('')
+                    }
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>
