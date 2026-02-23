@@ -22,12 +22,13 @@ export default function ScrubNumberOverlay({ open, anchorRect, value, step = 1, 
 
   const viewportWidth = window.innerWidth
   const clampedLeft = clamp(anchorRect.left + anchorRect.width / 2, VIEWPORT_PADDING, viewportWidth - VIEWPORT_PADDING)
-  const prefersBelow = anchorRect.top < 110
+  const viewportHeight = window.innerHeight
+  const clampedTop = clamp(anchorRect.top + anchorRect.height / 2, VIEWPORT_PADDING, viewportHeight - VIEWPORT_PADDING)
 
   const style = {
     left: clampedLeft,
-    top: prefersBelow ? anchorRect.bottom + 12 : anchorRect.top - 12,
-    transform: prefersBelow ? 'translate(-50%, 0)' : 'translate(-50%, -100%)',
+    top: clampedTop,
+    transform: 'translate(-50%, -50%)',
     maxWidth: `${Math.max(120, viewportWidth - VIEWPORT_PADDING * 2)}px`,
   }
 
@@ -37,13 +38,15 @@ export default function ScrubNumberOverlay({ open, anchorRect, value, step = 1, 
 
   return createPortal(
     <div className="scrub-overlay-anchored" style={{ pointerEvents: 'none', position: 'fixed', inset: 0, zIndex: 120 }}>
-      <div ref={overlayRef} className="slot-overlay-glass" style={{ ...style, position: 'fixed', pointerEvents: 'none' }}>
-        <span className="slot-handle" />
-        <div className="slot-value-stack">
-          <span className="slot-muted">{formatNumber(above)}{unit ? <small>{unit}</small> : null}</span>
-          <strong key={pulseKey} className="slot-center">{formatNumber(center)}{unit ? <small>{unit}</small> : null}</strong>
-          <span className="slot-muted">{formatNumber(Math.max(0, below))}{unit ? <small>{unit}</small> : null}</span>
+      <div ref={overlayRef} className="slot-overlay-stack" style={{ ...style, position: 'fixed', pointerEvents: 'none' }}>
+        <span className="slot-muted slot-muted-top">{formatNumber(above)}{unit ? <small>{unit}</small> : null}</span>
+        <div className="slot-overlay-glass">
+          <span className="slot-handle" />
+          <div className="slot-value-stack">
+            <strong key={pulseKey} className="slot-center">{formatNumber(center)}{unit ? <small>{unit}</small> : null}</strong>
+          </div>
         </div>
+        <span className="slot-muted slot-muted-bottom">{formatNumber(Math.max(0, below))}{unit ? <small>{unit}</small> : null}</span>
       </div>
     </div>,
     document.body,

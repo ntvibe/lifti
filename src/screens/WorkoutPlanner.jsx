@@ -94,6 +94,14 @@ function NumberKeypad({ isOpen, fieldKey, value, onChange, onDone, onClose }) {
 
   const config = FIELD_CONFIG[fieldKey]
   const nudges = config.allowDecimal ? [-10, -5, -2.5, 2.5, 5, 10] : [-10, -5, 5, 10]
+  const appendDigit = (prev, digit) => {
+    const current = prev || ''
+    if (current === '0') {
+      return String(digit)
+    }
+
+    return `${current}${digit}`
+  }
 
   return (
     <div className="modal-backdrop keypad-backdrop" role="presentation" onClick={onClose}>
@@ -101,12 +109,18 @@ function NumberKeypad({ isOpen, fieldKey, value, onChange, onDone, onClose }) {
         <div className="number-pad-value">{value || '0'}</div>
         <div className="number-pad-grid">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
-            <button key={digit} type="button" onClick={() => onChange((prev) => `${prev || ''}${digit}`)}>{digit}</button>
+            <button key={digit} type="button" onClick={() => onChange((prev) => appendDigit(prev, digit))}>{digit}</button>
           ))}
           {config.allowDecimal
-            ? <button type="button" onClick={() => onChange((prev) => (prev.includes('.') ? prev : `${prev || '0'}.`))}>.</button>
+            ? <button type="button" onClick={() => onChange((prev) => {
+              const current = prev || ''
+              if (current.includes('.')) {
+                return current
+              }
+              return current === '' ? '0.' : `${current}.`
+            })}>.</button>
             : <button type="button" onClick={() => onChange((prev) => (prev ? prev.slice(0, -1) : ''))}>⌫</button>}
-          <button type="button" onClick={() => onChange((prev) => `${prev || ''}0`)}>0</button>
+          <button type="button" onClick={() => onChange((prev) => appendDigit(prev, 0))}>0</button>
           <button type="button" onClick={() => onChange((prev) => (prev ? prev.slice(0, -1) : ''))}>⌫</button>
         </div>
 
