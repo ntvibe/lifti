@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toTitleCase } from '../utils/label'
 
 function createId(prefix) {
@@ -69,8 +69,6 @@ function normalizeSet(setRow = {}) {
 
 export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, onSave }) {
   const [draftSets, setDraftSets] = useState([])
-  const [sheetOffsetY, setSheetOffsetY] = useState(0)
-  const sheetPointerStart = useRef(0)
 
   const sets = useMemo(() => {
     if (draftSets.length) {
@@ -103,6 +101,22 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
     }
   }, [isOpen])
 
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined
+    }
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        onClose()
+      }
+    }
+
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [isOpen, onClose])
+
   if (!isOpen || !item) {
     return null
   }
@@ -120,103 +134,88 @@ export default function ExerciseEditorModal({ isOpen, item, exercise, onClose, o
   const saveAndClose = () => {
     onSave(sets)
     onClose()
-    setSheetOffsetY(0)
   }
 
   return (
     <div className="modal-backdrop bottom-sheet-backdrop select-none" role="presentation" onClick={(event) => { if (event.target === event.currentTarget) saveAndClose() }}>
       <section
-        className="modal-sheet bottom-sheet glass glass-strong"
+        className="modal-sheet bottom-sheet exercise-editor-sheet glass glass-strong"
         role="dialog"
         aria-modal="true"
-        style={{ transform: `translateY(${sheetOffsetY}px)` }}
-        onPointerDown={(event) => {
-          sheetPointerStart.current = event.clientY
-        }}
-        onPointerMove={(event) => {
-          const delta = event.clientY - sheetPointerStart.current
-          if (delta > 0) {
-            setSheetOffsetY(delta)
-          }
-        }}
-        onPointerUp={() => {
-          if (sheetOffsetY > 100) {
-            saveAndClose()
-          } else {
-            setSheetOffsetY(0)
-          }
-        }}
         onClick={(event) => event.stopPropagation()}
       >
+        {/* Keep close actions explicit (button / ESC / backdrop) so pointer movement never dismisses this dialog. */}
         <div className="sheet-handle" />
         <div className="filter-header-row">
           <h2>{toTitleCase(item.exerciseName)}</h2>
           <button type="button" className="text-button" onClick={saveAndClose}>X</button>
         </div>
 
-        <div className="sets-table">
-          <div className="sets-header sets-grid-extended centered-headers">
-            <span>Set #</span>
-            <span>Reps</span>
-            <span>Weight</span>
-            <span>Rest</span>
-            <span />
-          </div>
-          {sets.map((setRow, index) => (
-            <div key={setRow.id || `${item.id}-set-${index + 1}`} className="set-row sets-grid-extended">
-              <span className="set-index">{index + 1}</span>
-              <input
-                type="number"
-                inputMode="numeric"
-                className="field-button"
-                value={setRow.reps}
-                min={0}
-                step={1}
-                aria-label={`Set ${index + 1} reps`}
-                onChange={(event) => updateSet(index, 'reps', event.target.value)}
-              />
-              <input
-                type="number"
-                inputMode="decimal"
-                className="field-button"
-                value={setRow.weight}
-                min={0}
-                step={0.5}
-                aria-label={`Set ${index + 1} weight`}
-                onChange={(event) => updateSet(index, 'weight', event.target.value)}
-              />
-              <input
-                type="number"
-                inputMode="numeric"
-                className="field-button"
-                value={setRow.restSec}
-                min={0}
-                step={5}
-                aria-label={`Set ${index + 1} rest in seconds`}
-                onChange={(event) => updateSet(index, 'restSec', event.target.value)}
-              />
-              <button
-                type="button"
-                className="text-button"
-                aria-label={`Delete set ${index + 1}`}
-                onClick={() => commitSets(sets.filter((_, rowIndex) => rowIndex !== index))}
-              >
-                X
-              </button>
+        <div className="exercise-editor-content">
+          <div className="sets-table">
+            <div className="sets-header sets-grid-extended centered-headers">
+              <span>Set #</span>
+              <span>Reps</span>
+              <span>Weight</span>
+              <span>Rest</span>
+              <span />
             </div>
-          ))}
-        </div>
+            {sets.map((setRow, index) => (
+              <div key={setRow.id || `${item.id}-set-${index + 1}`} className="set-row sets-grid-extended">
+                <span className="set-index">{index + 1}</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  className="field-button"
+                  value={setRow.reps}
+                  min={0}
+                  step={1}
+                  aria-label={`Set ${index + 1} reps`}
+                  onChange={(event) => updateSet(index, 'reps', event.target.value)}
+                />
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  className="field-button"
+                  value={setRow.weight}
+                  min={0}
+                  step={0.5}
+                  aria-label={`Set ${index + 1} weight`}
+                  onChange={(event) => updateSet(index, 'weight', event.target.value)}
+                />
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  className="field-button"
+                  value={setRow.restSec}
+                  min={0}
+                  step={5}
+                  aria-label={`Set ${index + 1} rest in seconds`}
+                  onChange={(event) => updateSet(index, 'restSec', event.target.value)}
+                />
+                <button
+                  type="button"
+                  className="text-button"
+                  aria-label={`Delete set ${index + 1}`}
+                  onClick={() => commitSets(sets.filter((_, rowIndex) => rowIndex !== index))}
+                >
+                  X
+                </button>
+              </div>
+            ))}
+          </div>
 
-        <button
-          type="button"
-          className="ghost add-set-full"
-          onClick={() => {
-            const last = sets[sets.length - 1] || FALLBACK_SET
-            commitSets([...sets, { id: createId('set'), reps: last.reps, weight: last.weight, restSec: last.restSec }])
-          }}
-        >
-          + Add set
-        </button>
+          <button
+            type="button"
+            className="ghost add-set-full"
+            onClick={() => {
+              const last = sets[sets.length - 1] || FALLBACK_SET
+              commitSets([...sets, { id: createId('set'), reps: last.reps, weight: last.weight, restSec: last.restSec }])
+            }}
+          >
+            + Add set
+          </button>
+        </div>
       </section>
     </div>
   )
