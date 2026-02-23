@@ -41,7 +41,7 @@ function toRepoPlan(plan = {}) {
             order: Number.isFinite(setRow.order) ? setRow.order : setIndex,
             reps: Number.isFinite(setRow.reps) ? Math.max(0, Math.round(setRow.reps)) : 0,
             weight: Number.isFinite(setRow.weight) ? Math.max(0, Number(setRow.weight)) : 0,
-            restSec: Number.isFinite(setRow.restSec) ? Math.max(0, Math.round(setRow.restSec)) : 0,
+            restSec: Number.isFinite(setRow.restSec) ? Math.max(0, Math.round(setRow.restSec)) : 60,
           }))
           : [],
       }))

@@ -714,6 +714,14 @@ input {
   min-height: 44px;
 }
 
+input.field-button {
+  padding: 0.5rem 0.65rem;
+  text-align: center;
+  touch-action: manipulation;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
 .number-pad-sheet {
   background: #0e1015;
   border-radius: 1rem;
@@ -1121,6 +1129,10 @@ button,
 
 .field-button {
   touch-action: none;
+}
+
+input.field-button {
+  touch-action: manipulation;
 }
 
 .loading-skeleton {
