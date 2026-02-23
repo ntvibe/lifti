@@ -301,13 +301,23 @@ export default function App() {
       await ensureDriveClientReady(token)
 
       const snapshotFileId = await findFileIdByName(token, PLAN_SNAPSHOT_FILE)
+      let remotePlans = []
+
       if (snapshotFileId) {
         const snapshot = await readJson(token, snapshotFileId)
-        const syncedPlans = Array.isArray(snapshot?.plans) ? snapshot.plans : []
-        await replacePlans(syncedPlans)
+        remotePlans = Array.isArray(snapshot?.plans) ? snapshot.plans : []
       } else {
         const { plans: drivePlans } = await readPlanFiles(token)
-        await replacePlans(drivePlans)
+        remotePlans = Array.isArray(drivePlans) ? drivePlans : []
+      }
+
+      if (remotePlans.length > 0) {
+        await replacePlans(remotePlans)
+      } else if (plans.length > 0) {
+        await upsertJsonByName(token, PLAN_SNAPSHOT_FILE, {
+          updatedAt: new Date().toISOString(),
+          plans,
+        })
       }
 
       await loadPlans()

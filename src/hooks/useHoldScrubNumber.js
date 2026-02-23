@@ -67,6 +67,7 @@ export default function useHoldScrubNumber({
     }
 
     document.body.classList.remove('no-scroll', 'scrub-active')
+    document.documentElement.classList.remove('no-scroll')
 
     pointerRef.current = {
       pointerId: null,
@@ -205,6 +206,7 @@ export default function useHoldScrubNumber({
         state.holdTriggered = true
         state.anchorEl.setPointerCapture(event.pointerId)
         document.body.classList.add('no-scroll', 'scrub-active')
+        document.documentElement.classList.add('no-scroll')
         setOverlay({
           open: true,
           anchorRect: state.anchorEl.getBoundingClientRect(),
