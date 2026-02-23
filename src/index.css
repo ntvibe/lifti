@@ -1142,11 +1142,11 @@ button,
 }
 
 .field-button {
-  touch-action: none;
+  touch-action: auto;
 }
 
 input.field-button {
-  touch-action: manipulation;
+  touch-action: auto;
 }
 
 .loading-skeleton {
@@ -1310,11 +1310,11 @@ input.field-button {
 }
 
 .plan-card-content {
-  align-items: center;
+  align-items: start;
   display: grid;
   gap: 0.4rem;
-  justify-items: center;
-  text-align: center;
+  justify-items: start;
+  text-align: left;
   width: 100%;
 }
 
@@ -1356,6 +1356,60 @@ input.field-button {
 
 .planner-screen .filled-plan-name {
   text-align: center;
+}
+
+.number-input-wrap {
+  position: relative;
+}
+
+.input-stepper-overlay {
+  align-items: center;
+  display: grid;
+  gap: 0.25rem;
+  position: absolute;
+  right: -2.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 8;
+}
+
+.stepper-btn {
+  font-size: 0.7rem;
+  min-height: 28px;
+  min-width: 42px;
+  padding: 0.2rem 0.35rem;
+}
+
+.keypad-backdrop {
+  align-items: flex-end;
+  padding: 0;
+}
+
+.keypad-sheet {
+  border-radius: 1rem 1rem 0 0;
+  margin: 0;
+  max-width: none;
+  width: 100%;
+}
+
+.open-keypad-fab {
+  align-items: center;
+  border-radius: 999px;
+  bottom: calc(var(--bottom-nav-height) + 88px + env(safe-area-inset-bottom));
+  display: inline-flex;
+  height: 48px;
+  justify-content: center;
+  position: fixed;
+  right: 1rem;
+  width: 48px;
+  z-index: 61;
+}
+
+.kebab-icon-only {
+  border: none;
+  min-height: 32px;
+  min-width: 32px;
+  padding: 0.2rem;
 }
 
 .planner-exercise-editor-screen {
