@@ -117,6 +117,8 @@ export default function App() {
   const [historySessions, setHistorySessions] = useState([])
   const [historyStatus, setHistoryStatus] = useState('idle')
   const [historyError, setHistoryError] = useState('')
+  const [isDriveSynced, setIsDriveSynced] = useState(false)
+  const [isSyncingDrive, setIsSyncingDrive] = useState(false)
   const catalog = useExerciseCatalog()
   const {
     accessToken,
@@ -305,6 +307,7 @@ export default function App() {
     setFileIds({ history: '', exercises: '' })
     setPlans([])
     persistActiveSession(null)
+    setIsDriveSynced(false)
     localStorage.removeItem('lifti_file_ids')
     handleToast('success', 'Signed out')
     navigate('/')
@@ -335,6 +338,7 @@ export default function App() {
   const handleCreatePlan = async () => {
     try {
       const newPlan = await createPlan('New Plan')
+      setIsDriveSynced(false)
       setDraftPlan(newPlan)
       navigate('/planner')
     } catch (error) {
@@ -348,8 +352,31 @@ export default function App() {
     setDraftPlan(nextPlan)
     try {
       await upsertPlan(nextPlan)
+      setIsDriveSynced(false)
     } catch (error) {
       handleDriveError(error)
+    }
+  }
+
+
+  const handleSyncNow = async () => {
+    if (!accessToken || isSyncingDrive) {
+      return
+    }
+
+    setIsSyncingDrive(true)
+    try {
+      await upsertJsonByName(accessToken, 'lifti_sync_snapshot.json', {
+        updatedAt: new Date().toISOString(),
+        plans,
+      })
+      setIsDriveSynced(true)
+      handleToast('success', 'Synced latest local changes to Google Drive.')
+    } catch (error) {
+      setIsDriveSynced(false)
+      handleDriveError(error, 'Couldn’t sync latest local changes.')
+    } finally {
+      setIsSyncingDrive(false)
     }
   }
 
@@ -385,6 +412,9 @@ export default function App() {
               profileName={profileName}
               profilePicture={profilePicture}
               onSettings={() => navigate('/settings')}
+              onSync={handleSyncNow}
+              syncing={isSyncingDrive}
+              isSynced={isDriveSynced}
               onSignOut={handleLogout}
             />
           ) : (
@@ -431,6 +461,7 @@ export default function App() {
                   onDeletePlan={async (planId) => {
                     try {
                       await deletePlan(planId)
+                      setIsDriveSynced(false)
                       handleToast('success', 'Plan deleted')
                     } catch (error) {
                       handleDriveError(error)
@@ -459,6 +490,7 @@ export default function App() {
                       )
                       setHistorySessions((current) => [nextSession, ...current.filter((entry) => entry.fileId !== nextSession.fileId)])
                       setHistoryStatus('ready')
+                      setIsDriveSynced(false)
                       persistActiveSession(null)
                       handleToast('success', 'Session saved')
                       navigate('/')

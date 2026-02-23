@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 const MOVE_CANCEL_THRESHOLD = 8
 const TAP_THRESHOLD = 6
 const DEFAULT_PIXELS_PER_STEP = 16
+const SCROLL_GUARD_MS = 140
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
@@ -30,6 +31,7 @@ export default function useHoldScrubNumber({
 }) {
   const timerRef = useRef(null)
   const overlayRef = useRef(null)
+  const lastScrollAtRef = useRef(0)
   const pointerRef = useRef({
     pointerId: null,
     startX: 0,
@@ -97,6 +99,15 @@ export default function useHoldScrubNumber({
   }, [])
 
   useEffect(() => {
+    const onScroll = () => {
+      lastScrollAtRef.current = Date.now()
+    }
+
+    window.addEventListener('scroll', onScroll, true)
+    return () => window.removeEventListener('scroll', onScroll, true)
+  }, [])
+
+  useEffect(() => {
     if (!overlay.open) {
       return undefined
     }
@@ -133,6 +144,10 @@ export default function useHoldScrubNumber({
   const bind = useMemo(() => ({
     onPointerDown: (event) => {
       if (event.button !== undefined && event.button !== 0) {
+        return
+      }
+
+      if (Date.now() - lastScrollAtRef.current < SCROLL_GUARD_MS) {
         return
       }
 
@@ -221,7 +236,7 @@ export default function useHoldScrubNumber({
       }
 
       if (state.moved < TAP_THRESHOLD) {
-        onTap?.()
+        onTap?.(event)
       }
 
       close()

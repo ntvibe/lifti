@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-export default function AvatarMenu({ profileName, profilePicture, onSignOut, onSettings }) {
+export default function AvatarMenu({ profileName, profilePicture, isSynced = false, onSync, syncing = false, onSignOut, onSettings }) {
   const [open, setOpen] = useState(false)
   const wrapperRef = useRef(null)
 
@@ -24,11 +24,26 @@ export default function AvatarMenu({ profileName, profilePicture, onSignOut, onS
 
   return (
     <div className="avatar-menu" ref={wrapperRef}>
-      <button type="button" className="avatar-button select-none" onClick={() => setOpen((value) => !value)} aria-label="Account menu">
+      <button
+        type="button"
+        className={`avatar-button select-none ${isSynced ? 'avatar-button-synced' : 'avatar-button-unsynced'}`}
+        onClick={() => setOpen((value) => !value)}
+        aria-label="Account menu"
+      >
         {profilePicture ? <img src={profilePicture} alt={profileName || 'Profile'} /> : <span>{initials}</span>}
       </button>
       {open ? (
         <div className="avatar-dropdown glass">
+          <button
+            type="button"
+            disabled={syncing}
+            onClick={async () => {
+              await onSync?.()
+              setOpen(false)
+            }}
+          >
+            {syncing ? 'Syncing…' : 'Sync'}
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -45,7 +60,7 @@ export default function AvatarMenu({ profileName, profilePicture, onSignOut, onS
               onSignOut()
             }}
           >
-            Sign out
+            Sign Out
           </button>
         </div>
       ) : null}

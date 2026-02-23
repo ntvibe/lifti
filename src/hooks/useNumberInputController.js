@@ -5,9 +5,10 @@ export default function useNumberInputController({ onCommit }) {
   const [isKeypadOpen, setIsKeypadOpen] = useState(false)
   const [currentValue, setCurrentValue] = useState('')
 
-  const openField = useCallback((field, value) => {
+  const openField = useCallback((field, value, options = {}) => {
     setActiveField(field)
     setCurrentValue(value === '' || value === null || value === undefined ? '' : String(value))
+    setIsKeypadOpen(Boolean(options.openKeypad))
   }, [])
 
   const close = useCallback(() => {
@@ -34,16 +35,6 @@ export default function useNumberInputController({ onCommit }) {
     setCurrentValue(next === '' || next === null || next === undefined ? '' : String(next))
   }, [activeField, currentValue, onCommit])
 
-  const nudge = useCallback((delta) => {
-    if (!activeField) {
-      return
-    }
-
-    const baseValue = Number(currentValue || 0)
-    const nextValue = Number.isFinite(baseValue) ? baseValue + delta : delta
-    commit(String(nextValue))
-  }, [activeField, commit, currentValue])
-
   return {
     activeField,
     isKeypadOpen,
@@ -53,7 +44,6 @@ export default function useNumberInputController({ onCommit }) {
     openKeypad,
     closeKeypad,
     close,
-    nudge,
     commit,
   }
 }
