@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import {
   createJson,
@@ -104,15 +104,6 @@ function Toast({ toast }) {
   return <div className={`toast toast-${toast.type}`}>{toast.message}</div>
 }
 
-function buildPlanAutosaveSignature(plan = {}) {
-  return JSON.stringify({
-    id: plan.id || '',
-    createdAt: plan.createdAt || '',
-    name: plan.name || '',
-    exercises: Array.isArray(plan.exercises) ? plan.exercises : [],
-  })
-}
-
 export default function App() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -126,9 +117,6 @@ export default function App() {
   const [historySessions, setHistorySessions] = useState([])
   const [historyStatus, setHistoryStatus] = useState('idle')
   const [historyError, setHistoryError] = useState('')
-  const autoSaveTimeoutRef = useRef(null)
-  const lastAutoSavedSignatureRef = useRef('')
-  const draftPlanRef = useRef(draftPlan)
   const catalog = useExerciseCatalog()
   const {
     accessToken,
@@ -170,10 +158,8 @@ export default function App() {
     deletePlan,
     upsertPlan,
     setPlans,
-  } = usePlans({
-    accessToken,
-    onAuthExpired: handleSessionExpired,
-  })
+    getPlanWithDetails,
+  } = usePlans()
 
   useEffect(() => {
     if (!toast) {
@@ -183,16 +169,6 @@ export default function App() {
     const timeout = window.setTimeout(() => setToast(null), 2800)
     return () => window.clearTimeout(timeout)
   }, [toast])
-
-  useEffect(() => () => {
-    if (autoSaveTimeoutRef.current) {
-      window.clearTimeout(autoSaveTimeoutRef.current)
-    }
-  }, [])
-
-  useEffect(() => {
-    draftPlanRef.current = draftPlan
-  }, [draftPlan])
 
   const handleToast = (type, message) => {
     setToast({ type, message })
@@ -334,8 +310,6 @@ export default function App() {
     navigate('/')
   }
 
-  const homePlans = useMemo(() => plans.slice().sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()), [plans])
-
   const handleStartSession = (plan) => {
     const now = new Date().toISOString()
     const nextSession = {
@@ -362,7 +336,6 @@ export default function App() {
     try {
       const newPlan = await createPlan('New Plan')
       setDraftPlan(newPlan)
-      lastAutoSavedSignatureRef.current = buildPlanAutosaveSignature(newPlan)
       navigate('/planner')
     } catch (error) {
       handleDriveError(error)
@@ -370,6 +343,15 @@ export default function App() {
   }
 
   const shouldShowHomeFab = isAuthenticated && location.pathname === '/'
+
+  const handleDraftPlanChange = async (nextPlan) => {
+    setDraftPlan(nextPlan)
+    try {
+      await upsertPlan(nextPlan)
+    } catch (error) {
+      handleDriveError(error)
+    }
+  }
 
   const handleTogglePauseResume = () => {
     if (!activeSession) {
@@ -390,75 +372,6 @@ export default function App() {
     })
     navigate('/training')
   }
-
-  const flushDraftPlanAutosave = useCallback(() => {
-    if (!isAuthenticated || !accessToken) {
-      return
-    }
-
-    const planToSave = draftPlanRef.current
-    if (!planToSave?.id || !planToSave?.createdAt) {
-      return
-    }
-
-    const signature = buildPlanAutosaveSignature(planToSave)
-    if (signature === lastAutoSavedSignatureRef.current) {
-      return
-    }
-
-    if (autoSaveTimeoutRef.current) {
-      window.clearTimeout(autoSaveTimeoutRef.current)
-    }
-
-    void upsertPlan(planToSave)
-      .then(() => {
-        lastAutoSavedSignatureRef.current = signature
-      })
-      .catch((error) => {
-        handleDriveError(error)
-      })
-  }, [accessToken, isAuthenticated, upsertPlan])
-
-  useEffect(() => {
-    if (location.pathname !== '/planner') {
-      if (autoSaveTimeoutRef.current) {
-        window.clearTimeout(autoSaveTimeoutRef.current)
-      }
-      return
-    }
-
-    if (!isAuthenticated || !accessToken) {
-      return
-    }
-
-    if (!draftPlan?.id || !draftPlan?.createdAt) {
-      return
-    }
-
-    const signature = buildPlanAutosaveSignature(draftPlan)
-    if (signature === lastAutoSavedSignatureRef.current) {
-      return
-    }
-
-    if (autoSaveTimeoutRef.current) {
-      window.clearTimeout(autoSaveTimeoutRef.current)
-    }
-
-    autoSaveTimeoutRef.current = window.setTimeout(async () => {
-      try {
-        await upsertPlan(draftPlan)
-        lastAutoSavedSignatureRef.current = signature
-      } catch (error) {
-        handleDriveError(error)
-      }
-    }, 450)
-  }, [accessToken, draftPlan, isAuthenticated, location.pathname, upsertPlan])
-
-  useEffect(() => () => {
-    if (location.pathname === '/planner') {
-      flushDraftPlanAutosave()
-    }
-  }, [flushDraftPlanAutosave, location.pathname])
 
   return (
     <div className="app-shell select-none">
@@ -496,17 +409,16 @@ export default function App() {
               element={(
                 <Home
                   authStatus={authStatus}
-                  plans={homePlans}
+                  plans={plans}
                   allExercises={catalog}
                   driveStatus={authLoading ? 'loading' : driveStatus}
                   driveError={driveError}
                   onRetry={loadPlans}
                   onSignIn={handleLogin}
-                  onOpenPlan={(planId) => {
-                    const existing = plans.find((entry) => entry.id === planId)
-                    if (existing) {
-                      setDraftPlan(existing)
-                      lastAutoSavedSignatureRef.current = buildPlanAutosaveSignature(existing)
+                  onOpenPlan={async (planId) => {
+                    const details = await getPlanWithDetails(planId)
+                    if (details?.uiPlan) {
+                      setDraftPlan(details.uiPlan)
                       navigate('/planner')
                     }
                   }}
@@ -566,7 +478,7 @@ export default function App() {
               <WorkoutPlanner
                 plan={draftPlan}
                 allExercises={catalog}
-                onPlanChange={setDraftPlan}
+                onPlanChange={handleDraftPlanChange}
                 onStartWorkout={handleStartSession}
               />
             )}
