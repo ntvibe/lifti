@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ExerciseRepo } from '../storage/repositories/ExerciseRepo'
 import { PlanRepo } from '../storage/repositories/PlanRepo'
+import { db } from '../storage/db'
 import { getPlanWithDetails } from '../storage/selectors/getPlanWithDetails'
 
 function toUiExercise(planExercise, exercise) {
@@ -119,6 +120,37 @@ export default function usePlans() {
     setPlans((current) => current.filter((plan) => plan.id !== planId))
   }, [])
 
+  const replacePlans = useCallback(async (nextPlans = []) => {
+    const normalized = nextPlans.map((plan) => toRepoPlan(plan))
+
+    await db.planSets.clear()
+    await db.planExercises.clear()
+    await db.plans.clear()
+
+    for (const plan of normalized) {
+      // eslint-disable-next-line no-await-in-loop
+      await PlanRepo.upsert({
+        ...plan,
+        createdAt: plan.createdAt,
+        updatedAt: plan.updatedAt,
+        exercises: Array.isArray(plan.exercises)
+          ? plan.exercises.map((exercise, exerciseIndex) => ({
+            ...exercise,
+            order: Number.isFinite(exercise.order) ? exercise.order : exerciseIndex,
+            sets: Array.isArray(exercise.sets)
+              ? exercise.sets.map((setRow, setIndex) => ({
+                ...setRow,
+                order: Number.isFinite(setRow.order) ? setRow.order : setIndex,
+              }))
+              : [],
+          }))
+          : [],
+      })
+    }
+
+    await hydratePlans()
+  }, [hydratePlans])
+
   const fetchPlanWithDetails = useCallback(async (planId) => {
     const details = await getPlanWithDetails(planId)
     if (!details) {
@@ -156,6 +188,7 @@ export default function usePlans() {
     createPlan,
     updatePlan,
     deletePlan,
+    replacePlans,
     upsertPlan,
     setPlans,
     getPlanWithDetails: fetchPlanWithDetails,

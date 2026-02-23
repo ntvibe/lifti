@@ -4,9 +4,12 @@ import {
   createJson,
   deleteDriveFile,
   ensureDriveClientReady,
+  findFileIdByName,
   isAuthExpiredError,
   listDriveFiles,
+  readJson,
   readFileJson,
+  readPlanFiles,
   upsertJsonByName,
 } from './services/driveAppData'
 import PlanBuilder from './pages/PlanBuilder'
@@ -23,6 +26,7 @@ import History from './screens/History'
 
 const HISTORY_FILE = 'lifti_history.json'
 const EXERCISES_FILE = 'lifti_exercises.json'
+const PLAN_SNAPSHOT_FILE = 'lifti_sync_snapshot.json'
 const ACTIVE_SESSION_KEY = 'lifti_active_session'
 
 const DEFAULT_HISTORY = { entries: [] }
@@ -160,6 +164,7 @@ export default function App() {
     deletePlan,
     upsertPlan,
     setPlans,
+    replacePlans,
     getPlanWithDetails,
   } = usePlans()
 
@@ -294,8 +299,19 @@ export default function App() {
     try {
       const token = await login()
       await ensureDriveClientReady(token)
+
+      const snapshotFileId = await findFileIdByName(token, PLAN_SNAPSHOT_FILE)
+      if (snapshotFileId) {
+        const snapshot = await readJson(token, snapshotFileId)
+        const syncedPlans = Array.isArray(snapshot?.plans) ? snapshot.plans : []
+        await replacePlans(syncedPlans)
+      } else {
+        const { plans: drivePlans } = await readPlanFiles(token)
+        await replacePlans(drivePlans)
+      }
+
       await loadPlans()
-      handleToast('success', 'Signed in successfully.')
+      handleToast('success', 'Signed in and pulled latest plans from Google Drive.')
     } catch (error) {
       console.warn('Login failed.', error)
       handleToast('info', error?.message || 'Google Sign-in unavailable.')
