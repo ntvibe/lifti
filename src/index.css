@@ -630,6 +630,7 @@ input {
   right: 0;
   top: 0;
   z-index: 50;
+  pointer-events: auto;
 }
 
 .modal-sheet {
@@ -638,7 +639,20 @@ input {
   max-height: calc(100vh - 2rem);
   overflow: auto;
   padding: 1rem;
+  pointer-events: auto;
   width: min(760px, 100%);
+}
+
+.exercise-editor-sheet {
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+.exercise-editor-content {
+  max-height: calc(90vh - 5.5rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 .editor-screen {
