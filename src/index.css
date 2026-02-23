@@ -507,8 +507,14 @@ input {
   color: #edf1ff;
   display: grid;
   gap: 0.2rem;
+  justify-content: flex-start;
   justify-items: flex-start;
   padding: 0.8rem;
+  text-align: left;
+}
+
+.planner-list-item > * {
+  justify-self: start;
   text-align: left;
 }
 
