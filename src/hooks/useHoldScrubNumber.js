@@ -48,6 +48,67 @@ export default function useHoldScrubNumber({
     displayValue: Number(value || 0),
     pulseKey: 0,
   })
+  const scrollLockRef = useRef({
+    locked: false,
+    scrollX: 0,
+    scrollY: 0,
+    bodyPosition: '',
+    bodyTop: '',
+    bodyLeft: '',
+    bodyRight: '',
+    bodyWidth: '',
+    bodyOverflow: '',
+    htmlOverflow: '',
+    htmlOverscroll: '',
+  })
+
+  const lockScroll = useCallback(() => {
+    const state = scrollLockRef.current
+    if (state.locked) {
+      return
+    }
+
+    const { body, documentElement } = document
+    state.locked = true
+    state.scrollX = window.scrollX
+    state.scrollY = window.scrollY
+    state.bodyPosition = body.style.position
+    state.bodyTop = body.style.top
+    state.bodyLeft = body.style.left
+    state.bodyRight = body.style.right
+    state.bodyWidth = body.style.width
+    state.bodyOverflow = body.style.overflow
+    state.htmlOverflow = documentElement.style.overflow
+    state.htmlOverscroll = documentElement.style.overscrollBehavior
+
+    body.style.position = 'fixed'
+    body.style.top = `-${state.scrollY}px`
+    body.style.left = '0'
+    body.style.right = '0'
+    body.style.width = '100%'
+    body.style.overflow = 'hidden'
+    documentElement.style.overflow = 'hidden'
+    documentElement.style.overscrollBehavior = 'none'
+  }, [])
+
+  const unlockScroll = useCallback(() => {
+    const state = scrollLockRef.current
+    if (!state.locked) {
+      return
+    }
+
+    const { body, documentElement } = document
+    body.style.position = state.bodyPosition
+    body.style.top = state.bodyTop
+    body.style.left = state.bodyLeft
+    body.style.right = state.bodyRight
+    body.style.width = state.bodyWidth
+    body.style.overflow = state.bodyOverflow
+    documentElement.style.overflow = state.htmlOverflow
+    documentElement.style.overscrollBehavior = state.htmlOverscroll
+    window.scrollTo(state.scrollX, state.scrollY)
+    state.locked = false
+  }, [])
 
   const close = useCallback(() => {
     if (timerRef.current) {
@@ -68,6 +129,7 @@ export default function useHoldScrubNumber({
 
     document.body.classList.remove('no-scroll', 'scrub-active')
     document.documentElement.classList.remove('no-scroll')
+    unlockScroll()
 
     pointerRef.current = {
       pointerId: null,
@@ -85,7 +147,7 @@ export default function useHoldScrubNumber({
       open: false,
       anchorRect: null,
     }))
-  }, [])
+  }, [unlockScroll])
 
   const refreshAnchorRect = useCallback(() => {
     const anchorEl = pointerRef.current.anchorEl
@@ -113,6 +175,10 @@ export default function useHoldScrubNumber({
       return undefined
     }
 
+    const stopNativeScroll = (event) => {
+      event.preventDefault()
+    }
+
     const onEscape = (event) => {
       if (event.key === 'Escape') {
         close()
@@ -130,12 +196,16 @@ export default function useHoldScrubNumber({
     window.addEventListener('keydown', onEscape)
     window.addEventListener('resize', refreshAnchorRect)
     window.addEventListener('scroll', refreshAnchorRect, true)
+    window.addEventListener('wheel', stopNativeScroll, { passive: false, capture: true })
+    window.addEventListener('touchmove', stopNativeScroll, { passive: false, capture: true })
     document.addEventListener('pointerdown', onDocumentPointerDown)
 
     return () => {
       window.removeEventListener('keydown', onEscape)
       window.removeEventListener('resize', refreshAnchorRect)
       window.removeEventListener('scroll', refreshAnchorRect, true)
+      window.removeEventListener('wheel', stopNativeScroll, { capture: true })
+      window.removeEventListener('touchmove', stopNativeScroll, { capture: true })
       document.removeEventListener('pointerdown', onDocumentPointerDown)
     }
   }, [close, overlay.open, refreshAnchorRect])
@@ -207,6 +277,7 @@ export default function useHoldScrubNumber({
         state.anchorEl.setPointerCapture(event.pointerId)
         document.body.classList.add('no-scroll', 'scrub-active')
         document.documentElement.classList.add('no-scroll')
+        lockScroll()
         setOverlay({
           open: true,
           anchorRect: state.anchorEl.getBoundingClientRect(),
@@ -278,7 +349,7 @@ export default function useHoldScrubNumber({
     onContextMenu: (event) => {
       event.preventDefault()
     },
-  }), [close, longPressMs, max, min, onChange, onTap, pixelsPerStep, step, value])
+  }), [close, lockScroll, longPressMs, max, min, onChange, onTap, pixelsPerStep, step, value])
 
   return { bind, overlay: { ...overlay, displayValue: overlay.open ? overlay.displayValue : Number(value || 0) }, overlayRef, close }
 }
