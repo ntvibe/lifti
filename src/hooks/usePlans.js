@@ -80,6 +80,12 @@ export default function usePlans() {
     await hydratePlans()
   }, [hydratePlans])
 
+  const getPlansSnapshot = useCallback(async () => {
+    const [loadedPlans, loadedExercises] = await Promise.all([PlanRepo.list(), ExerciseRepo.list()])
+    const exerciseMap = new Map(loadedExercises.map((exercise) => [exercise.id, exercise]))
+    return loadedPlans.map((plan) => toUiPlan(plan, exerciseMap))
+  }, [])
+
   const createPlan = useCallback(async (name = 'New Plan') => {
     const created = await PlanRepo.upsert({ name, exercises: [] })
     const nextPlan = toUiPlan(created, exerciseById)
@@ -191,6 +197,7 @@ export default function usePlans() {
     replacePlans,
     upsertPlan,
     setPlans,
+    getPlansSnapshot,
     getPlanWithDetails: fetchPlanWithDetails,
   }
 }

@@ -165,6 +165,7 @@ export default function App() {
     upsertPlan,
     setPlans,
     replacePlans,
+    getPlansSnapshot,
     getPlanWithDetails,
   } = usePlans()
 
@@ -387,9 +388,10 @@ export default function App() {
 
     setIsSyncingDrive(true)
     try {
+      const latestPlans = await getPlansSnapshot()
       await upsertJsonByName(accessToken, 'lifti_sync_snapshot.json', {
         updatedAt: new Date().toISOString(),
-        plans,
+        plans: latestPlans,
       })
       setIsDriveSynced(true)
       handleToast('success', 'Synced latest local changes to Google Drive.')
