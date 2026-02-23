@@ -16,6 +16,9 @@ import ScrubNumberOverlay from '../components/ScrubNumberOverlay'
 const MUSCLE_FIELD_CANDIDATES = ['primaryMuscles', 'muscles', 'muscleGroups', 'muscleGroup', 'targetMuscles', 'targets']
 const EQUIPMENT_FIELD_CANDIDATES = ['equipment', 'equipments', 'gear', 'machine']
 const FALLBACK_SET = { reps: 10, weight: 0, restSec: 60 }
+const KEYPAD_HEIGHT = 320
+const KEYPAD_GAP = 16
+
 const FIELD_CONFIG = {
   reps: { step: 1, allowDecimal: false, min: 0, max: 200, unit: '' },
   weight: { step: 0.5, allowDecimal: true, min: 0, max: 500, unit: 'kg' },
@@ -91,8 +94,8 @@ function ScrubbableNumberField({ id, label, value, config, onTap, onScrubChange 
   )
 }
 
-function NumberKeypad({ isOpen, fieldKey, anchorRect, onChange, onDone }) {
-  if (!isOpen || !fieldKey || !anchorRect) return null
+function NumberKeypad({ isOpen, fieldKey, onChange, onDone, onClose }) {
+  if (!isOpen || !fieldKey) return null
 
   const config = FIELD_CONFIG[fieldKey]
   const nudges = config.allowDecimal ? [-10, -5, -2.5, 2.5, 5, 10] : [-10, -5, 5, 10]
@@ -105,52 +108,50 @@ function NumberKeypad({ isOpen, fieldKey, anchorRect, onChange, onDone }) {
     return `${current}${digit}`
   }
 
-  const viewportPadding = 10
-  const top = Math.min(window.innerHeight - 330, Math.max(viewportPadding, anchorRect.bottom + 8))
-  const left = Math.min(window.innerWidth - viewportPadding, Math.max(viewportPadding, anchorRect.left + (anchorRect.width / 2)))
-
   return createPortal(
-    <section
-      className="number-pad-sheet keypad-sheet keypad-popover glass glass-strong"
-      role="dialog"
-      aria-modal="false"
-      style={{ top, left }}
-    >
-      <div className="number-pad-grid">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
-          <button key={digit} type="button" onClick={() => onChange((prev) => appendDigit(prev, digit))}>{digit}</button>
-        ))}
-        {config.allowDecimal
-          ? <button type="button" onClick={() => onChange((prev) => {
-            const current = prev || ''
-            if (current.includes('.')) {
-              return current
-            }
-            return current === '' ? '0.' : `${current}.`
-          })}>.</button>
-          : <button type="button" onClick={() => onChange((prev) => (prev ? prev.slice(0, -1) : ''))}>⌫</button>}
-        <button type="button" onClick={() => onChange((prev) => appendDigit(prev, 0))}>0</button>
-        <button type="button" onClick={() => onChange((prev) => (prev ? prev.slice(0, -1) : ''))}>⌫</button>
-      </div>
+    <div className="modal-backdrop keypad-backdrop select-none" role="presentation" onClick={onClose}>
+      <section
+        className="number-pad-sheet keypad-sheet glass glass-strong"
+        role="dialog"
+        aria-modal="true"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="number-pad-grid">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
+            <button key={digit} type="button" onClick={() => onChange((prev) => appendDigit(prev, digit))}>{digit}</button>
+          ))}
+          {config.allowDecimal
+            ? <button type="button" onClick={() => onChange((prev) => {
+              const current = prev || ''
+              if (current.includes('.')) {
+                return current
+              }
+              return current === '' ? '0.' : `${current}.`
+            })}>.</button>
+            : <button type="button" onClick={() => onChange((prev) => (prev ? prev.slice(0, -1) : ''))}>⌫</button>}
+          <button type="button" onClick={() => onChange((prev) => appendDigit(prev, 0))}>0</button>
+          <button type="button" onClick={() => onChange((prev) => (prev ? prev.slice(0, -1) : ''))}>⌫</button>
+        </div>
 
-      <div className="nudge-row">
-        {nudges.map((step) => (
-          <button
-            key={step}
-            type="button"
-            className="ghost"
-            onClick={() => onChange((prev) => {
-              const base = Number(prev || 0)
-              return String(Math.max(config.min, Math.min(config.max, (Number.isFinite(base) ? base : 0) + step)))
-            })}
-          >
-            {step > 0 ? `+${step}` : step}
-          </button>
-        ))}
-      </div>
+        <div className="nudge-row">
+          {nudges.map((step) => (
+            <button
+              key={step}
+              type="button"
+              className="ghost"
+              onClick={() => onChange((prev) => {
+                const base = Number(prev || 0)
+                return String(Math.max(config.min, Math.min(config.max, (Number.isFinite(base) ? base : 0) + step)))
+              })}
+            >
+              {step > 0 ? `+${step}` : step}
+            </button>
+          ))}
+        </div>
 
-      <button type="button" onClick={onDone}>Done</button>
-    </section>,
+        <button type="button" onClick={onDone}>Done</button>
+      </section>
+    </div>,
     document.body,
   )
 }
@@ -165,13 +166,12 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
   const titleInputRef = useRef(null)
   const menuRef = useRef(null)
   const menuHoldTimerRef = useRef(null)
-  const keypadAnchorRef = useRef(null)
+  const fieldElementMapRef = useRef(new Map())
 
   const intensities = useMemo(() => computePlanMuscleIntensities(plan.exercises, allExercises), [plan.exercises, allExercises])
   const exerciseById = useMemo(() => new Map((allExercises || []).map((exercise) => [exercise.id, exercise])), [allExercises])
   const editingItem = plan.exercises.find((item) => item.id === exerciseItemId) || null
   const editingExercise = editingItem ? exerciseById.get(editingItem.exerciseId) : null
-  const [keypadAnchorRect, setKeypadAnchorRect] = useState(null)
 
 
   const setExercises = (exercises) => onPlanChange({ ...plan, exercises })
@@ -219,24 +219,35 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
     }
   }, [isTitleEditing])
 
+
   useEffect(() => {
-    if (!numberInputController.isKeypadOpen) {
-      setKeypadAnchorRect(null)
+    if (!numberInputController.isKeypadOpen || !numberInputController.activeField) {
       return undefined
     }
 
-    const refreshAnchorRect = () => {
-      if (!keypadAnchorRef.current) return
-      setKeypadAnchorRect(keypadAnchorRef.current.getBoundingClientRect())
+    const fieldMapKey = `${numberInputController.activeField.setId}-${numberInputController.activeField.fieldKey}`
+    const target = fieldElementMapRef.current.get(fieldMapKey)
+    if (!target) {
+      return undefined
     }
 
-    refreshAnchorRect()
-    window.addEventListener('resize', refreshAnchorRect)
-    window.addEventListener('scroll', refreshAnchorRect, true)
-    return () => {
-      window.removeEventListener('resize', refreshAnchorRect)
-      window.removeEventListener('scroll', refreshAnchorRect, true)
+    const scrollContainer = target.closest('.exercise-editor-content')
+    if (!scrollContainer) {
+      return undefined
     }
+
+    const ensureVisible = () => {
+      const rect = target.getBoundingClientRect()
+      const visibleBottom = window.innerHeight - KEYPAD_HEIGHT - KEYPAD_GAP
+      if (rect.bottom > visibleBottom) {
+        scrollContainer.scrollBy({ top: rect.bottom - visibleBottom, behavior: 'smooth' })
+      } else if (rect.top < KEYPAD_GAP) {
+        scrollContainer.scrollBy({ top: rect.top - KEYPAD_GAP, behavior: 'smooth' })
+      }
+    }
+
+    const rafId = window.requestAnimationFrame(ensureVisible)
+    return () => window.cancelAnimationFrame(rafId)
   }, [numberInputController.activeField, numberInputController.isKeypadOpen])
 
   useEffect(() => () => {
@@ -280,7 +291,7 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
         <PlanMuscleHeatmapSVG svgPath={getPublicAssetUrl('svg/muscle-groups.svg')} intensities={Object.fromEntries(editingMuscles.map((group) => [normalizeKey(group), 1]))} className="plan-editor-heatmap exercise-editor-heatmap" />
         <h2 className="exercise-editor-title">{toTitleCase(editingItem.exerciseName)}</h2>
 
-        <div className="exercise-editor-content">
+        <div className={`exercise-editor-content ${numberInputController.isKeypadOpen ? 'exercise-editor-content-keypad-open' : ''}`.trim()}>
           <div className="sets-table">
             <div className="sets-header sets-grid-extended centered-headers"><span>Set #</span><span>Reps</span><span>Weight</span><span>Rest</span><span /></div>
             {(editingItem.sets || []).map((setRow, index) => {
@@ -293,7 +304,18 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
                     const config = FIELD_CONFIG[fieldKey]
 
                     return (
-                      <div key={fieldKey} className="number-input-wrap">
+                      <div
+                        key={fieldKey}
+                        className="number-input-wrap"
+                        ref={(node) => {
+                          const mapKey = `${setId}-${fieldKey}`
+                          if (node) {
+                            fieldElementMapRef.current.set(mapKey, node)
+                          } else {
+                            fieldElementMapRef.current.delete(mapKey)
+                          }
+                        }}
+                      >
                         <ScrubbableNumberField
                           id={`${setId}-${fieldKey}`}
                           label={`Set ${index + 1} ${fieldKey === 'restSec' ? 'rest in seconds' : fieldKey}`}
@@ -305,9 +327,7 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
                             numberInputController.openField({ setId, fieldKey }, nextValue)
                             numberInputController.commit(nextValue)
                           }}
-                          onTap={(target) => {
-                            keypadAnchorRef.current = target || null
-                            setKeypadAnchorRect(target?.getBoundingClientRect() || null)
+                          onTap={() => {
                             numberInputController.openField({ setId, fieldKey }, setRow[fieldKey], { openKeypad: true })
                           }}
                         />
@@ -334,7 +354,6 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
         <NumberKeypad
           isOpen={numberInputController.isKeypadOpen}
           fieldKey={numberInputController.activeField?.fieldKey}
-          anchorRect={keypadAnchorRect}
           onChange={(updater) => {
             numberInputController.setCurrentValue((prev) => {
               const next = typeof updater === 'function' ? updater(prev) : updater
@@ -346,6 +365,7 @@ export default function WorkoutPlanner({ plan, allExercises, onPlanChange, onSta
             numberInputController.commit(numberInputController.currentValue || '0')
             numberInputController.closeKeypad()
           }}
+          onClose={() => numberInputController.closeKeypad()}
         />
       </section>
     )

@@ -1428,16 +1428,22 @@ input.field-button {
 
 .keypad-backdrop {
   align-items: flex-end;
+  justify-content: stretch;
   padding: 0;
+  z-index: 130;
 }
 
 .keypad-sheet {
   border-radius: 1rem 1rem 0 0;
   margin: 0;
   max-width: none;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   width: 100%;
 }
 
+.exercise-editor-content-keypad-open {
+  padding-bottom: 340px;
+}
 
 .keypad-popover {
   border-radius: 0.9rem;
