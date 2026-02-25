@@ -39,6 +39,7 @@ const MUSCLE_TO_SVG_IDS: Record<MuscleId, string[]> = {
 
 export function BodyMap({ highlightedMuscles = [], heatmap, onClick, size = 100, className = '' }: BodyMapProps) {
     const containerRef = useRef<HTMLDivElement>(null);
+    const bodyMapSrc = `${import.meta.env.BASE_URL}svg/muscle-groups.svg`;
 
     const maxHeat = useMemo(() => {
         if (!heatmap) return 1;
@@ -123,7 +124,7 @@ export function BodyMap({ highlightedMuscles = [], heatmap, onClick, size = 100,
         <div ref={containerRef} className={`${styles.wrap} ${className}`} style={{ width: size }}>
             <object
                 type="image/svg+xml"
-                data="/svg/muscle-groups.svg"
+                data={bodyMapSrc}
                 className={styles.svg}
                 aria-label="Body muscle map"
             >

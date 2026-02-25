@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Navigation } from './components/Navigation/Navigation';
 import { PlansHome } from './features/plans/PlansHome/PlansHome';
@@ -39,8 +39,8 @@ export default function App() {
         return () => window.clearInterval(timer);
     }, [authStatus, refreshPendingOps]);
 
-    return (
-        <BrowserRouter basename={import.meta.env.BASE_URL}>
+    const appRoutes = (
+        <>
             <div className="app-shell">
                 <div className="app-bg" />
                 <div className="app-phone">
@@ -60,6 +60,14 @@ export default function App() {
                     <Navigation />
                 </div>
             </div>
-        </BrowserRouter>
+        </>
     );
+
+    // GitHub Pages serves apps from a subpath and does not support SPA history fallback.
+    // Use hash routing for non-root builds so refresh/deep links remain stable.
+    if (import.meta.env.BASE_URL !== '/') {
+        return <HashRouter>{appRoutes}</HashRouter>;
+    }
+
+    return <BrowserRouter basename={import.meta.env.BASE_URL}>{appRoutes}</BrowserRouter>;
 }
