@@ -1,5 +1,5 @@
 .page {
-    padding: 0 var(--s-4) var(--s-8);
+    padding: 0 var(--s-4) calc(var(--s-12) + var(--safe-bottom));
 }
 
 .bodyWrap {
@@ -10,7 +10,7 @@
 
 .exerciseName {
     text-align: center;
-    font-size: var(--fs-lg);
+    font-size: var(--fs-xl);
     font-weight: var(--fw-semibold);
     margin-bottom: var(--s-2);
 }
@@ -20,17 +20,18 @@
     font-size: var(--fs-xs);
     color: var(--c-text-dim);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     margin-bottom: var(--s-4);
 }
 
 .tableWrap {
-    background: color-mix(in srgb, var(--c-bg-raised) 92%, transparent);
-    border: 1px solid var(--c-border);
+    background: linear-gradient(170deg, var(--c-surface-1) 0%, var(--c-surface-2) 100%);
+    border: 1px solid color-mix(in srgb, var(--c-border) 80%, #fff 20%);
     border-radius: var(--r-lg);
     padding: var(--s-2);
     margin-bottom: var(--s-4);
     overflow: hidden;
+    box-shadow: 0 12px 28px rgba(26, 48, 63, 0.1);
 }
 
 .table {
@@ -44,7 +45,7 @@
     font-weight: var(--fw-medium);
     color: var(--c-text-dim);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
     padding: var(--s-2) var(--s-1);
     text-align: center;
     border-bottom: 1px solid var(--c-border);
@@ -56,15 +57,19 @@
 }
 
 .table th:last-child {
-    width: 28px;
+    width: 32px;
 }
 
 .table td {
     padding: var(--s-2) var(--s-1);
     text-align: center;
     vertical-align: middle;
-    border-bottom: 1px solid var(--c-border);
+    border-bottom: 1px solid color-mix(in srgb, var(--c-border) 92%, transparent);
     min-width: 0;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
 }
 
 .table td:first-child {
@@ -75,48 +80,82 @@
 }
 
 .removeCell {
-    cursor: pointer;
-    color: var(--c-text-dim);
-    transition: color var(--dur-fast) ease;
-    width: 28px;
+    width: 32px;
 }
 
-.removeCell:hover {
+.removeBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--r-full);
+    color: var(--c-text-dim);
+    transition: color var(--dur-fast) ease, background var(--dur-fast) ease, transform var(--dur-fast) ease;
+}
+
+.removeBtn:hover:not(:disabled) {
     color: var(--c-danger);
+    background: var(--c-danger-soft);
+}
+
+.removeBtn:active:not(:disabled) {
+    transform: scale(0.94);
+}
+
+.removeBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 .addSetBtn {
     width: 100%;
     padding: var(--s-4);
-    background: var(--c-bg-input);
-    border: 1px dashed var(--c-border);
+    background: color-mix(in srgb, var(--c-bg-input) 88%, #ffffff 12%);
+    border: 1px dashed color-mix(in srgb, var(--c-border) 82%, #ffffff 18%);
     border-radius: var(--r-lg);
     color: var(--c-text-muted);
     font-size: var(--fs-sm);
-    font-weight: var(--fw-medium);
-    transition: background var(--dur-fast) ease;
+    font-weight: var(--fw-semibold);
+    transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease, color var(--dur-fast) ease;
 }
 
 .addSetBtn:hover {
-    background: var(--c-bg-overlay);
+    background: color-mix(in srgb, var(--c-accent-soft) 48%, var(--c-bg-overlay) 52%);
+    border-color: color-mix(in srgb, var(--c-accent) 30%, var(--c-border));
+    color: color-mix(in srgb, var(--c-text) 88%, var(--c-accent) 12%);
 }
 
 .fab {
     position: fixed;
-    bottom: calc(var(--nav-height) + var(--safe-bottom) + var(--s-6));
-    right: var(--s-4);
-    width: 56px;
-    height: 56px;
+    bottom: calc(var(--safe-bottom) + var(--s-6));
+    right: max(var(--s-4), calc(50% - (var(--max-width) / 2) + var(--s-4)));
+    width: 58px;
+    height: 58px;
     border-radius: var(--r-full);
-    background: var(--c-accent);
+    background: linear-gradient(145deg, color-mix(in srgb, var(--c-accent) 94%, #fff 6%) 0%, color-mix(in srgb, var(--c-accent) 80%, #117d73 20%) 100%);
     color: var(--c-accent-text);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: var(--shadow-md);
-    transition: transform var(--dur-fast) ease;
+    box-shadow:
+        0 16px 28px rgba(var(--c-accent-rgb), 0.3),
+        0 4px 12px rgba(var(--c-accent-rgb), 0.18);
+    transition: transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+
+.fab:hover {
+    box-shadow:
+        0 20px 34px rgba(var(--c-accent-rgb), 0.34),
+        0 5px 14px rgba(var(--c-accent-rgb), 0.2);
 }
 
 .fab:active {
     transform: scale(0.92);
+}
+
+@media (max-width: 640px) {
+    .fab {
+        right: var(--s-4);
+    }
 }

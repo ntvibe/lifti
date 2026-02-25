@@ -32,19 +32,24 @@ export function ExerciseLibrary() {
                 <input
                     className={s.searchInput}
                     placeholder="Search exercises…"
+                    aria-label="Search exercises"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
             </div>
 
             <div className={s.grid}>
-                {filtered?.map(ex => (
-                    <div key={ex.id} className={s.exerciseCard}>
-                        <BodyMap size={50} highlightedMuscles={ex.musclesPrimary} />
-                        <div className={s.exName}>{ex.name}</div>
-                        <div className={s.exMode}>{ex.mode.replace(/_/g, ' ')}</div>
-                    </div>
-                ))}
+                {filtered && filtered.length > 0 ? (
+                    filtered.map(ex => (
+                        <div key={ex.id} className={s.exerciseCard}>
+                            <BodyMap size={50} highlightedMuscles={ex.musclesPrimary} />
+                            <div className={s.exName}>{ex.name}</div>
+                            <div className={s.exMode}>{ex.mode.replace(/_/g, ' ')}</div>
+                        </div>
+                    ))
+                ) : (
+                    <div className={s.empty}>No exercises match your search.</div>
+                )}
             </div>
         </div>
     );

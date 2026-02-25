@@ -99,17 +99,22 @@ export function PlanEditor() {
                 <input
                     className={styles.searchInput}
                     placeholder="Search exercises…"
+                    aria-label="Search exercises"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
                 <div className={styles.templateList}>
-                    {filtered.map(tpl => (
-                        <button key={tpl.id} className={styles.templateBtn} onClick={() => handleAdd(tpl)}>
-                            <Plus size={14} />
-                            {tpl.name}
-                            <span className={styles.templateMode}>{tpl.mode.replace('_', ' ')}</span>
-                        </button>
-                    ))}
+                    {filtered.length > 0 ? (
+                        filtered.map(tpl => (
+                            <button key={tpl.id} className={styles.templateBtn} onClick={() => handleAdd(tpl)}>
+                                <Plus size={14} />
+                                {tpl.name}
+                                <span className={styles.templateMode}>{tpl.mode.replace('_', ' ')}</span>
+                            </button>
+                        ))
+                    ) : (
+                        <div className={styles.emptyTemplates}>No matching exercises</div>
+                    )}
                 </div>
             </div>
         </div>
@@ -135,6 +140,16 @@ function SortableRow({ id, name, setCount, onEdit, onDelete }: RowProps) {
             className={styles.row}
             style={{ transform: CSS.Transform.toString(transform), transition }}
             onClick={onEdit}
+            role="button"
+            tabIndex={0}
+            onKeyDown={event => {
+                if (event.target !== event.currentTarget) return;
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onEdit();
+                }
+            }}
+            aria-label={`Edit ${name}`}
         >
             <div className={styles.dragHandle} {...attributes} {...listeners}>
                 <GripVertical size={18} />
@@ -143,7 +158,7 @@ function SortableRow({ id, name, setCount, onEdit, onDelete }: RowProps) {
                 <div className={styles.rowName}>{name}</div>
                 <div className={styles.rowMeta}>{setCount} set{setCount !== 1 ? 's' : ''}</div>
             </div>
-            <button className={styles.deleteBtn} onClick={e => { e.stopPropagation(); onDelete(); }}>
+            <button className={styles.deleteBtn} aria-label={`Delete ${name}`} onClick={e => { e.stopPropagation(); onDelete(); }}>
                 <Trash2 size={16} />
             </button>
         </div>

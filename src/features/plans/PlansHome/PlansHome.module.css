@@ -1,5 +1,5 @@
 .page {
-    padding: calc(var(--s-5) + 2px) var(--s-4);
+    padding: calc(var(--s-5) + 2px) var(--s-4) var(--s-8);
 }
 
 .topBar {
@@ -7,20 +7,46 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--s-4);
+    gap: var(--s-3);
 }
 
 .logo {
     display: block;
-    font-size: clamp(1.7rem, 2.4vw, 1.95rem);
+    font-size: clamp(1.72rem, 2.6vw, 2rem);
     font-weight: var(--fw-bold);
     letter-spacing: -0.03em;
-    line-height: 1.05;
+    line-height: 1.02;
 }
 
 .subtitle {
     font-size: var(--fs-sm);
     color: var(--c-text-dim);
     margin-top: 4px;
+}
+
+.newBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    padding: 10px 16px;
+    background:
+        linear-gradient(145deg, color-mix(in srgb, var(--c-accent) 96%, white 4%) 0%, color-mix(in srgb, var(--c-accent) 82%, #138478 18%) 100%);
+    color: var(--c-accent-text);
+    font-weight: var(--fw-semibold);
+    font-size: 0.8rem;
+    border-radius: var(--r-full);
+    transition: opacity var(--dur-fast) ease, transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+    box-shadow: 0 10px 20px rgba(var(--c-accent-rgb), 0.28);
+    white-space: nowrap;
+}
+
+.newBtn:hover {
+    opacity: 0.96;
+    transform: translateY(-1px);
+}
+
+.newBtn:active {
+    transform: scale(0.98);
 }
 
 .metrics {
@@ -32,10 +58,10 @@
 
 .metricCard {
     padding: 14px var(--s-4);
-    border-radius: 15px;
+    border-radius: 16px;
     border: 1px solid color-mix(in srgb, var(--c-border) 82%, #fff 18%);
-    background: color-mix(in srgb, var(--c-bg-raised) 95%, transparent);
-    box-shadow: 0 6px 16px rgba(43, 71, 88, 0.05);
+    background: linear-gradient(165deg, var(--c-surface-1) 0%, var(--c-surface-2) 100%);
+    box-shadow: 0 10px 24px rgba(43, 71, 88, 0.08);
 }
 
 .metricLabel {
@@ -48,33 +74,9 @@
 }
 
 .metricValue {
-    font-family: var(--font-sans);
-    font-size: clamp(1.75rem, 3vw, 2.1rem);
+    font-size: clamp(1.72rem, 3vw, 2rem);
     font-weight: var(--fw-semibold);
     line-height: 1;
-}
-
-.newBtn {
-    display: flex;
-    align-items: center;
-    gap: var(--s-2);
-    padding: 10px 15px;
-    background: linear-gradient(145deg, color-mix(in srgb, var(--c-accent) 96%, white 4%) 0%, color-mix(in srgb, var(--c-accent) 82%, #138478 18%) 100%);
-    color: var(--c-accent-text);
-    font-weight: var(--fw-semibold);
-    font-size: 0.79rem;
-    border-radius: var(--r-full);
-    transition: opacity var(--dur-fast) ease, transform var(--dur-fast) ease;
-    box-shadow: 0 9px 18px rgba(var(--c-accent-rgb), 0.26);
-}
-
-.newBtn:hover {
-    opacity: 0.95;
-    transform: translateY(-1px);
-}
-
-.newBtn:active {
-    transform: scale(0.98);
 }
 
 .grid {
@@ -83,13 +85,13 @@
 }
 
 .card {
-    background: linear-gradient(170deg, color-mix(in srgb, var(--c-bg-raised) 97%, transparent) 0%, color-mix(in srgb, var(--c-bg-raised) 92%, #e9f2f1 8%) 100%);
+    background: linear-gradient(170deg, var(--c-surface-1) 0%, var(--c-surface-2) 100%);
     border: 1px solid color-mix(in srgb, var(--c-border) 78%, #fff 22%);
     border-radius: 20px;
     padding: var(--s-5);
     cursor: pointer;
     transition: transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease, border-color var(--dur-fast) ease;
-    box-shadow: 0 10px 24px rgba(28, 53, 68, 0.08);
+    box-shadow: 0 12px 28px rgba(28, 53, 68, 0.1);
 }
 
 .card:hover {
@@ -102,10 +104,19 @@
     transform: scale(0.99);
 }
 
+.card:focus-visible {
+    outline: none;
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--c-accent) 40%, transparent),
+        var(--focus-ring),
+        0 16px 30px rgba(30, 57, 71, 0.2);
+}
+
 .cardTop {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    gap: var(--s-4);
     margin-bottom: var(--s-4);
 }
 
@@ -116,7 +127,7 @@
 }
 
 .cardMeta {
-    font-size: 0.73rem;
+    font-size: 0.74rem;
     letter-spacing: 0.02em;
     color: var(--c-text-dim);
 }
@@ -139,12 +150,12 @@
     font-weight: var(--fw-semibold);
     font-size: 0.8rem;
     border-radius: 13px;
-    transition: opacity var(--dur-fast) ease, transform var(--dur-fast) ease;
-    box-shadow: 0 8px 14px rgba(20, 28, 36, 0.24);
+    transition: opacity var(--dur-fast) ease, transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+    box-shadow: 0 9px 16px rgba(20, 28, 36, 0.27);
 }
 
 .startBtn:hover {
-    opacity: 0.95;
+    opacity: 0.96;
 }
 
 .startBtn:active {
@@ -152,20 +163,26 @@
 }
 
 .editBtn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 42px;
+    width: 44px;
+    min-width: 44px;
     background: color-mix(in srgb, var(--c-bg-raised) 88%, #eaf1f3 12%);
     border: 1px solid color-mix(in srgb, var(--c-border) 85%, #fff 15%);
     border-radius: 13px;
     color: var(--c-text-muted);
-    transition: background var(--dur-fast) ease, transform var(--dur-fast) ease;
+    transition: background var(--dur-fast) ease, transform var(--dur-fast) ease, color var(--dur-fast) ease;
 }
 
 .editBtn:hover {
     background: color-mix(in srgb, var(--c-accent-soft) 62%, #f1f7f7 38%);
     transform: translateY(-1px);
+    color: color-mix(in srgb, var(--c-text) 86%, var(--c-accent) 14%);
+}
+
+.editBtn:active {
+    transform: scale(0.97);
 }
 
 .empty {
@@ -180,9 +197,15 @@
 }
 
 .emptyTitle {
-    font-size: 1.7rem;
-    font-family: var(--font-sans);
+    font-size: 1.62rem;
     font-weight: var(--fw-semibold);
     color: var(--c-text-muted);
     margin-bottom: var(--s-2);
+}
+
+@media (max-width: 430px) {
+    .newBtn {
+        padding: 10px 14px;
+        font-size: 0.76rem;
+    }
 }

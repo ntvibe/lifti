@@ -1,5 +1,5 @@
 .page {
-    padding: 0 var(--s-4) var(--s-6);
+    padding: 0 var(--s-4) var(--s-8);
 }
 
 .bodyWrap {
@@ -13,6 +13,7 @@
     align-items: baseline;
     justify-content: space-between;
     margin-bottom: var(--s-3);
+    gap: var(--s-3);
 }
 
 .sectionHead h2 {
@@ -37,15 +38,28 @@
     align-items: center;
     gap: var(--s-3);
     padding: var(--s-4);
-    background: color-mix(in srgb, var(--c-bg-raised) 92%, transparent);
-    border: 1px solid var(--c-border);
+    background: linear-gradient(170deg, var(--c-surface-1) 0%, var(--c-surface-2) 100%);
+    border: 1px solid color-mix(in srgb, var(--c-border) 80%, #fff 20%);
     border-radius: var(--r-lg);
     cursor: pointer;
-    transition: background var(--dur-fast) ease, transform 0.15s ease;
+    transition: background var(--dur-fast) ease, transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease, border-color var(--dur-fast) ease;
+    box-shadow: 0 10px 22px rgba(27, 51, 67, 0.08);
+}
+
+.row:hover {
+    border-color: color-mix(in srgb, var(--c-accent) 30%, var(--c-border));
+    box-shadow: 0 14px 28px rgba(23, 44, 58, 0.12);
 }
 
 .row:active {
     transform: scale(0.99);
+}
+
+.row:focus-visible {
+    outline: none;
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--c-accent) 45%, transparent),
+        var(--focus-ring);
 }
 
 .dragHandle {
@@ -53,6 +67,10 @@
     cursor: grab;
     touch-action: none;
     flex-shrink: 0;
+}
+
+.dragHandle:active {
+    cursor: grabbing;
 }
 
 .rowInfo {
@@ -71,13 +89,14 @@
 .rowMeta {
     font-size: var(--fs-xs);
     color: var(--c-text-dim);
+    margin-top: 2px;
 }
 
 .deleteBtn {
     color: var(--c-text-dim);
     padding: var(--s-2);
     border-radius: var(--r-md);
-    transition: color var(--dur-fast) ease, background var(--dur-fast) ease;
+    transition: color var(--dur-fast) ease, background var(--dur-fast) ease, transform var(--dur-fast) ease;
 }
 
 .deleteBtn:hover {
@@ -85,21 +104,25 @@
     background: var(--c-danger-soft);
 }
 
-/* Add exercise picker */
+.deleteBtn:active {
+    transform: scale(0.95);
+}
+
 .pickerSection {
     margin-top: var(--s-8);
-    background: color-mix(in srgb, var(--c-bg-raised) 86%, transparent);
-    border: 1px solid var(--c-border);
+    background: linear-gradient(170deg, var(--c-surface-1) 0%, var(--c-surface-2) 100%);
+    border: 1px solid color-mix(in srgb, var(--c-border) 80%, #fff 20%);
     border-radius: var(--r-lg);
     padding: var(--s-4);
+    box-shadow: 0 12px 24px rgba(28, 52, 67, 0.09);
 }
 
 .pickerTitle {
     font-size: var(--fs-sm);
     color: var(--c-text-dim);
-    font-weight: var(--fw-medium);
+    font-weight: var(--fw-semibold);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     margin-bottom: var(--s-3);
 }
 
@@ -111,10 +134,12 @@
     border-radius: var(--r-lg);
     margin-bottom: var(--s-3);
     color: var(--c-text);
+    transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease;
 }
 
 .searchInput:focus {
-    border-color: var(--c-accent);
+    border-color: color-mix(in srgb, var(--c-accent) 68%, var(--c-border));
+    background: color-mix(in srgb, var(--c-bg-input) 85%, #fff 15%);
 }
 
 .templateList {
@@ -133,13 +158,14 @@
     text-align: left;
     border-radius: var(--r-md);
     font-size: var(--fs-sm);
-    transition: background var(--dur-fast) ease, transform var(--dur-fast) ease;
+    transition: background var(--dur-fast) ease, transform var(--dur-fast) ease, border-color var(--dur-fast) ease;
     color: var(--c-text);
     border: 1px solid transparent;
+    min-height: 42px;
 }
 
 .templateBtn:hover {
-    background: var(--c-accent-soft);
+    background: color-mix(in srgb, var(--c-accent-soft) 68%, transparent);
     border-color: color-mix(in srgb, var(--c-accent) 26%, transparent);
 }
 
@@ -151,4 +177,12 @@
     font-size: var(--fs-xs);
     color: var(--c-text-dim);
     margin-left: auto;
+    text-transform: capitalize;
+}
+
+.emptyTemplates {
+    font-size: var(--fs-sm);
+    color: var(--c-text-dim);
+    padding: var(--s-3) var(--s-2);
+    text-align: center;
 }

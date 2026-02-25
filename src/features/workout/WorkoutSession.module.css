@@ -1,18 +1,24 @@
 .page {
     display: flex;
     flex-direction: column;
-    min-height: 100dvh;
-    background: linear-gradient(180deg, color-mix(in srgb, var(--c-accent) 14%, var(--c-bg)) 0%, var(--c-bg) 40%);
+    min-height: calc(100dvh - var(--safe-top));
+    background:
+        radial-gradient(80% 38% at 50% -2%, color-mix(in srgb, var(--c-accent) 16%, transparent) 0%, transparent 100%),
+        linear-gradient(180deg, color-mix(in srgb, var(--c-accent) 12%, var(--c-bg)) 0%, var(--c-bg) 46%);
+    border-radius: 24px;
+    border: 1px solid color-mix(in srgb, var(--c-border) 72%, transparent);
+    box-shadow: 0 16px 34px rgba(21, 42, 56, 0.14);
+    overflow: hidden;
 }
 
 .progressBar {
-    height: 3px;
-    background: var(--c-border);
+    height: 4px;
+    background: color-mix(in srgb, var(--c-border) 78%, transparent);
 }
 
 .progressFill {
     height: 100%;
-    background: var(--c-accent);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--c-accent) 96%, #ffffff 4%), color-mix(in srgb, var(--c-accent) 72%, #0f766e 28%));
     transition: width 0.4s var(--ease-out);
     border-radius: 0 var(--r-full) var(--r-full) 0;
 }
@@ -29,16 +35,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
+    width: 40px;
+    height: 40px;
     border-radius: var(--r-full);
-    background: color-mix(in srgb, var(--c-bg-raised) 70%, transparent);
-    border: 1px solid var(--c-border);
+    background: color-mix(in srgb, var(--c-bg-raised) 72%, transparent);
+    border: 1px solid color-mix(in srgb, var(--c-border) 85%, transparent);
+}
+
+.backBtn:hover {
+    background: color-mix(in srgb, var(--c-accent-soft) 52%, var(--c-bg-overlay) 48%);
 }
 
 .headerCenter {
     flex: 1;
     text-align: center;
+    min-width: 0;
 }
 
 .headerLabel {
@@ -46,12 +57,15 @@
     font-size: var(--fs-xs);
     color: var(--c-text-dim);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.07em;
 }
 
 .headerName {
     font-weight: var(--fw-bold);
     font-size: var(--fs-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .finishBtn {
@@ -61,11 +75,15 @@
     padding: var(--s-2) var(--s-3);
     border-radius: var(--r-full);
     border: 1px solid color-mix(in srgb, var(--c-danger) 24%, transparent);
-    transition: background var(--dur-fast) ease;
+    transition: background var(--dur-fast) ease, transform var(--dur-fast) ease;
 }
 
 .finishBtn:hover {
     background: var(--c-danger-soft);
+}
+
+.finishBtn:active {
+    transform: scale(0.96);
 }
 
 .content {
@@ -79,12 +97,12 @@
 }
 
 .bodyMap {
-    opacity: 0.76;
+    opacity: 0.78;
     margin-bottom: var(--s-4);
 }
 
 .exerciseName {
-    font-size: var(--fs-xl);
+    font-size: clamp(1.45rem, 3vw, 1.75rem);
     font-weight: var(--fw-bold);
     text-align: center;
 }
@@ -92,23 +110,25 @@
 .setLabel {
     font-size: var(--fs-sm);
     color: var(--c-text-dim);
+    letter-spacing: 0.01em;
 }
 
 .valueCard {
-    background: color-mix(in srgb, var(--c-bg-raised) 92%, transparent);
-    border: 1px solid var(--c-border);
+    background: linear-gradient(170deg, var(--c-surface-1) 0%, var(--c-surface-2) 100%);
+    border: 1px solid color-mix(in srgb, var(--c-border) 80%, #fff 20%);
     border-radius: var(--r-xl);
     padding: var(--s-8) var(--s-10);
     text-align: center;
     margin: var(--s-6) 0;
     width: 100%;
     max-width: 320px;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 16px 30px rgba(26, 48, 62, 0.14);
 }
 
 .primaryVal {
     font-size: var(--fs-3xl);
     font-weight: var(--fw-bold);
+    line-height: 1;
 }
 
 .primaryUnit {
@@ -131,12 +151,16 @@
 }
 
 .saveToggle {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: var(--s-2);
     font-size: var(--fs-sm);
     color: var(--c-text-dim);
     cursor: pointer;
+    background: color-mix(in srgb, var(--c-bg-raised) 75%, transparent);
+    border: 1px solid color-mix(in srgb, var(--c-border) 75%, transparent);
+    border-radius: var(--r-full);
+    padding: 8px 12px;
 }
 
 .saveToggle input {
@@ -146,8 +170,8 @@
 }
 
 .footer {
-    padding: var(--s-4) var(--s-5);
-    border-top: 1px solid var(--c-border);
+    padding: var(--s-4) var(--s-5) calc(var(--s-4) + var(--safe-bottom));
+    border-top: 1px solid color-mix(in srgb, var(--c-border) 80%, transparent);
     background: color-mix(in srgb, var(--c-bg-raised) 90%, transparent);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
@@ -159,6 +183,10 @@
     justify-content: center;
     gap: var(--s-3);
     margin-bottom: var(--s-4);
+    padding: var(--s-2) var(--s-3);
+    border-radius: var(--r-full);
+    background: color-mix(in srgb, var(--c-accent-soft) 64%, transparent);
+    border: 1px solid color-mix(in srgb, var(--c-accent) 26%, transparent);
 }
 
 .timerValue {
@@ -171,6 +199,7 @@
     font-size: var(--fs-sm);
     color: var(--c-text-dim);
     text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .skipBtn {
@@ -180,12 +209,12 @@
     font-size: var(--fs-sm);
     color: var(--c-text-dim);
     padding: var(--s-2) var(--s-3);
-    border-radius: var(--r-sm);
+    border-radius: var(--r-full);
     transition: background var(--dur-fast) ease;
 }
 
 .skipBtn:hover {
-    background: var(--c-bg-overlay);
+    background: color-mix(in srgb, var(--c-bg-overlay) 85%, #fff 15%);
 }
 
 .completeBtn {
@@ -195,15 +224,29 @@
     justify-content: center;
     gap: var(--s-2);
     padding: var(--s-5);
-    background: var(--c-accent);
+    background: linear-gradient(145deg, color-mix(in srgb, var(--c-accent) 95%, #fff 5%), color-mix(in srgb, var(--c-accent) 82%, #127c73 18%));
     color: var(--c-accent-text);
     font-size: var(--fs-base);
     font-weight: var(--fw-semibold);
     border-radius: var(--r-xl);
-    transition: opacity var(--dur-fast) ease, transform 60ms ease;
-    box-shadow: var(--shadow-sm);
+    transition: opacity var(--dur-fast) ease, transform 60ms ease, box-shadow var(--dur-fast) ease;
+    box-shadow: 0 12px 24px rgba(var(--c-accent-rgb), 0.28);
+}
+
+.completeBtn:hover {
+    opacity: 0.96;
+    box-shadow: 0 15px 28px rgba(var(--c-accent-rgb), 0.33);
 }
 
 .completeBtn:active {
     transform: scale(0.98);
+}
+
+@media (max-width: 640px) {
+    .page {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        box-shadow: none;
+    }
 }

@@ -128,8 +128,15 @@ export function ExerciseSetEditor() {
                                     max={3600}
                                 />
                             </td>
-                            <td className={styles.removeCell} onClick={() => removeSet(i)}>
-                                <X size={14} />
+                            <td className={styles.removeCell}>
+                                <button
+                                    className={styles.removeBtn}
+                                    onClick={() => removeSet(i)}
+                                    aria-label={`Delete set ${i + 1}`}
+                                    disabled={exercise.sets.length <= 1}
+                                >
+                                    <X size={14} />
+                                </button>
                             </td>
                         </tr>
                     ))}
@@ -139,7 +146,7 @@ export function ExerciseSetEditor() {
 
             <button className={styles.addSetBtn} onClick={addSet}>+ Add Set</button>
 
-            <button className={styles.fab} onClick={() => navigate(`/plan/${planId}`)}>
+            <button className={styles.fab} aria-label="Save and return" onClick={() => navigate(`/plan/${planId}`)}>
                 <Check size={24} />
             </button>
         </div>

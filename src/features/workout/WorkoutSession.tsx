@@ -119,7 +119,7 @@ export function WorkoutSession() {
             </div>
 
             <header className={s.header}>
-                <button className={s.backBtn} onClick={() => navigate('/')}>
+                <button className={s.backBtn} aria-label="Leave workout" onClick={() => navigate('/')}>
                     <ChevronLeft size={20} />
                 </button>
                 <div className={s.headerCenter}>

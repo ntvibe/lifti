@@ -5,6 +5,8 @@
     --c-bg-raised: #f9fbfc;
     --c-bg-overlay: #edf2f4;
     --c-bg-input: #f3f6f7;
+    --c-surface-1: color-mix(in srgb, var(--c-bg-raised) 96%, #ffffff 4%);
+    --c-surface-2: color-mix(in srgb, var(--c-bg-raised) 90%, #ecf2f5 10%);
     --c-border: rgba(36, 62, 80, 0.12);
     --c-border-focus: rgba(34, 170, 159, 0.4);
     --c-text: #182731;
@@ -68,8 +70,10 @@
     --shadow-sm: 0 8px 20px rgba(18, 45, 61, 0.08);
     --shadow-md: 0 18px 36px rgba(18, 45, 61, 0.12);
     --shadow-lg: 0 32px 72px rgba(18, 45, 61, 0.18);
+    --focus-ring: 0 0 0 3px rgba(var(--c-accent-rgb), 0.32);
+    --focus-ring-subtle: 0 0 0 2px color-mix(in srgb, var(--c-bg-raised) 66%, rgba(var(--c-accent-rgb), 0.46));
 
-    --nav-height: 66px;
+    --nav-height: 68px;
     --max-width: 430px;
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -81,6 +85,8 @@
         --c-bg-raised: #0f1f31;
         --c-bg-overlay: #15283d;
         --c-bg-input: #142535;
+        --c-surface-1: color-mix(in srgb, var(--c-bg-raised) 92%, #14344a 8%);
+        --c-surface-2: color-mix(in srgb, var(--c-bg-raised) 84%, #173a53 16%);
         --c-border: rgba(236, 245, 255, 0.12);
         --c-border-focus: rgba(236, 245, 255, 0.2);
         --c-text: #ecf5ff;

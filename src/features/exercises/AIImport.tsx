@@ -64,6 +64,7 @@ export function AIImport() {
                     className={s.textarea}
                     value={json}
                     onChange={e => setJson(e.target.value)}
+                    aria-label="Exercise JSON input"
                     placeholder={`[\n  {\n    "name": "Barbell Row",\n    "mode": "strength_reps",\n    "musclesPrimary": ["UpperBack","Biceps"]\n  }\n]`}
                 />
             </div>

@@ -29,6 +29,11 @@
     font-variant-numeric: tabular-nums lining-nums;
 }
 
+.displayButton:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-subtle);
+}
+
 .displayButton:active {
     background: color-mix(in srgb, var(--c-accent-soft) 56%, transparent);
 }
@@ -127,7 +132,7 @@
     z-index: 201;
     background: var(--c-bg-raised);
     border-top: 1px solid var(--c-border);
-    border-radius: 26px 26px 0 0;
+    border-radius: 28px 28px 0 0;
     padding: var(--s-6);
     padding-bottom: calc(var(--s-6) + var(--safe-bottom));
     box-shadow: var(--shadow-lg);
@@ -223,9 +228,10 @@
     width: 100%;
     margin-top: var(--s-4);
     padding: var(--s-4);
-    background: var(--c-accent);
+    background: linear-gradient(145deg, color-mix(in srgb, var(--c-accent) 95%, #fff 5%), color-mix(in srgb, var(--c-accent) 82%, #127c73 18%));
     color: var(--c-accent-text);
     font-weight: var(--fw-semibold);
     border-radius: var(--r-lg);
     font-size: var(--fs-base);
+    box-shadow: 0 10px 20px rgba(var(--c-accent-rgb), 0.24);
 }

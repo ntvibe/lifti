@@ -96,7 +96,20 @@ function PlanCard({ plan, templates, onOpen, onStart }: PlanCardProps) {
     }, [plan, templates]);
 
     return (
-        <div className={styles.card} onClick={onOpen}>
+        <article
+            className={styles.card}
+            role="button"
+            tabIndex={0}
+            onClick={onOpen}
+            onKeyDown={event => {
+                if (event.target !== event.currentTarget) return;
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onOpen();
+                }
+            }}
+            aria-label={`Open ${plan.name}`}
+        >
             <div className={styles.cardTop}>
                 <div>
                     <div className={styles.cardName}>{plan.name}</div>
@@ -110,10 +123,10 @@ function PlanCard({ plan, templates, onOpen, onStart }: PlanCardProps) {
                 <button className={styles.startBtn} onClick={e => { e.stopPropagation(); onStart(); }}>
                     <Play size={14} /> Start
                 </button>
-                <button className={styles.editBtn} onClick={e => { e.stopPropagation(); onOpen(); }}>
+                <button className={styles.editBtn} aria-label={`Edit ${plan.name}`} onClick={e => { e.stopPropagation(); onOpen(); }}>
                     <Pencil size={14} />
                 </button>
             </div>
-        </div>
+        </article>
     );
 }

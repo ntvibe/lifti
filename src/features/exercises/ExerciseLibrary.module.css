@@ -7,6 +7,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--s-5);
+    gap: var(--s-3);
 }
 
 .pageTitle {
@@ -18,21 +19,24 @@
 .subTitle {
     font-size: var(--fs-sm);
     color: var(--c-text-dim);
+    margin-top: 4px;
 }
 
 .importBtn {
     font-size: var(--fs-sm);
     font-weight: var(--fw-semibold);
     color: var(--c-accent);
-    padding: var(--s-2) var(--s-4);
+    padding: 9px 14px;
     border-radius: var(--r-full);
-    background: var(--c-accent-soft);
+    background: color-mix(in srgb, var(--c-accent-soft) 86%, transparent);
     border: 1px solid color-mix(in srgb, var(--c-accent) 32%, transparent);
-    transition: opacity var(--dur-fast) ease, transform var(--dur-fast) ease;
+    transition: opacity var(--dur-fast) ease, transform var(--dur-fast) ease, background var(--dur-fast) ease;
+    white-space: nowrap;
 }
 
 .importBtn:hover {
-    opacity: 0.85;
+    opacity: 0.9;
+    background: color-mix(in srgb, var(--c-accent-soft) 95%, #f1fbf9 5%);
 }
 
 .importBtn:active {
@@ -56,13 +60,15 @@
     width: 100%;
     padding: var(--s-3) var(--s-4) var(--s-3) calc(var(--s-4) + 24px);
     background: var(--c-bg-input);
-    border: 1px solid var(--c-border);
+    border: 1px solid color-mix(in srgb, var(--c-border) 88%, transparent);
     border-radius: var(--r-lg);
     color: var(--c-text);
+    transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease;
 }
 
 .searchInput:focus {
-    border-color: var(--c-accent);
+    border-color: color-mix(in srgb, var(--c-accent) 66%, var(--c-border));
+    background: color-mix(in srgb, var(--c-bg-input) 82%, #fff 18%);
 }
 
 .grid {
@@ -72,8 +78,8 @@
 }
 
 .exerciseCard {
-    background: color-mix(in srgb, var(--c-bg-raised) 92%, transparent);
-    border: 1px solid var(--c-border);
+    background: linear-gradient(170deg, var(--c-surface-1) 0%, var(--c-surface-2) 100%);
+    border: 1px solid color-mix(in srgb, var(--c-border) 82%, #fff 18%);
     border-radius: var(--r-lg);
     padding: var(--s-4);
     display: flex;
@@ -81,15 +87,40 @@
     align-items: center;
     gap: var(--s-3);
     text-align: center;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 10px 22px rgba(25, 48, 63, 0.1);
+    transition: transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+
+.exerciseCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 28px rgba(23, 44, 58, 0.14);
+    border-color: color-mix(in srgb, var(--c-accent) 32%, var(--c-border));
 }
 
 .exName {
     font-size: var(--fs-sm);
-    font-weight: var(--fw-medium);
+    font-weight: var(--fw-semibold);
 }
 
 .exMode {
     font-size: var(--fs-xs);
     color: var(--c-text-dim);
+    text-transform: capitalize;
+}
+
+.empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: var(--s-8) var(--s-4);
+    border: 1px dashed color-mix(in srgb, var(--c-border) 86%, transparent);
+    border-radius: var(--r-lg);
+    color: var(--c-text-dim);
+    background: color-mix(in srgb, var(--c-bg-overlay) 52%, transparent);
+}
+
+@media (max-width: 430px) {
+    .importBtn {
+        font-size: 0.76rem;
+        padding: 8px 12px;
+    }
 }

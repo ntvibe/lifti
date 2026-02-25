@@ -3,16 +3,18 @@
 }
 
 .info {
-    background: color-mix(in srgb, var(--c-bg-raised) 92%, transparent);
-    border: 1px solid var(--c-border);
+    background: linear-gradient(170deg, var(--c-surface-1) 0%, var(--c-surface-2) 100%);
+    border: 1px solid color-mix(in srgb, var(--c-border) 82%, #fff 18%);
     border-radius: var(--r-lg);
     padding: var(--s-5);
     margin-bottom: var(--s-6);
+    box-shadow: 0 12px 26px rgba(24, 47, 62, 0.1);
 }
 
 .helper {
     font-size: var(--fs-sm);
     margin-bottom: var(--s-3);
+    color: var(--c-text-muted);
 }
 
 .infoHeader {
@@ -23,23 +25,26 @@
     font-weight: var(--fw-semibold);
     font-size: var(--fs-sm);
     margin-bottom: var(--s-3);
+    letter-spacing: 0.01em;
 }
 
 .textarea {
     width: 100%;
     height: 280px;
     padding: var(--s-4);
-    background: var(--c-bg-input);
-    border: 1px solid var(--c-border);
+    background: color-mix(in srgb, var(--c-bg-input) 85%, #f7fbfd 15%);
+    border: 1px solid color-mix(in srgb, var(--c-border) 90%, transparent);
     border-radius: var(--r-lg);
-    color: var(--c-success);
+    color: color-mix(in srgb, var(--c-text) 84%, #0d8362 16%);
     font-family: var(--font-mono);
     font-size: var(--fs-sm);
+    line-height: 1.5;
     resize: vertical;
 }
 
 .textarea:focus {
-    border-color: var(--c-accent);
+    border-color: color-mix(in srgb, var(--c-accent) 62%, var(--c-border));
+    background: color-mix(in srgb, var(--c-bg-input) 76%, #ffffff 24%);
 }
 
 .error {
@@ -47,11 +52,12 @@
     align-items: center;
     gap: var(--s-2);
     padding: var(--s-4);
-    background: var(--c-danger-soft);
+    background: color-mix(in srgb, var(--c-danger-soft) 86%, transparent);
     color: var(--c-danger);
     border-radius: var(--r-md);
     font-size: var(--fs-sm);
     margin-bottom: var(--s-4);
+    border: 1px solid color-mix(in srgb, var(--c-danger) 24%, transparent);
 }
 
 .success {
@@ -59,31 +65,38 @@
     align-items: center;
     gap: var(--s-2);
     padding: var(--s-4);
-    background: var(--c-success-soft);
+    background: color-mix(in srgb, var(--c-success-soft) 86%, transparent);
     color: var(--c-success);
     border-radius: var(--r-md);
     font-size: var(--fs-sm);
     margin-bottom: var(--s-4);
+    border: 1px solid color-mix(in srgb, var(--c-success) 24%, transparent);
 }
 
 .importBtn {
     width: 100%;
     padding: var(--s-4);
-    background: var(--c-accent);
+    background: linear-gradient(145deg, color-mix(in srgb, var(--c-accent) 95%, #fff 5%), color-mix(in srgb, var(--c-accent) 82%, #127c73 18%));
     color: var(--c-accent-text);
     font-weight: var(--fw-semibold);
     border-radius: var(--r-lg);
     font-size: var(--fs-base);
-    transition: opacity var(--dur-fast) ease;
+    transition: opacity var(--dur-fast) ease, transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+    box-shadow: 0 12px 22px rgba(var(--c-accent-rgb), 0.24);
 }
 
 .importBtn:hover {
-    opacity: 0.9;
+    opacity: 0.94;
+}
+
+.importBtn:active {
+    transform: scale(0.99);
 }
 
 .importBtn:disabled {
-    opacity: 0.4;
+    opacity: 0.45;
     cursor: not-allowed;
+    box-shadow: none;
 }
 
 .tip {

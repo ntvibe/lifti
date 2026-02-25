@@ -7,7 +7,7 @@ export function Navigation() {
         `${styles.link} ${isActive ? styles.active : ''}`;
 
     return (
-        <nav className={styles.nav}>
+        <nav className={styles.nav} aria-label="Primary">
             <NavLink to="/" className={linkClass} end>
                 <Home className={styles.icon} />
                 <span>Plans</span>
