@@ -1,5 +1,6 @@
 import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import './App.css';
 import { Navigation } from './components/Navigation/Navigation';
 import { PlansHome } from './features/plans/PlansHome/PlansHome';
 import { PlanEditor } from './features/plans/PlanEditor/PlanEditor';

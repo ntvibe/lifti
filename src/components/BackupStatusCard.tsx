@@ -25,38 +25,34 @@ function getLastSyncLabel(lastSyncedAt?: number) {
 }
 
 export function BackupStatusCard() {
-    const auth = useAuthStore(state => ({
-        status: state.status,
-        user: state.user,
-        provider: state.provider,
-        accessToken: state.accessToken,
-        lastError: state.lastError,
-        connectGoogle: state.connectGoogle,
-        disconnect: state.disconnect,
-    }));
+    const authStatus = useAuthStore(state => state.status);
+    const authUser = useAuthStore(state => state.user);
+    const authProvider = useAuthStore(state => state.provider);
+    const authAccessToken = useAuthStore(state => state.accessToken);
+    const authLastError = useAuthStore(state => state.lastError);
+    const connectGoogle = useAuthStore(state => state.connectGoogle);
+    const disconnectAuth = useAuthStore(state => state.disconnect);
 
-    const sync = useSyncStore(state => ({
-        status: state.status,
-        pendingOps: state.pendingOps,
-        lastSyncedAt: state.lastSyncedAt,
-        lastError: state.lastError,
-        syncNow: state.syncNow,
-        deleteCloudBackup: state.deleteCloudBackup,
-        disconnectCloud: state.disconnectCloud,
-    }));
+    const syncStatus = useSyncStore(state => state.status);
+    const pendingOps = useSyncStore(state => state.pendingOps);
+    const lastSyncedAt = useSyncStore(state => state.lastSyncedAt);
+    const syncLastError = useSyncStore(state => state.lastError);
+    const syncNow = useSyncStore(state => state.syncNow);
+    const deleteCloudBackup = useSyncStore(state => state.deleteCloudBackup);
+    const disconnectCloud = useSyncStore(state => state.disconnectCloud);
 
-    const connected = auth.status === 'authenticated' && auth.provider === 'google' && Boolean(auth.accessToken);
-    const statusLabel = getStatusLabel(sync.status);
+    const connected = authStatus === 'authenticated' && authProvider === 'google' && Boolean(authAccessToken);
+    const statusLabel = getStatusLabel(syncStatus);
 
     const handleEnableBackup = async () => {
-        const success = await auth.connectGoogle();
+        const success = await connectGoogle();
         if (success) {
-            await sync.syncNow();
+            await syncNow();
         }
     };
 
     const handleDisconnect = async () => {
-        await Promise.all([auth.disconnect(), sync.disconnectCloud()]);
+        await Promise.all([disconnectAuth(), disconnectCloud()]);
     };
 
     return (
@@ -68,32 +64,32 @@ export function BackupStatusCard() {
                         {connected ? 'Backup connected to Google' : 'Back up your plans and history'}
                     </h3>
                 </div>
-                <span className={`${styles.badge} ${sync.status === 'out_of_sync' || sync.status === 'error' ? styles.outOfSync : ''}`}>
+                <span className={`${styles.badge} ${syncStatus === 'out_of_sync' || syncStatus === 'error' ? styles.outOfSync : ''}`}>
                     {statusLabel}
                 </span>
             </div>
 
             <p className={styles.meta}>
                 {connected
-                    ? `Connected as ${auth.user?.email ?? auth.user?.name ?? 'Google account'}`
+                    ? `Connected as ${authUser?.email ?? authUser?.name ?? 'Google account'}`
                     : 'Optional backup. Training remains fully offline-first.'}
             </p>
 
             {connected && (
                 <p className={styles.meta}>
-                    {getLastSyncLabel(sync.lastSyncedAt)}
-                    {sync.pendingOps > 0 ? ` • ${sync.pendingOps} pending` : ''}
+                    {getLastSyncLabel(lastSyncedAt)}
+                    {pendingOps > 0 ? ` • ${pendingOps} pending` : ''}
                 </p>
             )}
 
-            {(auth.lastError || sync.lastError) && (
-                <p className={styles.errorText}>{sync.lastError ?? auth.lastError}</p>
+            {(authLastError || syncLastError) && (
+                <p className={styles.errorText}>{syncLastError ?? authLastError}</p>
             )}
 
             <div className={styles.actions}>
                 {!connected ? (
-                    <button className={styles.primaryBtn} onClick={handleEnableBackup} disabled={auth.status === 'authenticating'}>
-                        {auth.status === 'authenticating' ? (
+                    <button className={styles.primaryBtn} onClick={handleEnableBackup} disabled={authStatus === 'authenticating'}>
+                        {authStatus === 'authenticating' ? (
                             <><LoaderCircle size={14} className={styles.spin} /> Connecting...</>
                         ) : (
                             <><Cloud size={14} /> Enable backup</>
@@ -101,8 +97,8 @@ export function BackupStatusCard() {
                     </button>
                 ) : (
                     <>
-                        <button className={styles.secondaryBtn} onClick={sync.syncNow} disabled={sync.status === 'syncing'}>
-                            {sync.status === 'syncing' ? (
+                        <button className={styles.secondaryBtn} onClick={syncNow} disabled={syncStatus === 'syncing'}>
+                            {syncStatus === 'syncing' ? (
                                 <><LoaderCircle size={14} className={styles.spin} /> Syncing...</>
                             ) : (
                                 <><RefreshCw size={14} /> Sync now</>
@@ -111,7 +107,7 @@ export function BackupStatusCard() {
                         <button className={styles.secondaryBtn} onClick={handleDisconnect}>
                             <Unplug size={14} /> Disconnect
                         </button>
-                        <button className={styles.dangerBtn} onClick={sync.deleteCloudBackup}>
+                        <button className={styles.dangerBtn} onClick={deleteCloudBackup}>
                             <Trash2 size={14} /> Delete cloud backup only
                         </button>
                     </>
