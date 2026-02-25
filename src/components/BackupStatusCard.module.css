@@ -1,10 +1,10 @@
 .card {
-    margin-bottom: var(--s-5);
-    border: 1px solid var(--c-border);
-    border-radius: var(--r-lg);
-    background: color-mix(in srgb, var(--c-bg-raised) 92%, transparent);
-    padding: var(--s-4);
-    box-shadow: var(--shadow-sm);
+    margin-bottom: 14px;
+    border: 1px solid color-mix(in srgb, var(--c-border) 80%, #fff 20%);
+    border-radius: 16px;
+    background: linear-gradient(160deg, color-mix(in srgb, var(--c-bg-raised) 98%, transparent) 0%, color-mix(in srgb, var(--c-bg-raised) 92%, #eaf4f2 8%) 100%);
+    padding: 14px;
+    box-shadow: 0 10px 20px rgba(37, 66, 82, 0.08);
 }
 
 .headerRow {
@@ -21,7 +21,7 @@
 }
 
 .title {
-    font-size: var(--fs-sm);
+    font-size: 0.87rem;
     font-family: var(--font-sans);
     font-weight: var(--fw-semibold);
     letter-spacing: 0;
@@ -29,11 +29,11 @@
 
 .badge {
     border-radius: var(--r-full);
-    background: var(--c-accent-soft);
+    background: color-mix(in srgb, var(--c-accent-soft) 82%, #ffffff 18%);
     color: var(--c-accent);
-    font-size: var(--fs-xs);
+    font-size: 0.68rem;
     font-weight: var(--fw-semibold);
-    padding: 6px var(--s-2);
+    padding: 6px 10px;
     white-space: nowrap;
 }
 
@@ -45,7 +45,7 @@
 .meta {
     margin-top: var(--s-2);
     color: var(--c-text-dim);
-    font-size: var(--fs-xs);
+    font-size: 0.73rem;
 }
 
 .errorText {
@@ -55,10 +55,10 @@
 }
 
 .actions {
-    margin-top: var(--s-3);
+    margin-top: 11px;
     display: flex;
     flex-wrap: wrap;
-    gap: var(--s-2);
+    gap: 7px;
 }
 
 .primaryBtn,
@@ -67,21 +67,22 @@
     display: inline-flex;
     align-items: center;
     gap: var(--s-2);
-    padding: var(--s-2) var(--s-3);
+    padding: 8px 12px;
     border-radius: var(--r-full);
-    font-size: var(--fs-xs);
+    font-size: 0.68rem;
     font-weight: var(--fw-semibold);
-    transition: opacity var(--dur-fast) ease;
+    transition: opacity var(--dur-fast) ease, transform var(--dur-fast) ease;
 }
 
 .primaryBtn {
-    background: var(--c-accent);
+    background: linear-gradient(140deg, color-mix(in srgb, var(--c-accent) 96%, white 4%) 0%, color-mix(in srgb, var(--c-accent) 82%, #138478 18%) 100%);
     color: var(--c-accent-text);
+    box-shadow: 0 8px 14px rgba(var(--c-accent-rgb), 0.22);
 }
 
 .secondaryBtn {
-    border: 1px solid var(--c-border);
-    background: var(--c-bg-overlay);
+    border: 1px solid color-mix(in srgb, var(--c-border) 80%, #fff 20%);
+    background: color-mix(in srgb, var(--c-bg-overlay) 78%, #fff 22%);
     color: var(--c-text);
 }
 
@@ -95,6 +96,7 @@
 .secondaryBtn:hover,
 .dangerBtn:hover {
     opacity: 0.9;
+    transform: translateY(-1px);
 }
 
 .primaryBtn:disabled,

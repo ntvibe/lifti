@@ -1,19 +1,19 @@
 /* Lifti mobile design tokens */
 
 :root {
-    --c-bg: #f4f8fb;
-    --c-bg-raised: #ffffff;
-    --c-bg-overlay: #ecf2f6;
-    --c-bg-input: #f3f7fa;
-    --c-border: rgba(8, 23, 40, 0.1);
-    --c-border-focus: rgba(8, 23, 40, 0.2);
-    --c-text: #0b2239;
-    --c-text-muted: #39536b;
-    --c-text-dim: #6e8396;
-    --c-accent: #0f9b8e;
-    --c-accent-rgb: 15, 155, 142;
-    --c-accent-soft: rgba(15, 155, 142, 0.14);
-    --c-accent-text: #ffffff;
+    --c-bg: #dfe6eb;
+    --c-bg-raised: #f9fbfc;
+    --c-bg-overlay: #edf2f4;
+    --c-bg-input: #f3f6f7;
+    --c-border: rgba(36, 62, 80, 0.12);
+    --c-border-focus: rgba(34, 170, 159, 0.4);
+    --c-text: #182731;
+    --c-text-muted: #4a6271;
+    --c-text-dim: #7f95a2;
+    --c-accent: #22aa9f;
+    --c-accent-rgb: 34, 170, 159;
+    --c-accent-soft: rgba(34, 170, 159, 0.18);
+    --c-accent-text: #f5ffff;
     --c-danger: #db4455;
     --c-danger-soft: rgba(219, 68, 85, 0.12);
     --c-success: #0b9f5f;
@@ -65,12 +65,12 @@
     --dur-normal: 220ms;
     --dur-slow: 360ms;
 
-    --shadow-sm: 0 6px 14px rgba(4, 28, 44, 0.08);
-    --shadow-md: 0 14px 30px rgba(4, 28, 44, 0.12);
-    --shadow-lg: 0 24px 60px rgba(4, 28, 44, 0.18);
+    --shadow-sm: 0 8px 20px rgba(18, 45, 61, 0.08);
+    --shadow-md: 0 18px 36px rgba(18, 45, 61, 0.12);
+    --shadow-lg: 0 32px 72px rgba(18, 45, 61, 0.18);
 
-    --nav-height: 72px;
-    --max-width: 460px;
+    --nav-height: 66px;
+    --max-width: 430px;
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
