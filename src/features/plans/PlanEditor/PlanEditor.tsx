@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { GripVertical, Trash2 } from 'lucide-react';
+import { GripVertical, RotateCcw, Trash2 } from 'lucide-react';
 import {
     DndContext, closestCenter, PointerSensor, KeyboardSensor,
     useSensor, useSensors, type DragEndEvent,
@@ -14,8 +14,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { db, planRepo } from '../../../db/db';
 import { BodyMap } from '../../../components/BodyMap/BodyMap';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
-import { setVolume } from '../../../types/helpers';
-import type { MuscleId } from '../../../types/domain';
+import { deepClone, setVolume } from '../../../types/helpers';
+import type { MuscleId, PlanExercise } from '../../../types/domain';
 import styles from './PlanEditor.module.css';
 
 export function PlanEditor() {
@@ -23,6 +23,11 @@ export function PlanEditor() {
     const navigate = useNavigate();
     const plan = useLiveQuery(() => (id ? db.plans.get(id) : undefined), [id]);
     const templates = useLiveQuery(() => db.exercises.toArray());
+    const [deletedExercises, setDeletedExercises] = useState<DeletedExerciseSnapshot[]>([]);
+
+    useEffect(() => {
+        setDeletedExercises([]);
+    }, [id]);
 
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -54,7 +59,27 @@ export function PlanEditor() {
         if (from >= 0 && to >= 0) planRepo.reorderExercises(plan, from, to);
     };
 
-    const handleDelete = (idx: number) => planRepo.removeExercise(plan, idx);
+    const handleDelete = async (idx: number) => {
+        const exercise = plan.exercises[idx];
+        if (!exercise) return;
+        setDeletedExercises(prev => [...prev, { exercise: deepClone(exercise), index: idx }]);
+        await planRepo.removeExercise(plan, idx);
+    };
+
+    const handleDeletePlan = async () => {
+        const confirmed = window.confirm(`Are you sure you want to delete "${plan.name}"?`);
+        if (!confirmed) return;
+        await planRepo.delete(plan.id);
+        navigate('/', { replace: true });
+    };
+
+    const handleUndoDelete = async () => {
+        const lastDeleted = deletedExercises[deletedExercises.length - 1];
+        if (!lastDeleted) return;
+        const restoreIndex = Math.min(lastDeleted.index, plan.exercises.length);
+        await planRepo.insertExercise(plan, deepClone(lastDeleted.exercise), restoreIndex);
+        setDeletedExercises(prev => prev.slice(0, -1));
+    };
 
     const sortableIds = plan.exercises.map(ex => ex.id);
 
@@ -81,7 +106,7 @@ export function PlanEditor() {
                                 name={templates.find(t => t.id === ex.templateId)?.name ?? 'Unknown'}
                                 setCount={ex.sets.length}
                                 onEdit={() => navigate(`/plan/${id}/exercise/${idx}`)}
-                                onDelete={() => handleDelete(idx)}
+                                onDelete={() => void handleDelete(idx)}
                             />
                         ))}
                         {plan.exercises.length === 0 && (
@@ -99,8 +124,26 @@ export function PlanEditor() {
             >
                 + Add Exercise
             </button>
+
+            <div className={styles.planActionRow}>
+                <button className={styles.deletePlanBtn} onClick={() => void handleDeletePlan()}>
+                    <Trash2 size={15} /> Delete Plan
+                </button>
+                <button
+                    className={styles.undoDeleteBtn}
+                    onClick={() => void handleUndoDelete()}
+                    disabled={deletedExercises.length === 0}
+                >
+                    <RotateCcw size={15} /> Undo Delete
+                </button>
+            </div>
         </div>
     );
+}
+
+interface DeletedExerciseSnapshot {
+    exercise: PlanExercise;
+    index: number;
 }
 
 // ── Sortable Row ──

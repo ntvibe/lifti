@@ -144,6 +144,17 @@ export const planRepo = {
         return updated;
     },
 
+    async insertExercise(plan: Plan, exercise: PlanExercise, atIndex: number): Promise<Plan> {
+        const exercises = deepClone(plan.exercises);
+        const insertIndex = Math.min(Math.max(atIndex, 0), exercises.length);
+        exercises.splice(insertIndex, 0, deepClone(exercise));
+        const updatedAt = Date.now();
+        const updated: Plan = { ...plan, exercises, updatedAt };
+        await db.plans.put(updated);
+        await trackSyncChange('plan', updated.id, updatedAt);
+        return updated;
+    },
+
     async reorderExercises(plan: Plan, fromIndex: number, toIndex: number): Promise<Plan> {
         const exercises = [...plan.exercises];
         const [moved] = exercises.splice(fromIndex, 1);

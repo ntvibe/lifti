@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus, Play, Dumbbell } from 'lucide-react';
@@ -43,6 +43,13 @@ export function PlansHome() {
         navigate(`/plan/${plan.id}`);
     };
 
+    const handleDeletePlan = async (plan: Plan) => {
+        const confirmed = window.confirm(`Are you sure you want to delete "${plan.name}"?`);
+        if (!confirmed) return;
+        await planRepo.delete(plan.id);
+        setQueryBuster(prev => prev + 1);
+    };
+
     const totalExercises = plans?.reduce((sum, p) => sum + p.exercises.length, 0) ?? 0;
 
     return (
@@ -79,6 +86,7 @@ export function PlansHome() {
                             templates={templates ?? []}
                             onOpen={() => navigate(`/plan/${plan.id}`)}
                             onStart={() => navigate(`/workout/${plan.id}`)}
+                            onLongDelete={() => void handleDeletePlan(plan)}
                         />
                     ))}
                 </div>
@@ -100,9 +108,27 @@ interface PlanCardProps {
     templates: ExerciseTemplate[];
     onOpen: () => void;
     onStart: () => void;
+    onLongDelete: () => void;
 }
 
-function PlanCard({ plan, templates, onOpen, onStart }: PlanCardProps) {
+const LONG_PRESS_MS = 550;
+const LONG_PRESS_MOVE_TOLERANCE_PX = 10;
+
+function PlanCard({ plan, templates, onOpen, onStart, onLongDelete }: PlanCardProps) {
+    const holdTimerRef = useRef<number | null>(null);
+    const pressStartRef = useRef<{ pointerId: number; x: number; y: number } | null>(null);
+    const longPressTriggeredRef = useRef(false);
+
+    const clearLongPress = useCallback(() => {
+        if (holdTimerRef.current) {
+            window.clearTimeout(holdTimerRef.current);
+            holdTimerRef.current = null;
+        }
+        pressStartRef.current = null;
+    }, []);
+
+    useEffect(() => () => clearLongPress(), [clearLongPress]);
+
     const heatmap = useMemo(() => {
         const map: Partial<Record<MuscleId, number>> = {};
         for (const ex of plan.exercises) {
@@ -119,12 +145,54 @@ function PlanCard({ plan, templates, onOpen, onStart }: PlanCardProps) {
         return map;
     }, [plan, templates]);
 
+    const handlePointerDown = (event: React.PointerEvent<HTMLElement>) => {
+        if ((event.target as HTMLElement).closest('button')) return;
+        if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+        clearLongPress();
+        longPressTriggeredRef.current = false;
+        pressStartRef.current = {
+            pointerId: event.pointerId,
+            x: event.clientX,
+            y: event.clientY,
+        };
+        holdTimerRef.current = window.setTimeout(() => {
+            longPressTriggeredRef.current = true;
+            onLongDelete();
+        }, LONG_PRESS_MS);
+    };
+
+    const handlePointerMove = (event: React.PointerEvent<HTMLElement>) => {
+        const press = pressStartRef.current;
+        if (!press || press.pointerId !== event.pointerId || longPressTriggeredRef.current) return;
+        const movedDistance = Math.hypot(event.clientX - press.x, event.clientY - press.y);
+        if (movedDistance > LONG_PRESS_MOVE_TOLERANCE_PX) {
+            clearLongPress();
+        }
+    };
+
+    const handlePointerEnd = (event: React.PointerEvent<HTMLElement>) => {
+        if (pressStartRef.current?.pointerId !== event.pointerId) return;
+        clearLongPress();
+    };
+
     return (
         <article
             className={styles.card}
             role="button"
             tabIndex={0}
-            onClick={onOpen}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerEnd}
+            onPointerCancel={handlePointerEnd}
+            onPointerLeave={handlePointerEnd}
+            onClick={() => {
+                if (longPressTriggeredRef.current) {
+                    longPressTriggeredRef.current = false;
+                    return;
+                }
+                onOpen();
+            }}
             onKeyDown={event => {
                 if (event.target !== event.currentTarget) return;
                 if (event.key === 'Enter' || event.key === ' ') {

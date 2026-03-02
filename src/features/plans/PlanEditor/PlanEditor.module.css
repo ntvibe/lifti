@@ -141,3 +141,50 @@
 .addExerciseBtn:active {
     transform: scale(0.99);
 }
+
+.planActionRow {
+    margin-top: var(--s-3);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-3);
+}
+
+.deletePlanBtn,
+.undoDeleteBtn {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-2);
+    border-radius: var(--r-lg);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    transition: opacity var(--dur-fast) ease, transform var(--dur-fast) ease;
+}
+
+.deletePlanBtn {
+    background: color-mix(in srgb, var(--c-danger) 16%, var(--c-surface-1));
+    color: var(--c-danger);
+    border: 1px solid color-mix(in srgb, var(--c-danger) 45%, transparent);
+}
+
+.undoDeleteBtn {
+    background: linear-gradient(170deg, var(--c-surface-1) 0%, var(--c-surface-2) 100%);
+    border: 1px solid color-mix(in srgb, var(--c-border) 85%, #fff 15%);
+    color: var(--c-text);
+}
+
+.deletePlanBtn:hover,
+.undoDeleteBtn:hover:not(:disabled) {
+    opacity: 0.96;
+}
+
+.deletePlanBtn:active,
+.undoDeleteBtn:active:not(:disabled) {
+    transform: scale(0.99);
+}
+
+.undoDeleteBtn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
