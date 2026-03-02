@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus, Play, Dumbbell } from 'lucide-react';
@@ -11,11 +11,35 @@ import styles from './PlansHome.module.css';
 
 export function PlansHome() {
     const navigate = useNavigate();
-    const plans = useLiveQuery(() => db.plans.toArray());
+    const [queryBuster, setQueryBuster] = useState(0);
+    const plans = useLiveQuery(
+        () => db.plans.orderBy('updatedAt').reverse().toArray(),
+        [queryBuster],
+    );
     const templates = useLiveQuery(() => db.exercises.toArray());
+
+    useEffect(() => {
+        const refreshPlans = () => {
+            setQueryBuster(prev => prev + 1);
+        };
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') refreshPlans();
+        };
+
+        window.addEventListener('pageshow', refreshPlans);
+        window.addEventListener('focus', refreshPlans);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            window.removeEventListener('pageshow', refreshPlans);
+            window.removeEventListener('focus', refreshPlans);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, []);
 
     const handleNew = async () => {
         const plan = await planRepo.create('New Plan');
+        setQueryBuster(prev => prev + 1);
         navigate(`/plan/${plan.id}`);
     };
 

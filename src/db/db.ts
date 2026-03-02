@@ -118,11 +118,11 @@ export const planRepo = {
         return updated;
     },
 
-    async addExercise(plan: Plan, template: ExerciseTemplate): Promise<Plan> {
+    async addExercise(plan: Plan, template: ExerciseTemplate, sets?: PlanSet[]): Promise<Plan> {
         const instance: PlanExercise = {
             id: crypto.randomUUID(),
             templateId: template.id,
-            sets: [createDefaultSet(template.mode)],
+            sets: sets && sets.length > 0 ? deepClone(sets) : [createDefaultSet(template.mode)],
         };
         const updatedAt = Date.now();
         const updated: Plan = {

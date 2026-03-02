@@ -26,7 +26,7 @@
     text-transform: capitalize;
 }
 
-.detailsCard {
+.setsCard {
     background: linear-gradient(170deg, var(--c-surface-1) 0%, var(--c-surface-2) 100%);
     border: 1px solid color-mix(in srgb, var(--c-border) 82%, #fff 18%);
     border-radius: var(--r-lg);
@@ -34,32 +34,117 @@
     box-shadow: 0 10px 22px rgba(25, 48, 63, 0.1);
 }
 
-.detailRow {
+.setsHead {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: var(--s-3) 0;
-}
-
-.detailRow:not(:last-child) {
-    border-bottom: 1px solid color-mix(in srgb, var(--c-border) 76%, transparent);
-}
-
-.detailRow span:first-child {
-    color: var(--c-text-dim);
+    justify-content: space-between;
+    align-items: center;
     font-size: var(--fs-xs);
     text-transform: uppercase;
     letter-spacing: 0.06em;
+    color: var(--c-text-dim);
+    margin-bottom: var(--s-3);
 }
 
-.detailRow span:last-child {
-    color: var(--c-text);
+.tableWrap {
+    overflow: hidden;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.table th {
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-medium);
+    color: var(--c-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: var(--s-2) var(--s-1);
+    text-align: center;
+    border-bottom: 1px solid var(--c-border);
+}
+
+.table th:first-child {
+    text-align: left;
+    width: 28px;
+}
+
+.table th:last-child {
+    width: 32px;
+}
+
+.table td {
+    padding: var(--s-2) var(--s-1);
+    text-align: center;
+    vertical-align: middle;
+    border-bottom: 1px solid color-mix(in srgb, var(--c-border) 92%, transparent);
+    min-width: 0;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table td:first-child {
+    text-align: left;
+    color: var(--c-text-dim);
     font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+}
+
+.removeCell {
+    width: 32px;
+}
+
+.removeBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--r-full);
+    color: var(--c-text-dim);
+    transition: color var(--dur-fast) ease, background var(--dur-fast) ease, transform var(--dur-fast) ease;
+}
+
+.removeBtn:hover:not(:disabled) {
+    color: var(--c-danger);
+    background: var(--c-danger-soft);
+}
+
+.removeBtn:active:not(:disabled) {
+    transform: scale(0.94);
+}
+
+.removeBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.addSetBtn {
+    width: 100%;
+    margin-top: var(--s-4);
+    padding: var(--s-4);
+    background: color-mix(in srgb, var(--c-bg-input) 88%, #ffffff 12%);
+    border: 1px dashed color-mix(in srgb, var(--c-border) 82%, #ffffff 18%);
+    border-radius: var(--r-lg);
+    color: var(--c-text-muted);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+
+.addSetBtn:hover {
+    background: color-mix(in srgb, var(--c-accent-soft) 48%, var(--c-bg-overlay) 52%);
+    border-color: color-mix(in srgb, var(--c-accent) 30%, var(--c-border));
+    color: color-mix(in srgb, var(--c-text) 88%, var(--c-accent) 12%);
 }
 
 .addBtn {
     width: 100%;
-    margin-top: var(--s-6);
+    margin-top: var(--s-5);
     display: inline-flex;
     align-items: center;
     justify-content: center;

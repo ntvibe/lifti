@@ -119,6 +119,10 @@
     margin: 0 auto var(--s-4);
 }
 
+.cardMapWrap object {
+    pointer-events: none;
+}
+
 .cardName {
     font-size: 1.06rem;
     font-weight: var(--fw-bold);
