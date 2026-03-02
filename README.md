@@ -34,6 +34,14 @@ npm run build -- --base=/<repo-name>/
 npm run lint
 ```
 
+## Repo Safety Check
+
+```bash
+npm run check:repo-safety
+```
+
+This guard ensures local/user artifacts are never tracked (for example `.env` files, build output, or DB/browser storage files).
+
 ## Optional Google Backup
 
 Create a `.env` from `.env.example` and set:
@@ -49,5 +57,6 @@ If this variable is not set, the app still works fully offline; Google backup is
 Deployment is automated by `.github/workflows/deploy-pages.yml`.
 
 - Triggers on `master` and `main`
+- Runs a tracked-file safety check before install/build
 - Builds with the repository base path
 - Publishes the `dist` artifact to GitHub Pages

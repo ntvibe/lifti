@@ -32,6 +32,24 @@ coverage
 *.local
 .codex/
 
+# Local user data / browser storage artifacts
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite-journal
+*.idb
+*.ldb
+*.localstorage
+*.localstorage-journal
+IndexedDB/
+Local Storage/
+Session Storage/
+databases/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

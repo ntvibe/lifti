@@ -23,6 +23,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Verify tracked files are safe
+        run: bash ./scripts/check-repo-safety.sh
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
