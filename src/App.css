@@ -37,6 +37,15 @@
     padding-bottom: calc(var(--safe-bottom) + var(--s-6));
 }
 
+.route-loading {
+    min-height: 40dvh;
+    display: grid;
+    place-items: center;
+    color: var(--c-text-dim);
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+}
+
 @media (max-width: 640px) {
     .app-shell {
         padding: 0;

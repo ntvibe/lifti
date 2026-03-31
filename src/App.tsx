@@ -1,18 +1,62 @@
 import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import './App.css';
 import { Navigation } from './components/Navigation/Navigation';
-import { PlansHome } from './features/plans/PlansHome/PlansHome';
-import { PlanEditor } from './features/plans/PlanEditor/PlanEditor';
-import { ExerciseSetEditor } from './features/plans/ExerciseSetEditor/ExerciseSetEditor';
-import { PlanExercisePicker } from './features/plans/PlanExercisePicker/PlanExercisePicker';
-import { PlanExerciseDetail } from './features/plans/PlanExerciseDetail/PlanExerciseDetail';
-import { WorkoutSession } from './features/workout/WorkoutSession';
-import { HistoryView } from './features/history/HistoryView';
-import { ExerciseLibrary } from './features/exercises/ExerciseLibrary';
-import { AIImport } from './features/exercises/AIImport';
 import { useAuthStore } from './state/authStore';
 import { useSyncStore } from './state/syncStore';
+
+const PlansHome = lazy(async () => {
+    const module = await import('./features/plans/PlansHome/PlansHome');
+    return { default: module.PlansHome };
+});
+
+const PlanEditor = lazy(async () => {
+    const module = await import('./features/plans/PlanEditor/PlanEditor');
+    return { default: module.PlanEditor };
+});
+
+const ExerciseSetEditor = lazy(async () => {
+    const module = await import('./features/plans/ExerciseSetEditor/ExerciseSetEditor');
+    return { default: module.ExerciseSetEditor };
+});
+
+const PlanExercisePicker = lazy(async () => {
+    const module = await import('./features/plans/PlanExercisePicker/PlanExercisePicker');
+    return { default: module.PlanExercisePicker };
+});
+
+const PlanExerciseDetail = lazy(async () => {
+    const module = await import('./features/plans/PlanExerciseDetail/PlanExerciseDetail');
+    return { default: module.PlanExerciseDetail };
+});
+
+const WorkoutSession = lazy(async () => {
+    const module = await import('./features/workout/WorkoutSession');
+    return { default: module.WorkoutSession };
+});
+
+const HistoryView = lazy(async () => {
+    const module = await import('./features/history/HistoryView');
+    return { default: module.HistoryView };
+});
+
+const ExerciseLibrary = lazy(async () => {
+    const module = await import('./features/exercises/ExerciseLibrary');
+    return { default: module.ExerciseLibrary };
+});
+
+const AIImport = lazy(async () => {
+    const module = await import('./features/exercises/AIImport');
+    return { default: module.AIImport };
+});
+
+function RouteLoadingFallback() {
+    return (
+        <div className="route-loading" aria-live="polite">
+            Loading...
+        </div>
+    );
+}
 
 function AppLayout() {
     const location = useLocation();
@@ -26,18 +70,20 @@ function AppLayout() {
             <div className="app-bg" />
             <div className="app-content">
                 <main className={mainClassName}>
-                    <Routes>
-                        <Route path="/" element={<PlansHome />} />
-                        <Route path="/plan/:id" element={<PlanEditor />} />
-                        <Route path="/plan/:id/add-exercise" element={<PlanExercisePicker />} />
-                        <Route path="/plan/:id/add-exercise/:templateId" element={<PlanExerciseDetail />} />
-                        <Route path="/plan/:planId/exercise/:exerciseIndex" element={<ExerciseSetEditor />} />
-                        <Route path="/workout/:planId" element={<WorkoutSession />} />
-                        <Route path="/history" element={<HistoryView />} />
-                        <Route path="/exercises" element={<ExerciseLibrary />} />
-                        <Route path="/exercises/import" element={<AIImport />} />
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
+                    <Suspense fallback={<RouteLoadingFallback />}>
+                        <Routes>
+                            <Route path="/" element={<PlansHome />} />
+                            <Route path="/plan/:id" element={<PlanEditor />} />
+                            <Route path="/plan/:id/add-exercise" element={<PlanExercisePicker />} />
+                            <Route path="/plan/:id/add-exercise/:templateId" element={<PlanExerciseDetail />} />
+                            <Route path="/plan/:planId/exercise/:exerciseIndex" element={<ExerciseSetEditor />} />
+                            <Route path="/workout/:planId" element={<WorkoutSession />} />
+                            <Route path="/history" element={<HistoryView />} />
+                            <Route path="/exercises" element={<ExerciseLibrary />} />
+                            <Route path="/exercises/import" element={<AIImport />} />
+                            <Route path="*" element={<Navigate to="/" replace />} />
+                        </Routes>
+                    </Suspense>
                 </main>
             </div>
             {!isImmersiveRoute && <Navigation />}

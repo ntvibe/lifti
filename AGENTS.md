@@ -94,7 +94,7 @@ Sets:
 - Avoid overengineering. Simple architecture, clean boundaries.
 
 ## Repo Structure (preferred)
-- src/domain (types, pure logic)
+- src/types (domain types/helpers)
 - src/db (indexeddb schema + repositories)
 - src/sync (drive sync)
 - src/ui (screens/components)
@@ -109,7 +109,7 @@ Sets:
 ## First Milestone
 Foundation:
 - Create docs/exercise_data_model.md (no TS block)
-- Create src/domain/types.ts (strict unions)
+- Create src/types/domain.ts (strict unions)
 - Set up IndexedDB schema + repositories
 - Create route shell: Plans, Plan Editor, Workout, History
 

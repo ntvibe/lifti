@@ -4,6 +4,22 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+
+          if (id.includes('recharts') || id.includes('/d3-')) return 'charts'
+          if (id.includes('@dnd-kit')) return 'dnd'
+          if (id.includes('dexie')) return 'data'
+          if (id.includes('react-router')) return 'router'
+          if (id.includes('zustand') || id.includes('zod')) return 'state'
+          if (id.includes('react') || id.includes('scheduler')) return 'react-vendor'
+        }
+      }
+    }
+  },
   plugins: [
     react(),
     VitePWA({
